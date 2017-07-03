@@ -20,6 +20,11 @@ function setup()
 		socket.send(JSON.stringify(data));
 		pending[id] = [res, rej];
 	});
+	window.send_request = (type, data) => { //For console testing
+		send_request(type, data)
+			.then(data => console.log(data))
+			.catch(err => console.error(data));
+	}
 	socket.onopen = async () => {
 		console.log("Connected");
 		const data = await send_request("GetVersion");
