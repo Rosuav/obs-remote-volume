@@ -46,11 +46,13 @@ function setup()
 			const th = src.firstChild;
 			th.insertBefore(document.createTextNode(source.name), th.firstChild);
 			const inp = src.querySelector("input");
-			inp.value = src.querySelector("span").innerText = source.volume;
+			inp.value = Math.sqrt(source.volume);
+			src.querySelector("span").innerText = source.volume;
 			inp.oninput = ev => {
 				//TODO: Format as percentage?
-				ev.target.closest("tr").querySelector("span").innerText = ev.target.value;
-				send_request("SetVolume", {"source": source.name, "volume": +ev.target.value});
+				const val = ev.target.value * ev.target.value;
+				ev.target.closest("tr").querySelector("span").innerText = val;
+				send_request("SetVolume", {"source": source.name, "volume": val});
 			}
 			vol.appendChild(src);
 		})
