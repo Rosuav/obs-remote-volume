@@ -6,3 +6,7 @@
 #status th, #volumes th {
 	text-align: right;
 }
+
+.volslider {
+	width: 25em;
+}

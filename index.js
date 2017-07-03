@@ -42,7 +42,7 @@ function setup()
 		scene.sources.forEach(source => {
 			//Using forEach for the closure :)
 			const src = document.createElement("TR");
-			src.innerHTML = "<th></th><td><input type=range min=0 max=1 step=any></td><td><span></span></td>";
+			src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span></span></td>";
 			const th = src.firstChild;
 			th.insertBefore(document.createTextNode(source.name), th.firstChild);
 			const inp = src.querySelector("input");
