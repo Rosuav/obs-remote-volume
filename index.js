@@ -27,8 +27,15 @@ function setup()
 	}
 	socket.onopen = async () => {
 		console.log("Connected");
-		const data = await send_request("GetVersion");
-		console.log("Version:", data);
+		//console.log("Version:", await send_request("GetVersion"));
+		const auth = await send_request("GetAuthRequired");
+		if (auth.authRequired) {
+			console.log(auth);
+			const pwd = "hello-world"; //TODO: Get from user
+			const hash = forge_sha256(pwd + auth.salt);
+			const resp = forge_sha256(hash + auth.challenge);
+			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
+		}
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
