@@ -36,6 +36,24 @@ function setup()
 			const resp = forge_sha256(hash + auth.challenge);
 			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
 		}
+		const scene = await send_request("GetCurrentScene");
+		console.log("Scene:", scene);
+		const vol = document.getElementById("volumes").firstChild;
+		scene.sources.forEach(source => {
+			//Using forEach for the closure :)
+			const src = document.createElement("TR");
+			src.innerHTML = "<th></th><td><input type=range min=0 max=1 step=any></td><td><span></span></td>";
+			const th = src.firstChild;
+			th.insertBefore(document.createTextNode(source.name), th.firstChild);
+			const inp = src.querySelector("input");
+			inp.value = src.querySelector("span").innerText = source.volume;
+			inp.oninput = ev => {
+				//TODO: Format as percentage?
+				ev.target.closest("tr").querySelector("span").innerText = ev.target.value;
+				send_request("SetVolume", {"source": source.name, "volume": +ev.target.value});
+			}
+			vol.appendChild(src);
+		})
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);

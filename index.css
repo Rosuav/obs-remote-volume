@@ -3,6 +3,6 @@
 	top: 0; right: 0;
 }
 
-#status th {
+#status th, #volumes th {
 	text-align: right;
 }
