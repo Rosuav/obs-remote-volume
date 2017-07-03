@@ -11,8 +11,20 @@ function setup()
 {
 	console.log("Initializing");
 	const socket = new WebSocket("ws://localhost:4444/"); //Hard coded for now
-	socket.onopen = () => console.log("Connected");
-	//const announce_pos = (n) => socket.send(JSON.stringify({type: "setpos", data: n}))
+	let counter = 0;
+	const pending = {};
+	const send_request = (type, data={}) => new Promise((res, rej) => {
+		const id = "msg" + counter++;
+		data = Object.assign({"request-type": type, "message-id": id}, data);
+		console.log("Sending:", data);
+		socket.send(JSON.stringify(data));
+		pending[id] = [res, rej];
+	});
+	socket.onopen = async () => {
+		console.log("Connected");
+		const data = await send_request("GetVersion");
+		console.log("Version:", data);
+	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
 		if (data["update-type"])
@@ -22,6 +34,14 @@ function setup()
 			//Unknown events get logged once and then no more.
 			console.log("Unknown event:", data["update-type"]);
 			events[data["update-type"]] = () => {};
+			return;
+		}
+		if (data["message-id"]) {
+			const resrej = pending[data["message-id"]];
+			if (!resrej) return; //Response to an unknown message
+			delete pending[data["message-id"]];
+			if (data.status === "ok") resrej[0](data); //Resolve
+			else resrej[1](data); //Reject
 			return;
 		}
 		console.log("Unknown packet:", data);
