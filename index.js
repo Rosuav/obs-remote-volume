@@ -19,7 +19,6 @@ function setup()
 	const send_request = (type, data={}) => new Promise((res, rej) => {
 		const id = "msg" + counter++;
 		data = Object.assign({"request-type": type, "message-id": id}, data);
-		console.log("Sending:", data);
 		socket.send(JSON.stringify(data));
 		pending[id] = [res, rej];
 	});
