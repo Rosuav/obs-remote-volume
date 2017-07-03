@@ -10,7 +10,10 @@ const events = {
 function setup()
 {
 	console.log("Initializing");
-	const socket = new WebSocket("ws://localhost:4444/"); //Hard coded for now
+	const params = /#(.*)@(.*)/.exec(window.location.hash || "");
+	let server = "localhost", pwd = null;
+	if (params) {server = params[2]; pwd = params[1];}
+	const socket = new WebSocket("ws://" + server + ":4444/"); //Hard coded port for now
 	let counter = 0;
 	const pending = {};
 	const send_request = (type, data={}) => new Promise((res, rej) => {
@@ -30,14 +33,11 @@ function setup()
 		//console.log("Version:", await send_request("GetVersion"));
 		const auth = await send_request("GetAuthRequired");
 		if (auth.authRequired) {
-			console.log(auth);
-			const pwd = "hello-world"; //TODO: Get from user
 			const hash = forge_sha256(pwd + auth.salt);
 			const resp = forge_sha256(hash + auth.challenge);
 			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
 		}
 		const scene = await send_request("GetCurrentScene");
-		console.log("Scene:", scene);
 		const vol = document.getElementById("volumes").firstChild;
 		scene.sources.forEach(source => {
 			//Using forEach for the closure :)
