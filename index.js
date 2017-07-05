@@ -1,5 +1,6 @@
 const events = {
 	StreamStatus: data => {
+		window.laststatus = data; //For interactive inspection
 		for (const key of Object.keys(data)) {
 			const dom = document.getElementById("status_" + key.split("-").join("_"));
 			if (dom) dom.innerText = data[key];
