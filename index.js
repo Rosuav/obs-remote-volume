@@ -41,6 +41,7 @@ function setup()
 		update(scene.name, scene.sources);
 	}
 	function update(name, sources) {
+		document.getElementById("scene_name").innerText = name;
 		const vol = document.getElementById("volumes").firstChild;
 		vol.innerHTML = "";
 		sources.forEach(source => {
