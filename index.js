@@ -1,3 +1,26 @@
+function update(name, sources) {
+	document.getElementById("scene_name").innerText = name;
+	const vol = document.getElementById("volumes").firstChild;
+	vol.innerHTML = "";
+	sources.forEach(source => {
+		//Using forEach for the closure :)
+		const src = document.createElement("TR");
+		src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span></span></td>";
+		const th = src.firstChild;
+		th.insertBefore(document.createTextNode(source.name), th.firstChild);
+		const inp = src.querySelector("input");
+		inp.value = Math.sqrt(source.volume);
+		src.querySelector("span").innerText = source.volume;
+		inp.oninput = ev => {
+			//TODO: Format as percentage?
+			const val = ev.target.value * ev.target.value;
+			ev.target.closest("tr").querySelector("span").innerText = val;
+			send_request("SetVolume", {"source": source.name, "volume": val});
+		}
+		vol.appendChild(src);
+	})
+}
+
 const events = {
 	StreamStatus: data => {
 		window.laststatus = data; //For interactive inspection
@@ -39,28 +62,6 @@ function setup()
 		}
 		const scene = await send_request("GetCurrentScene");
 		update(scene.name, scene.sources);
-	}
-	function update(name, sources) {
-		document.getElementById("scene_name").innerText = name;
-		const vol = document.getElementById("volumes").firstChild;
-		vol.innerHTML = "";
-		sources.forEach(source => {
-			//Using forEach for the closure :)
-			const src = document.createElement("TR");
-			src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span></span></td>";
-			const th = src.firstChild;
-			th.insertBefore(document.createTextNode(source.name), th.firstChild);
-			const inp = src.querySelector("input");
-			inp.value = Math.sqrt(source.volume);
-			src.querySelector("span").innerText = source.volume;
-			inp.oninput = ev => {
-				//TODO: Format as percentage?
-				const val = ev.target.value * ev.target.value;
-				ev.target.closest("tr").querySelector("span").innerText = val;
-				send_request("SetVolume", {"source": source.name, "volume": val});
-			}
-			vol.appendChild(src);
-		})
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
