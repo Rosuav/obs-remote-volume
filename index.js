@@ -38,8 +38,12 @@ function setup()
 			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
 		}
 		const scene = await send_request("GetCurrentScene");
+		update(scene.name, scene.sources);
+	}
+	function update(name, sources) {
 		const vol = document.getElementById("volumes").firstChild;
-		scene.sources.forEach(source => {
+		vol.innerHTML = "";
+		sources.forEach(source => {
 			//Using forEach for the closure :)
 			const src = document.createElement("TR");
 			src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span></span></td>";
