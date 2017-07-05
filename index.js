@@ -29,6 +29,7 @@ const events = {
 			if (dom) dom.innerText = data[key];
 		}
 	},
+	SwitchScenes: data => update(data["scene-name"], data.sources),
 };
 
 function setup()
