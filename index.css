@@ -10,3 +10,12 @@
 .volslider {
 	width: 25em;
 }
+
+.percent {
+	display: inline-block;
+	width: 3em;
+	margin-right: 1.5em;
+}
+.percent:after {
+	content: "%";
+}
