@@ -5,7 +5,7 @@ function update(name, sources) {
 	sources.forEach(source => {
 		//Using forEach for the closure :)
 		const src = document.createElement("TR");
-		src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span class=percent></span></td>";
+		src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span class=percent></span><button type=button>Mute</button></td>";
 		const th = src.firstChild;
 		th.insertBefore(document.createTextNode(source.name), th.firstChild);
 		const inp = src.querySelector("input");
@@ -15,6 +15,9 @@ function update(name, sources) {
 			const val = ev.target.value * ev.target.value;
 			ev.target.closest("tr").querySelector("span").innerText = (val*100).toFixed(2);
 			send_request("SetVolume", {"source": source.name, "volume": val});
+		}
+		src.querySelector("button").onclick = ev => {
+			send_request("ToggleMute", {"source": source.name});
 		}
 		vol.appendChild(src);
 	})
