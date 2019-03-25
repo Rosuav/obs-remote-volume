@@ -52,7 +52,7 @@ function setup()
 	window.send_request = (type, data) => { //For console testing
 		send_request(type, data)
 			.then(data => console.log(data))
-			.catch(err => console.error(data));
+			.catch(err => console.error(err));
 	}
 	socket.onopen = async () => {
 		console.log("Connected");
