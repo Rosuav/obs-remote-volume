@@ -4,12 +4,28 @@ let layout = null; //If set, it's the DOM node that we render the layout into. I
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
 
+let resize_source = null; //If available, will resize a source in OBS
+const resizeObserver = new ResizeObserver(entries => {
+	for (let entry of entries) {
+		const el = entry.target;
+		const cx = entry.contentRect.width / display_scale;
+		if (cx == el.dataset.last_obs_cx)
+			continue; //Hasn't actually changed
+		const scale = cx / el.dataset.base_cx;
+		el.style.height = (scale * el.dataset.base_cy * display_scale) + "px";
+		//NOTE: If the scene changes while you're dragging, this may set the size
+		//on the wrong scene. Caveat resizor.
+		if (resize_source) resize_source(el.dataset.sourcename, scale);
+		//console.log("RESIZE:", el.dataset.sourcename, scale);
+	}
+});
+
 function update(name, sources) {
 	//console.log("Sources:", sources);
 	document.getElementById("scene_name").innerText = name;
 	const vol = document.getElementById("volumes").firstChild;
 	vol.innerHTML = "";
-	if (layout) while (layout.lastChild) layout.removeChild(layout.lastChild);
+	if (layout) while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
 	sources.forEach(source => {
 		//Using forEach for the closure :)
 		const typeinfo = sourcetypes[source.type];
@@ -21,6 +37,12 @@ function update(name, sources) {
 			el.style.height = (source.cy * display_scale) + "px";
 			el.style.left = (source.x * display_scale) + "px";
 			el.style.top = (source.y * display_scale) + "px";
+			el.dataset.sourcename = source.name;
+			el.dataset.last_obs_cx = source.cx;
+			el.dataset.last_obs_cy = source.cy;
+			el.dataset.base_cx = source.source_cx;
+			el.dataset.base_cy = source.source_cy;
+			resizeObserver.observe(el);
 			layout.appendChild(el);
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
@@ -87,6 +109,10 @@ function setup()
 					layout.innerHTML = "";
 					layout.style.width = (canvasx * display_scale) + "px";
 					layout.style.height = (canvasy * display_scale) + "px";
+					resize_source = (item, scale) => send_request("SetSceneItemProperties", {
+						item,
+						scale: {x: scale, y: scale},
+					});
 				}
 			});
 		send_request("GetSourceTypesList")

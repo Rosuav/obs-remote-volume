@@ -39,4 +39,5 @@ details {
 	background-color: rgba(255, 0, 127, 0.25);
 	border: 2px dashed green;
 	overflow: hidden;
+	resize: horizontal;
 }
