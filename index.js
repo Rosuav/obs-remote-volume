@@ -1,13 +1,30 @@
+const canvasx = 1920, canvasy = 1080; /* Currently, the OBS canvas size isn't available. For now, hacked in. */
+const display_scale = 0.75; //TODO: Calculate a viable value for this based on the canvas size and window size
+let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
+
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
 
 function update(name, sources) {
+	//console.log("Sources:", sources);
 	document.getElementById("scene_name").innerText = name;
 	const vol = document.getElementById("volumes").firstChild;
 	vol.innerHTML = "";
+	if (layout) while (layout.lastChild) layout.removeChild(layout.lastChild);
 	sources.forEach(source => {
 		//Using forEach for the closure :)
 		const typeinfo = sourcetypes[source.type];
+		if (layout && typeinfo && typeinfo.caps.hasVideo) {
+			//console.log(`Source: (${source.x},${source.y})-(${source.x+source.cx},${source.y+source.cy}) -- ${source.name}`);
+			const el = document.createElement("DIV");
+			el.appendChild(document.createTextNode(source.name));
+			el.style.width = (source.cx * display_scale) + "px";
+			el.style.height = (source.cy * display_scale) + "px";
+			el.style.left = (source.x * display_scale) + "px";
+			el.style.top = (source.y * display_scale) + "px";
+			layout.appendChild(el);
+		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
+		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
 		const src = document.createElement("TR");
 		src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span class=percent></span><button type=button>Mute</button></td>";
 		const th = src.firstChild;
@@ -60,7 +77,18 @@ function setup()
 	}
 	socket.onopen = async () => {
 		console.log("Connected");
-		//console.log("Version:", await send_request("GetVersion"));
+		send_request("GetVersion")
+			.then(data => {
+				console.info("Running on OBS " + data["obs-studio-version"]
+					+ " and obs-websocket " + data["obs-websocket-version"]);
+				if (data["obs-websocket-version"] >= "4.3.0") {
+					layout = document.getElementById("layout");
+					layout.parentNode.classList.remove("hidden");
+					layout.innerHTML = "";
+					layout.style.width = (canvasx * display_scale) + "px";
+					layout.style.height = (canvasy * display_scale) + "px";
+				}
+			});
 		send_request("GetSourceTypesList")
 			.then(data => data.types.forEach(type => sourcetypes[type.typeId] = type))
 			.catch(err => 0); //If we can't get the source types, don't bother. It's a nice-to-have only.
