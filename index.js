@@ -9,8 +9,7 @@ const resizeObserver = new ResizeObserver(entries => {
 	for (let entry of entries) {
 		const el = entry.target;
 		const cx = entry.contentRect.width / display_scale;
-		if (cx == el.dataset.last_obs_cx)
-			continue; //Suppress resize events caused by display rerendering
+		if (!el.dataset.reset_width) continue; //Suppress resize events caused by display rerendering
 		const scale = cx / el.dataset.base_cx;
 		el.style.height = (scale * el.dataset.base_cy * display_scale) + "px";
 		//NOTE: If the scene changes while you're dragging, this may set the size
@@ -23,6 +22,13 @@ const resizeObserver = new ResizeObserver(entries => {
 
 function max(a, b) {return a > b ? a : b;}
 
+//Since a div won't give me key events, we need to hook that on the document.
+let dragging = null;
+document.onkeydown = ev => {if (ev.key === "Escape") {
+	dragging.style.width = dragging.dataset.reset_width;
+	dragging.style.resize = "none";
+}};
+
 function update(name, sources) {
 	//console.log("Sources:", sources);
 	document.getElementById("scene_name").innerText = name;
@@ -34,6 +40,7 @@ function update(name, sources) {
 		const typeinfo = sourcetypes[source.type];
 		if (layout && typeinfo && typeinfo.caps.hasVideo) {
 			//console.log(`Source: (${source.x},${source.y})-(${source.x+source.cx},${source.y+source.cy}) -- ${source.name}`);
+			//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
 			const el = document.createElement("DIV");
 			el.appendChild(document.createTextNode(source.name));
 			el.style.width = max(source.cx * display_scale, 15) + "px";
@@ -41,9 +48,13 @@ function update(name, sources) {
 			el.style.left = (source.x * display_scale) + "px";
 			el.style.top = (source.y * display_scale) + "px";
 			el.dataset.sourcename = source.name;
-			el.dataset.last_obs_cx = source.cx;
 			el.dataset.base_cx = source.source_cx;
 			el.dataset.base_cy = source.source_cy;
+			//NOTE: We assume that a resize sequence begins with a mouse-down event.
+			//If this isn't the case (eg keyboard-only resize), figure out some other
+			//way to detect the start of the sequence.
+			el.onmousedown = ev => {dragging = el; ev.currentTarget.dataset.reset_width = ev.currentTarget.style.width;}
+			el.onmouseup = ev => {ev.currentTarget.style.resize = dragging = null;}
 			resizeObserver.observe(el);
 			layout.appendChild(el);
 		}
