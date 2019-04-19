@@ -20,6 +20,8 @@ const resizeObserver = new ResizeObserver(entries => {
 	}
 });
 
+function max(a, b) {return a > b ? a : b;}
+
 function update(name, sources) {
 	//console.log("Sources:", sources);
 	document.getElementById("scene_name").innerText = name;
@@ -33,8 +35,8 @@ function update(name, sources) {
 			//console.log(`Source: (${source.x},${source.y})-(${source.x+source.cx},${source.y+source.cy}) -- ${source.name}`);
 			const el = document.createElement("DIV");
 			el.appendChild(document.createTextNode(source.name));
-			el.style.width = (source.cx * display_scale) + "px";
-			el.style.height = (source.cy * display_scale) + "px";
+			el.style.width = max(source.cx * display_scale, 15) + "px";
+			el.style.height = max(source.cy * display_scale, 15) + "px";
 			el.style.left = (source.x * display_scale) + "px";
 			el.style.top = (source.y * display_scale) + "px";
 			el.dataset.sourcename = source.name;
