@@ -10,12 +10,13 @@ const resizeObserver = new ResizeObserver(entries => {
 		const el = entry.target;
 		const cx = entry.contentRect.width / display_scale;
 		if (cx == el.dataset.last_obs_cx)
-			continue; //Hasn't actually changed
+			continue; //Suppress resize events caused by display rerendering
 		const scale = cx / el.dataset.base_cx;
 		el.style.height = (scale * el.dataset.base_cy * display_scale) + "px";
 		//NOTE: If the scene changes while you're dragging, this may set the size
 		//on the wrong scene. Caveat resizor.
 		if (resize_source) resize_source(el.dataset.sourcename, scale);
+		el.dataset.last_obs_cx = -1;
 		//console.log("RESIZE:", el.dataset.sourcename, scale);
 	}
 });
@@ -41,7 +42,6 @@ function update(name, sources) {
 			el.style.top = (source.y * display_scale) + "px";
 			el.dataset.sourcename = source.name;
 			el.dataset.last_obs_cx = source.cx;
-			el.dataset.last_obs_cy = source.cy;
 			el.dataset.base_cx = source.source_cx;
 			el.dataset.base_cy = source.source_cy;
 			resizeObserver.observe(el);
