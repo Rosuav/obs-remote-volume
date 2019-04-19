@@ -1,9 +1,13 @@
+const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
+
 function update(name, sources) {
 	document.getElementById("scene_name").innerText = name;
 	const vol = document.getElementById("volumes").firstChild;
 	vol.innerHTML = "";
 	sources.forEach(source => {
 		//Using forEach for the closure :)
+		const typeinfo = sourcetypes[source.type];
+		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		const src = document.createElement("TR");
 		src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span class=percent></span><button type=button>Mute</button></td>";
 		const th = src.firstChild;
@@ -57,6 +61,9 @@ function setup()
 	socket.onopen = async () => {
 		console.log("Connected");
 		//console.log("Version:", await send_request("GetVersion"));
+		send_request("GetSourceTypesList")
+			.then(data => data.types.forEach(type => sourcetypes[type.typeId] = type))
+			.catch(err => 0); //If we can't get the source types, don't bother. It's a nice-to-have only.
 		const auth = await send_request("GetAuthRequired");
 		if (auth.authRequired) {
 			const hash = forge_sha256(pwd + auth.salt);
