@@ -186,6 +186,7 @@ function update(name, sources) {
 		if (layout && typeinfo && typeinfo.caps.hasVideo) {
 			//console.log(`Source: (${source.x},${source.y})-(${source.x+source.cx},${source.y+source.cy}) -- ${source.name}`);
 			//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
+			//TODO: Correctly handle item gravity (alignment)
 			const el = document.createElement("DIV");
 			el.appendChild(document.createTextNode(source.name));
 			el.style.width = max(source.cx * display_scale, 15) + "px";
