@@ -90,12 +90,33 @@ function build(tag, attributes, children) {
 	return ret;
 }
 
+const dropdowns = {
+	"bounds.type": ["OBS_BOUNDS_NONE", "OBS_BOUNDS_STRETCH", "OBS_BOUNDS_SCALE_INNER",
+		"OBS_BOUNDS_SCALE_TO_WIDTH", "OBS_BOUNDS_SCALE_TO_HEIGHT", "OBS_BOUNDS_MAX_ONLY"],
+	"position.alignment": [ //Bitwise, not an enumeration per se
+		"5=Top-Left", "4=Top-Center", "6=Top-Right",
+		"1=Center-Left", "0=Center", "2=Center-Right",
+		"9=Bottom-Left", "8=Bottom-Center", "10=Bottom-Right",
+	],
+};
+
 function build_details(props, pfx) {
 	const items = [];
 	for (const prop in props) {
 		const val = props[prop];
 		let display = prop + " => " + val;
-		switch (typeof val) {
+		const dd = dropdowns[pfx + prop];
+		if (dd) {
+			//Create a drop-down from either an array (value equals description)
+			//or an object (value: description).
+			const opts = dd.map(def => {
+				const [v, d] = def.split("=");
+				return build("option", {value: v}, d || v);
+			});
+			display = build("select", {"data-prop": pfx + prop, "data-origval": val, "data-numeric": 1}, opts);
+			display.value = val; //Must be done _after_ the children are added
+		}
+		else switch (typeof val) {
 			case "boolean":
 				display = build("label", 0, [prop, build("input", {
 					type: "checkbox", checked: val,
@@ -130,7 +151,7 @@ async function itemdetails(ev) {
 		modal.querySelectorAll("[data-prop]").forEach(el => {
 			let val = el.type === "checkbox" ? el.checked : el.value;
 			if (""+val === el.dataset.origval) return;
-			if (el.type === "number") val = parseFloat(val);
+			if (el.type === "number" || el.dataset.numeric) val = parseFloat(val);
 			const path = el.dataset.prop.split(".");
 			const leaf = path.pop();
 			let target = updates;
