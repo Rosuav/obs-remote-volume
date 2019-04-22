@@ -18,15 +18,21 @@
 <details class=hidden><summary>Layout management</summary>
 <div style="display: flex">
 <div id=layout>Not rendering the layout (you shouldn't normally see this text)</div>
+<div>
+<h4>Scene item management</h4>
 <ul>
 <li>Move items by holding Ctrl</li>
 <li>Resize using the grab handle bottom right</li>
 <li>Double-click any item to get details</li>
 </ul>
+<h4>Scene items (click for item details)</h4>
+<ul id=sceneitems></ul>
+</div>
 </div>
 </details>
 <dialog id=itemprops>
 <button id=itemprops_cancel>x</button>
+<h3>Details for ...</h3>
 <ul></ul>
 <button id=itemprops_apply>Apply</button>
 </dialog>

@@ -143,6 +143,7 @@ async function itemdetails(item) {
 	delete props["message-id"]; delete props["status"]; delete props["name"];
 	console.log("Got props:", props);
 	set_content(document.querySelector("#itemprops ul"), build_details(props, ""));
+	set_content(document.querySelector("#itemprops h3"), "Details for '" + item + "'");
 	const modal = document.getElementById("itemprops");
 	document.getElementById("itemprops_apply").onclick = async ev => {
 		console.log("Applying changes to item", item);
@@ -179,6 +180,7 @@ function update(name, sources) {
 	const vol = document.getElementById("volumes").firstChild;
 	vol.innerHTML = "";
 	if (layout) while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
+	const item_descs = [];
 	sources.forEach(source => {
 		//Using forEach for the closure :)
 		const typeinfo = sourcetypes[source.type];
@@ -200,7 +202,7 @@ function update(name, sources) {
 			el.ondblclick = ev => itemdetails(source.name);
 			resizeObserver.observe(el);
 			layout.appendChild(el);
-			//TODO: Maintain a list of scene items and allow their properties to be opened
+			item_descs.push(build("li", 0, build("button", {onclick: ev => itemdetails(source.name)}, source.name)));
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
@@ -221,6 +223,7 @@ function update(name, sources) {
 		}
 		vol.appendChild(src);
 	})
+	if (layout) set_content(document.getElementById("sceneitems"), item_descs);
 }
 
 const events = {
