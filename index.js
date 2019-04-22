@@ -4,7 +4,8 @@ let layout = null; //If set, it's the DOM node that we render the layout into. I
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
 
-let resize_source = null, move_source = null; //If available, will resize/move a source in OBS
+let send_request = null; //When the socket is connected, this is a function.
+
 const resizeObserver = new ResizeObserver(entries => {
 	for (let entry of entries) {
 		const el = entry.target;
@@ -14,7 +15,8 @@ const resizeObserver = new ResizeObserver(entries => {
 		el.style.height = (scale * el.dataset.base_cy * display_scale) + "px";
 		//NOTE: If the scene changes while you're dragging, this may set the size
 		//on the wrong scene. Caveat resizor.
-		if (resize_source) resize_source(el.dataset.sourcename, scale);
+		send_request("SetSceneItemProperties", {item: el.dataset.sourcename,
+			scale: {x: scale, y: scale}});
 		el.dataset.last_obs_cx = -1;
 		//console.log("RESIZE:", el.dataset.sourcename, scale);
 	}
@@ -36,7 +38,8 @@ function keepdragging(ev) {
 	const y = ev.clientY - this.dataset.baseY;
 	this.style.left = x + "px";
 	this.style.top  = y + "px";
-	if (move_source) move_source(this.dataset.sourcename, x / display_scale, y / display_scale);
+	send_request("SetSceneItemProperties", {item: this.dataset.sourcename,
+		position: {x: x / display_scale, y: y / display_scale}});
 }
 
 function startdragging(ev) {
@@ -133,13 +136,13 @@ function setup()
 	const socket = new WebSocket("ws://" + server + ":4444/"); //Hard coded port for now
 	let counter = 0;
 	const pending = {};
-	const send_request = (type, data={}) => new Promise((res, rej) => {
+	send_request = (type, data={}) => new Promise((res, rej) => {
 		const id = "msg" + counter++;
 		data = Object.assign({"request-type": type, "message-id": id}, data);
 		socket.send(JSON.stringify(data));
 		pending[id] = [res, rej];
 	});
-	window.send_request = (type, data) => { //For console testing
+	window.req = (type, data) => { //For console testing
 		send_request(type, data)
 			.then(data => console.log(data))
 			.catch(err => console.error(err));
@@ -156,14 +159,6 @@ function setup()
 					layout.innerHTML = "";
 					layout.style.width = (canvasx * display_scale) + "px";
 					layout.style.height = (canvasy * display_scale) + "px";
-					resize_source = (item, scale) => send_request("SetSceneItemProperties", {
-						item,
-						scale: {x: scale, y: scale},
-					});
-					move_source = (item, x, y) => send_request("SetSceneItemProperties", {
-						item,
-						position: {x, y},
-					});
 				}
 			});
 		send_request("GetSourceTypesList")
