@@ -11,6 +11,7 @@ const resizeObserver = new ResizeObserver(entries => {
 		const el = entry.target;
 		const cx = entry.contentRect.width / display_scale;
 		if (!el.dataset.reset_width) continue; //Suppress resize events caused by display rerendering
+		//TODO: Snap to edges and/or middle of canvas or other items
 		const scale = cx / el.dataset.base_cx;
 		el.style.height = (scale * el.dataset.base_cy * display_scale) + "px";
 		//NOTE: If the scene changes while you're dragging, this may set the size
@@ -34,6 +35,7 @@ document.onkeydown = ev => {if (ev.key === "Escape" && dragging) {
 }};
 
 function keepdragging(ev) {
+	//TODO: Snap to edges and/or middle of canvas or other items
 	const x = ev.clientX - this.dataset.baseX;
 	const y = ev.clientY - this.dataset.baseY;
 	this.style.left = x + "px";
