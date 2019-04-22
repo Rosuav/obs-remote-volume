@@ -69,18 +69,55 @@ function stopdragging(ev) {
 	}
 }
 
+function set_content(elem, children) {
+	while (elem.lastChild) elem.removeChild(elem.lastChild);
+	if (!Array.isArray(children)) children = [children];
+	for (let child of children) {
+		if (child === "") continue;
+		if (typeof child === "string") child = document.createTextNode(child);
+		elem.appendChild(child);
+	}
+	return elem;
+}
+function build(tag, attributes, children) {
+	const ret = document.createElement(tag);
+	if (attributes) for (let attr in attributes) {
+		if (attr.startsWith("data-")) //Simplistic - we don't transform "data-foo-bar" into "fooBar" per HTML.
+			ret.dataset[attr.slice(5)] = attributes[attr];
+		else ret[attr] = attributes[attr];
+	}
+	if (children) set_content(ret, children);
+	return ret;
+}
+
+function build_details(props, pfx) {
+	const items = [];
+	for (const prop in props) {
+		const val = props[prop];
+		let display = prop + " => " + val;
+		switch (typeof val) {
+			case "boolean": display = build("label", 0, [prop, build("input", {type: "checkbox", checked: val})]); break;
+			case "object": display = [prop, build("ul", 0, build_details(val, pfx + prop + "."))]; break;
+			case "number": case "string":
+				display = build("label", 0, [prop + " ", build("input", {
+					type: typeof val === "number" ? "number" : "text",
+					step: "any", //Prevent numeric fields from forcing to integer
+					value: val,
+				})]);
+				break;
+			default: break;
+		}
+		items.push(build("li", null, display));
+	}
+	return items;
+}
+
 async function itemdetails(ev) {
 	const item = this.dataset.sourcename;
 	const props = await send_request("GetSceneItemProperties", {item});
 	delete props["message-id"]; delete props["status"]; delete props["name"];
 	console.log("Got props:", props);
-	const ul = document.querySelector("#itemprops ul");
-	while (ul.lastChild) ul.removeChild(ul.lastChild);
-	for (const prop in props) {
-		const li = document.createElement("li");
-		li.innerHTML = prop + " => " + props[prop];
-		ul.appendChild(li);
-	}
+	set_content(document.querySelector("#itemprops ul"), build_details(props, ""));
 	document.getElementById("itemprops").showModal();
 }
 
