@@ -26,7 +26,7 @@ function max(a, b) {return a > b ? a : b;}
 
 //Since a div won't give me key events, we need to hook that on the document.
 let dragging = null;
-document.onkeydown = ev => {if (ev.key === "Escape") {
+document.onkeydown = ev => {if (ev.key === "Escape" && dragging) {
 	dragging.style.width = dragging.dataset.reset_width;
 	dragging.style.left = dragging.dataset.reset_left;
 	dragging.style.top = dragging.dataset.reset_top;
