@@ -69,6 +69,21 @@ function stopdragging(ev) {
 	}
 }
 
+async function itemdetails(ev) {
+	const item = this.dataset.sourcename;
+	const props = await send_request("GetSceneItemProperties", {item});
+	delete props["message-id"]; delete props["status"]; delete props["name"];
+	console.log("Got props:", props);
+	const ul = document.querySelector("#itemprops ul");
+	while (ul.lastChild) ul.removeChild(ul.lastChild);
+	for (const prop in props) {
+		const li = document.createElement("li");
+		li.innerHTML = prop + " => " + props[prop];
+		ul.appendChild(li);
+	}
+	document.getElementById("itemprops").showModal();
+}
+
 function update(name, sources) {
 	//console.log("Sources:", sources);
 	document.getElementById("scene_name").innerText = name;
@@ -92,6 +107,7 @@ function update(name, sources) {
 			el.dataset.base_cy = source.source_cy;
 			el.onpointerdown = startdragging;
 			el.onpointerup = stopdragging;
+			el.ondblclick = itemdetails;
 			resizeObserver.observe(el);
 			layout.appendChild(el);
 		}
@@ -194,4 +210,5 @@ function setup()
 		}
 		console.log("Unknown packet:", data);
 	};
+	document.getElementById("itemprops_cancel").onclick = ev => document.getElementById("itemprops").close();
 }

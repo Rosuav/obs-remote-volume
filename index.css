@@ -41,3 +41,20 @@ details {
 	overflow: hidden;
 	resize: horizontal;
 }
+
+dialog {
+	position: fixed;
+	width: 40em; height: 30em;
+	top: calc(50% - 20em);
+	left: calc(50% - 15em);
+	bottom: calc(50% - 20em);
+	right: calc(50% - 15em);
+	border: 5px solid black;
+	padding: 1em;
+	overflow: auto;
+}
+
+#itemprops_cancel {
+	position: absolute;
+	right: 1em; top: 1em;
+}
