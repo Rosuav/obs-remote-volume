@@ -110,6 +110,7 @@ function update(name, sources) {
 			el.ondblclick = itemdetails;
 			resizeObserver.observe(el);
 			layout.appendChild(el);
+			//TODO: Maintain a list of scene items and allow their properties to be opened
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
@@ -171,7 +172,7 @@ function setup()
 					+ " and obs-websocket " + data["obs-websocket-version"]);
 				if (data["obs-websocket-version"] >= "4.3.0") {
 					layout = document.getElementById("layout");
-					layout.parentNode.classList.remove("hidden");
+					layout.parentNode.parentNode.classList.remove("hidden");
 					layout.innerHTML = "";
 					layout.style.width = (canvasx * display_scale) + "px";
 					layout.style.height = (canvasy * display_scale) + "px";
