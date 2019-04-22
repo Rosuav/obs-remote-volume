@@ -96,13 +96,18 @@ function build_details(props, pfx) {
 		const val = props[prop];
 		let display = prop + " => " + val;
 		switch (typeof val) {
-			case "boolean": display = build("label", 0, [prop, build("input", {type: "checkbox", checked: val})]); break;
+			case "boolean":
+				display = build("label", 0, [prop, build("input", {
+					type: "checkbox", checked: val,
+					"data-prop": pfx + prop, "data-origval": val,
+				})]);
+				break;
 			case "object": display = [prop, build("ul", 0, build_details(val, pfx + prop + "."))]; break;
 			case "number": case "string":
 				display = build("label", 0, [prop + " ", build("input", {
 					type: typeof val === "number" ? "number" : "text",
 					step: "any", //Prevent numeric fields from forcing to integer
-					value: val,
+					value: val, "data-prop": pfx + prop, "data-origval": val,
 				})]);
 				break;
 			default: break;
@@ -118,7 +123,34 @@ async function itemdetails(ev) {
 	delete props["message-id"]; delete props["status"]; delete props["name"];
 	console.log("Got props:", props);
 	set_content(document.querySelector("#itemprops ul"), build_details(props, ""));
-	document.getElementById("itemprops").showModal();
+	const modal = document.getElementById("itemprops");
+	document.getElementById("itemprops_apply").onclick = async ev => {
+		console.log("Applying changes to item", item);
+		const updates = {}; let changes = 0;
+		modal.querySelectorAll("[data-prop]").forEach(el => {
+			let val = el.type === "checkbox" ? el.checked : el.value;
+			if (""+val === el.dataset.origval) return;
+			if (el.type === "number") val = parseFloat(val);
+			const path = el.dataset.prop.split(".");
+			const leaf = path.pop();
+			let target = updates;
+			for (let p of path) {
+				if (!target[p]) target[p] = {};
+				target = target[p];
+			}
+			target[leaf] = val;
+			++changes;
+		});
+		modal.close();
+		if (!changes) {console.log("No changes"); return;}
+		console.log("Updating", item, updates);
+		updates.item = item;
+		await send_request("SetSceneItemProperties", updates);
+		//After making any changes, do a full update. Simpler that way.
+		const scene = await send_request("GetCurrentScene");
+		update(scene.name, scene.sources);
+	};
+	modal.showModal();
 }
 
 function update(name, sources) {
@@ -209,7 +241,7 @@ function setup()
 					+ " and obs-websocket " + data["obs-websocket-version"]);
 				if (data["obs-websocket-version"] >= "4.3.0") {
 					layout = document.getElementById("layout");
-					layout.parentNode.parentNode.classList.remove("hidden");
+					layout.closest("details").classList.remove("hidden");
 					layout.innerHTML = "";
 					layout.style.width = (canvasx * display_scale) + "px";
 					layout.style.height = (canvasy * display_scale) + "px";
