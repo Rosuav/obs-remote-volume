@@ -138,8 +138,7 @@ function build_details(props, pfx) {
 	return items;
 }
 
-async function itemdetails(ev) {
-	const item = this.dataset.sourcename;
+async function itemdetails(item) {
 	const props = await send_request("GetSceneItemProperties", {item});
 	delete props["message-id"]; delete props["status"]; delete props["name"];
 	console.log("Got props:", props);
@@ -198,7 +197,7 @@ function update(name, sources) {
 			el.dataset.base_cy = source.source_cy;
 			el.onpointerdown = startdragging;
 			el.onpointerup = stopdragging;
-			el.ondblclick = itemdetails;
+			el.ondblclick = ev => itemdetails(source.name);
 			resizeObserver.observe(el);
 			layout.appendChild(el);
 			//TODO: Maintain a list of scene items and allow their properties to be opened
