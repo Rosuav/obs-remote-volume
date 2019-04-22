@@ -4,7 +4,7 @@ let layout = null; //If set, it's the DOM node that we render the layout into. I
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
 
-let resize_source = null; //If available, will resize a source in OBS
+let resize_source = null, move_source = null; //If available, will resize/move a source in OBS
 const resizeObserver = new ResizeObserver(entries => {
 	for (let entry of entries) {
 		const el = entry.target;
@@ -32,8 +32,11 @@ document.onkeydown = ev => {if (ev.key === "Escape") {
 }};
 
 function keepdragging(ev) {
-	this.style.left = (ev.clientX - this.dataset.baseX) + "px";
-	this.style.top  = (ev.clientY - this.dataset.baseY) + "px";
+	const x = ev.clientX - this.dataset.baseX;
+	const y = ev.clientY - this.dataset.baseY;
+	this.style.left = x + "px";
+	this.style.top  = y + "px";
+	if (move_source) move_source(this.dataset.sourcename, x / display_scale, y / display_scale);
 }
 
 function startdragging(ev) {
@@ -156,6 +159,10 @@ function setup()
 					resize_source = (item, scale) => send_request("SetSceneItemProperties", {
 						item,
 						scale: {x: scale, y: scale},
+					});
+					move_source = (item, x, y) => send_request("SetSceneItemProperties", {
+						item,
+						position: {x, y},
 					});
 				}
 			});
