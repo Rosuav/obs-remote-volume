@@ -26,8 +26,42 @@ function max(a, b) {return a > b ? a : b;}
 let dragging = null;
 document.onkeydown = ev => {if (ev.key === "Escape") {
 	dragging.style.width = dragging.dataset.reset_width;
-	dragging.style.resize = "none";
+	dragging.style.left = dragging.dataset.reset_left;
+	dragging.style.top = dragging.dataset.reset_top;
+	dragging.style.resize = "none"; //Prevent resizing until the mouse button is released
 }};
+
+function keepdragging(ev) {
+	this.style.left = (ev.clientX - this.dataset.baseX) + "px";
+	this.style.top  = (ev.clientY - this.dataset.baseY) + "px";
+}
+
+function startdragging(ev) {
+	if (ev.ctrlKey)
+	{
+		//Holding Ctrl moves and won't allow resizing
+		ev.preventDefault();
+		this.dataset.baseX = ev.clientX - parseFloat(this.style.left);
+		this.dataset.baseY = ev.clientY - parseFloat(this.style.top);
+		this.onpointermove = keepdragging;
+		this.setPointerCapture(ev.pointerId);
+	}
+	//Without Ctrl, we might resize, if the cursor was on the grab handle.
+	//Snapshot enough details for the Esc key to reset everything.
+	dragging = this;
+	this.dataset.reset_width = this.style.width;
+	this.dataset.reset_left = this.style.left;
+	this.dataset.reset_top = this.style.top;
+}
+
+function stopdragging(ev) {
+	if (this === dragging) {
+		//this.style.left = this.dataset.reset_left;
+		//this.style.top = this.dataset.reset_top;
+		this.style.resize = this.onpointermove = dragging = null;
+		this.releasePointerCapture(ev.pointerId);
+	}
+}
 
 function update(name, sources) {
 	//console.log("Sources:", sources);
@@ -50,11 +84,8 @@ function update(name, sources) {
 			el.dataset.sourcename = source.name;
 			el.dataset.base_cx = source.source_cx;
 			el.dataset.base_cy = source.source_cy;
-			//NOTE: We assume that a resize sequence begins with a mouse-down event.
-			//If this isn't the case (eg keyboard-only resize), figure out some other
-			//way to detect the start of the sequence.
-			el.onmousedown = ev => {dragging = el; ev.currentTarget.dataset.reset_width = ev.currentTarget.style.width;}
-			el.onmouseup = ev => {ev.currentTarget.style.resize = dragging = null;}
+			el.onpointerdown = startdragging;
+			el.onpointerup = stopdragging;
 			resizeObserver.observe(el);
 			layout.appendChild(el);
 		}
