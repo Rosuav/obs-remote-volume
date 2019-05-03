@@ -26,15 +26,18 @@ const resizeObserver = new ResizeObserver(entries => {
 function max(a, b) {return a > b ? a : b;}
 
 //Since a div won't give me key events, we need to hook that on the document.
-let dragging = null;
+let dragging = null, dragreset = null;
 document.onkeydown = ev => {if (ev.key === "Escape" && dragging) {
 	dragging.style.width = dragging.dataset.reset_width;
 	dragging.style.left = dragging.dataset.reset_left;
 	dragging.style.top = dragging.dataset.reset_top;
 	dragging.style.resize = "none"; //Prevent resizing until the mouse button is released
+	if (dragreset !== true) send_request("SetSceneItemProperties", dragreset);
+	dragreset = null; //Don't wipe dragging yet - let that happen when the button is released
 }};
 
 function keepdragging(ev) {
+	if (!dragreset) return;
 	//TODO: Snap to edges and/or middle of canvas or other items
 	const x = ev.clientX - this.dataset.baseX;
 	const y = ev.clientY - this.dataset.baseY;
@@ -49,11 +52,16 @@ function startdragging(ev) {
 	{
 		//Holding Ctrl moves and won't allow resizing
 		ev.preventDefault();
-		this.dataset.baseX = ev.clientX - parseFloat(this.style.left);
-		this.dataset.baseY = ev.clientY - parseFloat(this.style.top);
+		const x = parseFloat(this.style.left);
+		const y = parseFloat(this.style.top);
+		this.dataset.baseX = ev.clientX - x;
+		this.dataset.baseY = ev.clientY - y;
 		this.onpointermove = keepdragging;
 		this.setPointerCapture(ev.pointerId);
+		dragreset = {item: this.dataset.sourcename,
+			position: {x: x / display_scale, y: y / display_scale}}
 	}
+	else dragreset = true;
 	//Without Ctrl, we might resize, if the cursor was on the grab handle.
 	//Snapshot enough details for the Esc key to reset everything.
 	dragging = this;
