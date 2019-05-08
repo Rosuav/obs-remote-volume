@@ -1,5 +1,5 @@
 const canvasx = 1920, canvasy = 1080; /* Currently, the OBS canvas size isn't available. For now, hacked in. */
-const display_scale = 0.75; //TODO: Calculate a viable value for this based on the canvas size and window size
+const display_scale = 0.6; //TODO: Calculate a viable value for this based on the canvas size and window size
 let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
