@@ -1,4 +1,3 @@
-* Respond to events saying "scene item moved" etc
 * Respect gravity
   - it's the law!
 * Cope with cropped scene elements?
@@ -10,3 +9,4 @@
   - Locked items get U+1F512 LOCK "🔒" in the top left corner.
 * Move scene item buttons out of the Layout Management details
 * Figure out why I lost my volume controls during gaming stream
+  - Might be solved now that source types are sought synchronously
