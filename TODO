@@ -7,6 +7,6 @@
   - Locked items can be neither sized nor moved
   - Locked items have a paler background, of a different hue
   - Locked items get U+1F512 LOCK "🔒" in the top left corner.
-* Move scene item buttons out of the Layout Management details
+  - Will need locked status to be transmitted, pref incl an event
 * Figure out why I lost my volume controls during gaming stream
   - Might be solved now that source types are sought synchronously
