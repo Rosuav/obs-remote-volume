@@ -299,6 +299,7 @@ function setup()
 				if (data["obs-websocket-version"] >= "4.3.0") {
 					layout = document.getElementById("layout");
 					layout.closest("details").classList.remove("hidden");
+					document.getElementById("sceneitems").closest("details").classList.remove("hidden");
 					layout.innerHTML = "";
 					layout.style.width = (canvasx * display_scale) + "px";
 					layout.style.height = (canvasy * display_scale) + "px";
