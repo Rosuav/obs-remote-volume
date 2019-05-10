@@ -3,6 +3,7 @@ const display_scale = 0.6; //TODO: Calculate a viable value for this based on th
 let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
+let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
 
@@ -184,12 +185,22 @@ async function itemdetails(item) {
 	modal.showModal();
 }
 
+function update_element(el, xfrm) {
+	el.style.width = max(xfrm.width * display_scale, 15) + "px";
+	el.style.height = max(xfrm.height * display_scale, 15) + "px";
+	el.style.left = (xfrm.position.x * display_scale) + "px";
+	el.style.top = (xfrm.position.y * display_scale) + "px";
+	el.dataset.base_cx = xfrm.sourceWidth;
+	el.dataset.base_cy = xfrm.sourceHeight;
+}
+
 function update(name, sources) {
 	//console.log("Sources:", sources);
 	document.getElementById("scene_name").innerText = name;
 	const vol = document.getElementById("volumes").firstChild;
 	vol.innerHTML = "";
 	if (layout) while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
+	source_elements = {};
 	const item_descs = [];
 	sources.forEach(source => {
 		//Using forEach for the closure :)
@@ -200,18 +211,21 @@ function update(name, sources) {
 			//TODO: Correctly handle item gravity (alignment)
 			const el = document.createElement("DIV");
 			el.appendChild(document.createTextNode(source.name));
-			el.style.width = max(source.cx * display_scale, 15) + "px";
-			el.style.height = max(source.cy * display_scale, 15) + "px";
-			el.style.left = (source.x * display_scale) + "px";
-			el.style.top = (source.y * display_scale) + "px";
+			update_element(el, {
+				width: source.cx, height: source.cy,
+				//TODO: Alignment (gravity) is not provided by the SwitchScenes
+				//event, nor the GetCurrentScene query. Enhance them upstream,
+				//or query gravity some other way. For now, assume top-left.
+				position: {alignment: 5, x: source.x, y: source.y},
+				sourceWidth: source.source_cx, sourceHeight: source.source_cy,
+			});
 			el.dataset.sourcename = source.name;
-			el.dataset.base_cx = source.source_cx;
-			el.dataset.base_cy = source.source_cy;
 			el.onpointerdown = startdragging;
 			el.onpointerup = stopdragging;
 			el.ondblclick = ev => itemdetails(source.name);
 			resizeObserver.observe(el);
 			layout.appendChild(el);
+			source_elements[source.name] = el;
 			item_descs.push(build("li", 0, build("button", {onclick: ev => itemdetails(source.name)}, source.name)));
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
@@ -245,6 +259,15 @@ const events = {
 		}
 	},
 	SwitchScenes: data => update(data["scene-name"], data.sources),
+	SceneItemTransformChanged: data => {
+		const el = source_elements[data["item-name"]];
+		//NOTE: If a scene item is moved in OBS while being dragged here, we will
+		//ignore the OBS movement and carry on regardless. This includes if you
+		//hit Escape; we'll reset to where WE last saw it. This event happens in
+		//response to our own dragging, so this prevents lag-induced glitchiness.
+		if (!el || el === dragging) return;
+		update_element(el, data.transform);
+	},
 };
 
 function setup()
