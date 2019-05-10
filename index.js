@@ -1,5 +1,5 @@
 const canvasx = 1920, canvasy = 1080; /* Currently, the OBS canvas size isn't available. For now, hacked in. */
-const display_scale = 0.6; //TODO: Calculate a viable value for this based on the canvas size and window size
+let display_scale = 0.625; //Updated whenever we get a full set of new sources
 let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
@@ -25,6 +25,7 @@ const resizeObserver = new ResizeObserver(entries => {
 });
 
 function max(a, b) {return a > b ? a : b;}
+function min(a, b) {return a < b ? a : b;}
 
 //Since a div won't give me key events, we need to hook that on the document.
 let dragging = null, dragreset = null;
@@ -194,8 +195,22 @@ function update_element(el, xfrm) {
 	el.dataset.base_cy = xfrm.sourceHeight;
 }
 
+function calc_scale() {
+	const rhs = document.getElementById("layout_info");
+	const width = rhs.parentElement.clientWidth - rhs.clientWidth;
+	if (width <= 0) return display_scale; //Can't calculate. Don't change scale.
+	const maxscale = width / canvasx;
+	const scale = Math.floor(maxscale * 32) / 32; //Round down to a value that can be safely represented
+	//TODO maybe: Adjust scale only if it's "different enough",
+	//to avoid unnecessary churn.
+	return min(scale, 0.75);
+}
+
 function update(name, sources) {
 	//console.log("Sources:", sources);
+	display_scale = calc_scale();
+	layout.style.width = (canvasx * display_scale) + "px";
+	layout.style.height = (canvasy * display_scale) + "px";
 	document.getElementById("scene_name").innerText = name;
 	const vol = document.getElementById("volumes").firstChild;
 	vol.innerHTML = "";
@@ -250,6 +265,15 @@ function update(name, sources) {
 	if (layout) set_content(document.getElementById("sceneitems"), item_descs);
 }
 
+async function checksize(ev) {
+	if (!ev.target.open) return; //No point rechecking when the manager is closed	
+	const scale = calc_scale();
+	if (scale === display_scale) return;
+	//Scale has changed. Fully update everything.
+	const scene = await send_request("GetCurrentScene");
+	update(scene.name, scene.sources);
+}
+
 const events = {
 	StreamStatus: data => {
 		window.laststatus = data; //For interactive inspection
@@ -298,11 +322,11 @@ function setup()
 					+ " and obs-websocket " + data["obs-websocket-version"]);
 				if (data["obs-websocket-version"] >= "4.3.0") {
 					layout = document.getElementById("layout");
-					layout.closest("details").classList.remove("hidden");
+					const mgr = layout.closest("details");
+					mgr.classList.remove("hidden");
+					mgr.ontoggle = checksize;
 					document.getElementById("sceneitems").closest("details").classList.remove("hidden");
 					layout.innerHTML = "";
-					layout.style.width = (canvasx * display_scale) + "px";
-					layout.style.height = (canvasy * display_scale) + "px";
 				}
 			});
 		try {
