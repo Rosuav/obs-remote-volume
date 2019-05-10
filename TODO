@@ -7,5 +7,6 @@
     - Default everything to unlocked, same as OBS itself does
   - Locked items can be neither sized nor moved
   - Locked items have a paler background, of a different hue
+  - Locked items get U+1F512 LOCK "🔒" in the top left corner.
 * Move scene item buttons out of the Layout Management details
 * Figure out why I lost my volume controls during gaming stream
