@@ -42,6 +42,10 @@ details {
 	resize: horizontal;
 }
 
+#layout_info {
+	flex: none;
+}
+
 dialog {
 	position: fixed;
 	width: 40em; height: 37em;
