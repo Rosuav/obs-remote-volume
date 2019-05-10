@@ -300,7 +300,7 @@ function setup()
 			const func = events[data["update-type"]];
 			if (func) return func(data);
 			//Unknown events get logged once and then no more.
-			console.log("Unknown event:", data["update-type"]);
+			console.log("Unknown event:", data["update-type"], data);
 			events[data["update-type"]] = () => {};
 			return;
 		}
