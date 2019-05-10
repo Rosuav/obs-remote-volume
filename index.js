@@ -304,9 +304,10 @@ function setup()
 					layout.style.height = (canvasy * display_scale) + "px";
 				}
 			});
-		send_request("GetSourceTypesList")
-			.then(data => data.types.forEach(type => sourcetypes[type.typeId] = type))
-			.catch(err => 0); //If we can't get the source types, don't bother. It's a nice-to-have only.
+		try {
+			(await send_request("GetSourceTypesList"))
+				.types.forEach(type => sourcetypes[type.typeId] = type);
+		} catch (err) {} //If we can't get the source types, don't bother. It's a nice-to-have only.
 		const auth = await send_request("GetAuthRequired");
 		if (auth.authRequired) {
 			const hash = forge_sha256(pwd + auth.salt);
