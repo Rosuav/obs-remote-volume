@@ -216,7 +216,7 @@ function update(name, sources) {
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
-		const src = document.createElement("TR");
+		const src = document.createElement("TR"); //TODO: Use build() rather than innerHTML
 		src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span class=percent></span><button type=button>Mute</button></td>";
 		const th = src.firstChild;
 		th.insertBefore(document.createTextNode(source.name), th.firstChild);
