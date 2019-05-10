@@ -1,0 +1,11 @@
+* Respond to events saying "scene item moved" etc
+* Respect gravity
+  - it's the law!
+* Cope with cropped scene elements?
+* Respect the locked flag
+  - Maintain a local locked flag if there's no upstream info
+    - Default everything to unlocked, same as OBS itself does
+  - Locked items can be neither sized nor moved
+  - Locked items have a paler background, of a different hue
+* Move scene item buttons out of the Layout Management details
+* Figure out why I lost my volume controls during gaming stream
