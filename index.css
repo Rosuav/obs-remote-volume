@@ -44,7 +44,7 @@ details {
 
 dialog {
 	position: fixed;
-	width: 40em; height: 30em;
+	width: 40em; height: 37em;
 	top: calc(50% - 20em);
 	left: calc(50% - 15em);
 	bottom: calc(50% - 20em);
