@@ -7,6 +7,9 @@ let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
 
+//NOTE: Resizing when gravity is not top-left actually manipulates the position
+//as well as the scale. This may be a tad odd, but it's the best we can do, short
+//of implementing our own grab handles.
 const resizeObserver = new ResizeObserver(entries => {
 	for (let entry of entries) {
 		const el = entry.target;
@@ -14,11 +17,18 @@ const resizeObserver = new ResizeObserver(entries => {
 		if (!el.dataset.reset_width) continue; //Suppress resize events caused by display rerendering
 		//TODO: Snap to edges and/or middle of canvas or other items
 		const scale = cx / el.dataset.base_cx;
+		const update = {item: el.dataset.sourcename,
+			scale: {x: scale, y: scale}};
+		const xofs = parseFloat(el.dataset.grav_x), yofs = parseFloat(el.dataset.grav_y);
+		const rescale = scale / parseFloat(el.dataset.last_scale);
+		if (xofs || yofs) update.position = {
+			x: parseFloat(el.style.left) / display_scale + xofs * rescale,
+			y: parseFloat(el.style.top)  / display_scale + yofs * rescale,
+		};
 		el.style.height = (scale * el.dataset.base_cy * display_scale) + "px";
 		//NOTE: If the scene changes while you're dragging, this may set the size
 		//on the wrong scene. Caveat resizor.
-		send_request("SetSceneItemProperties", {item: el.dataset.sourcename,
-			scale: {x: scale, y: scale}});
+		send_request("SetSceneItemProperties", update);
 		//console.log("RESIZE:", el.dataset.sourcename, scale);
 	}
 });
@@ -73,6 +83,7 @@ function startdragging(ev) {
 	//Snapshot enough details for the Esc key to reset everything.
 	dragging = this;
 	this.dataset.reset_width = this.style.width;
+	this.dataset.last_scale = parseFloat(this.style.width) / display_scale / this.dataset.base_cx;
 	this.dataset.reset_left = this.style.left;
 	this.dataset.reset_top = this.style.top;
 }

@@ -1,5 +1,3 @@
-* Respect gravity
-  - it's the law!
 * Cope with cropped scene elements?
 * Respect the locked flag
   - Maintain a local locked flag if there's no upstream info
