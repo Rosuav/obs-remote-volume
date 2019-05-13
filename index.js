@@ -50,6 +50,7 @@ function keepdragging(ev) {
 }
 
 function startdragging(ev) {
+	if (ev.target.classList.contains("locked")) return; //No dragging locked elements.
 	if (ev.ctrlKey)
 	{
 		//Holding Ctrl moves and won't allow resizing
@@ -193,6 +194,8 @@ function update_element(el, xfrm) {
 	el.style.top = (xfrm.position.y * display_scale) + "px";
 	el.dataset.base_cx = xfrm.sourceWidth;
 	el.dataset.base_cy = xfrm.sourceHeight;
+	el.classList.toggle("locked", xfrm.locked);
+	el.style.zIndex = xfrm.locked ? 1 : 1000;
 }
 
 function calc_scale() {
@@ -228,6 +231,7 @@ function update(name, sources) {
 			el.appendChild(document.createTextNode(source.name));
 			update_element(el, {
 				width: source.cx, height: source.cy,
+				locked: source.locked,
 				//TODO: Alignment (gravity) is not provided by the SwitchScenes
 				//event, nor the GetCurrentScene query. Enhance them upstream,
 				//or query gravity some other way. For now, assume top-left.
