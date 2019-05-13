@@ -38,6 +38,13 @@ document.onkeydown = ev => {if (ev.key === "Escape" && dragging) {
 	dragreset = null; //Don't wipe dragging yet - let that happen when the button is released
 }};
 
+function drag_xfrm(el, x, y) {
+	return {item: el.dataset.sourcename, position: {
+		x: x / display_scale + parseInt(el.dataset.grav_x, 10),
+		y: y / display_scale + parseInt(el.dataset.grav_y, 10),
+	}};
+}
+
 function keepdragging(ev) {
 	if (!dragreset) return;
 	//TODO: Snap to edges and/or middle of canvas or other items
@@ -45,8 +52,7 @@ function keepdragging(ev) {
 	const y = ev.clientY - this.dataset.baseY;
 	this.style.left = x + "px";
 	this.style.top  = y + "px";
-	send_request("SetSceneItemProperties", {item: this.dataset.sourcename,
-		position: {x: x / display_scale, y: y / display_scale}});
+	send_request("SetSceneItemProperties", drag_xfrm(this, x, y));
 }
 
 function startdragging(ev) {
@@ -61,8 +67,7 @@ function startdragging(ev) {
 		this.dataset.baseY = ev.clientY - y;
 		this.onpointermove = keepdragging;
 		this.setPointerCapture(ev.pointerId);
-		dragreset = {item: this.dataset.sourcename,
-			position: {x: x / display_scale, y: y / display_scale}}
+		dragreset = drag_xfrm(this, x, y);
 	}
 	else dragreset = true;
 	//Without Ctrl, we might resize, if the cursor was on the grab handle.
@@ -188,10 +193,27 @@ async function itemdetails(item) {
 }
 
 function update_element(el, xfrm) {
+	if (xfrm.position.alignment === undefined)
+		//HACK
+		xfrm.position.alignment = el.dataset.sourcename === "Image Slide Show" ? 1 : 5;
+	let xofs = xfrm.width;
+	switch (xfrm.position.alignment & 3) {
+		case 1: xofs = 0; break; //Left
+		case 0: xofs /= 2; break; //Center
+		case 2: break; //Right
+	}
+	let yofs = xfrm.height;
+	switch (xfrm.position.alignment & 6) {
+		case 4: yofs = 0; break; //Top
+		case 0: yofs /= 2; break; //Center
+		case 6: break; //Bottom
+	}
 	el.style.width = max(xfrm.width * display_scale, 15) + "px";
 	el.style.height = max(xfrm.height * display_scale, 15) + "px";
-	el.style.left = (xfrm.position.x * display_scale) + "px";
-	el.style.top = (xfrm.position.y * display_scale) + "px";
+	el.style.left = ((xfrm.position.x - xofs) * display_scale) + "px";
+	el.style.top = ((xfrm.position.y - yofs) * display_scale) + "px";
+	el.dataset.grav_x = xofs;
+	el.dataset.grav_y = yofs;
 	el.dataset.base_cx = xfrm.sourceWidth;
 	el.dataset.base_cy = xfrm.sourceHeight;
 	el.classList.toggle("locked", xfrm.locked);
@@ -229,16 +251,16 @@ function update(name, sources) {
 			//TODO: Correctly handle item gravity (alignment)
 			const el = document.createElement("DIV");
 			el.appendChild(document.createTextNode(source.name));
+			el.dataset.sourcename = source.name;
 			update_element(el, {
 				width: source.cx, height: source.cy,
 				locked: source.locked,
 				//TODO: Alignment (gravity) is not provided by the SwitchScenes
 				//event, nor the GetCurrentScene query. Enhance them upstream,
 				//or query gravity some other way. For now, assume top-left.
-				position: {alignment: 5, x: source.x, y: source.y},
+				position: {alignment: source.alignment, x: source.x, y: source.y},
 				sourceWidth: source.source_cx, sourceHeight: source.source_cy,
 			});
-			el.dataset.sourcename = source.name;
 			el.onpointerdown = startdragging;
 			el.onpointerup = stopdragging;
 			el.ondblclick = ev => itemdetails(source.name);
