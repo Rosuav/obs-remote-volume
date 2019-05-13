@@ -1,4 +1,4 @@
-const canvasx = 1920, canvasy = 1080; /* Currently, the OBS canvas size isn't available. For now, hacked in. */
+const canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with *very* new obs-websocket builds. Otherwise, we assume.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
 let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
 
