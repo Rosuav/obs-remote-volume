@@ -19,7 +19,6 @@ const resizeObserver = new ResizeObserver(entries => {
 		//on the wrong scene. Caveat resizor.
 		send_request("SetSceneItemProperties", {item: el.dataset.sourcename,
 			scale: {x: scale, y: scale}});
-		el.dataset.last_obs_cx = -1;
 		//console.log("RESIZE:", el.dataset.sourcename, scale);
 	}
 });
