@@ -213,10 +213,10 @@ function update_element(el, xfrm) {
 		case 2: break; //Right
 	}
 	let yofs = xfrm.height;
-	switch (xfrm.position.alignment & 6) {
+	switch (xfrm.position.alignment & 12) {
 		case 4: yofs = 0; break; //Top
 		case 0: yofs /= 2; break; //Center
-		case 6: break; //Bottom
+		case 8: break; //Bottom
 	}
 	el.style.width = max(xfrm.width * display_scale, 15) + "px";
 	el.style.height = max(xfrm.height * display_scale, 15) + "px";
