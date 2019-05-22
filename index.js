@@ -278,6 +278,12 @@ function update(name, sources) {
 			layout.appendChild(el);
 			source_elements[source.name] = el;
 			item_descs.push(build("li", 0, build("button", {onclick: ev => itemdetails(source.name)}, source.name)));
+			/* Maybe TODO: Put actual images on the elements. Currently freezes OBS hard (if it's even supported).
+			if (show_preview_images && source.render)
+				send_request("TakeSourceScreenshot", {sourceName: source.name, embedPictureFormat: "png", width: 100})
+					.then(resp => {console.log("Got image for", source.name); el.style.backgroundImage = resp.img})
+					.catch(err => console.error("Couldn't get image for", source.name, err));
+			*/
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.

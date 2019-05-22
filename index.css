@@ -37,6 +37,7 @@ details {
 #layout div {
 	position: absolute;
 	background-color: rgba(255, 0, 127, 0.25);
+	background-size: cover; /* in case we toss an image on there */
 	border: 2px dashed green;
 	overflow: hidden;
 	resize: horizontal;
