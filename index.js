@@ -334,6 +334,13 @@ const events = {
 		if (!el || el === dragging) return;
 		update_element(el, data.transform);
 	},
+	SceneItemLockedChanged: data => {
+		const el = source_elements[data["item-name"]];
+		if (el) {
+			el.classList.toggle("locked", data["item-locked"]);
+			el.style.zIndex = data["item-locked"] ? 1 : 1000;
+		}
+	},
 };
 
 function setup()
