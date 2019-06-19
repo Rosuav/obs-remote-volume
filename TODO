@@ -7,6 +7,10 @@
 * Figure out why I lost my volume controls during gaming stream
   - Might be solved now that source types are sought synchronously
 * Scale the volume sliders if the window isn't wide enough
+* Respond to 'Exiting' event or socket disconnection by showing that we're
+  currently disconnected, and allowing the user to reconnect. Won't be perfect
+  (it's possible to lose traffic transfer without a disconnection signal), but
+  would be better than pretending all's fine but having no socket.
 
 
 To test a new build of OBS while live:
