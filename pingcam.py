@@ -16,7 +16,7 @@ while True:
 		ws = websocket.create_connection("ws://" + server + ":4444/")
 		break
 	except ConnectionRefusedError:
-		time.sleep(2) # Retry till OBS is fully up
+		time.sleep(10) # Retry till OBS is fully up
 data = {"request-type": "SetSourceSettings", "message-id": "fixcam",
 	"sourceName": "Webcam", "sourceSettings": {}}
 ws.send(json.dumps(data))
