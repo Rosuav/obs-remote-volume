@@ -413,3 +413,4 @@ function setup()
 	};
 	document.getElementById("itemprops_cancel").onclick = ev => document.getElementById("itemprops").close();
 }
+setup();
