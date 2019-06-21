@@ -1,7 +1,7 @@
 import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
 const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc;
 
-const canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with *very* new obs-websocket builds. Otherwise, we assume.
+let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
 let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
 
@@ -370,6 +370,10 @@ function setup()
 			const hash = forge_sha256(pwd + auth.salt);
 			const resp = forge_sha256(hash + auth.challenge);
 			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
+		}
+		if (ver["obs-websocket-version"] >= "4.6.0") {
+			const vidinfo = await send_request("GetVideoInfo");
+			canvasx = vidinfo.baseWidth; canvasy = vidinfo.baseHeight;
 		}
 		const scene = await send_request("GetCurrentScene");
 		update(scene.name, scene.sources);
