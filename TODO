@@ -1,9 +1,4 @@
 * Cope with cropped scene elements?
-* Respect the locked flag
-  - Maintain a local locked flag if there's no upstream info
-    - Default everything to unlocked, same as OBS itself does
-  - Will need locked status to be transmitted, pref incl an event
-    - See https://obsproject.com/mantis/view.php?id=1463
 * Figure out why I lost my volume controls during gaming stream
   - Might be solved now that source types are sought synchronously
 * Scale the volume sliders if the window isn't wide enough
