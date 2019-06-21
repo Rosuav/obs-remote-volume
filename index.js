@@ -203,9 +203,8 @@ async function itemdetails(item) {
 }
 
 function update_element(el, xfrm) {
-	if (xfrm.position.alignment === undefined)
-		//HACK
-		xfrm.position.alignment = el.dataset.sourcename === "Image Slide Show" ? 1 : 5;
+	//Default to top-left if obs-websocket doesn't give the actual alignment
+	if (xfrm.position.alignment === undefined) xfrm.position.alignment = 5;
 	let xofs = xfrm.width;
 	switch (xfrm.position.alignment & 3) {
 		case 1: xofs = 0; break; //Left
