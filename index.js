@@ -1,4 +1,5 @@
-import build, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
+import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
+const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON} = choc;
 
 const canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with *very* new obs-websocket builds. Otherwise, we assume.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
@@ -120,21 +121,21 @@ function build_details(props, pfx) {
 			//or an object (value: description).
 			const opts = dd.map(def => {
 				const [v, d] = def.split("=");
-				return build("option", {value: v}, d || v);
+				return OPTION({value: v}, d || v);
 			});
-			display = build("select", {"data-prop": pfx + prop, "data-origval": val, "data-numeric": 1}, opts);
+			display = SELECT({"data-prop": pfx + prop, "data-origval": val, "data-numeric": 1}, opts);
 			display.value = val; //Must be done _after_ the children are added
 		}
 		else switch (typeof val) {
 			case "boolean":
-				display = build("label", 0, [prop, build("input", {
+				display = LABEL([prop, INPUT({
 					type: "checkbox", checked: val,
 					"data-prop": pfx + prop, "data-origval": val,
 				})]);
 				break;
-			case "object": display = [prop, build("ul", 0, build_details(val, pfx + prop + "."))]; break;
+			case "object": display = [prop, UL(build_details(val, pfx + prop + "."))]; break;
 			case "number": case "string":
-				display = build("label", 0, [prop + " ", build("input", {
+				display = LABEL([prop + " ", INPUT({
 					type: typeof val === "number" ? "number" : "text",
 					step: "any", //Prevent numeric fields from forcing to integer
 					value: val, "data-prop": pfx + prop, "data-origval": val,
@@ -142,7 +143,7 @@ function build_details(props, pfx) {
 				break;
 			default: break;
 		}
-		items.push(build("li", null, display));
+		items.push(LI(display));
 	}
 	return items;
 }
@@ -257,7 +258,7 @@ function update(name, sources) {
 			resizeObserver.observe(el);
 			layout.appendChild(el);
 			source_elements[source.name] = el;
-			item_descs.push(build("li", 0, build("button", {onclick: ev => itemdetails(source.name)}, source.name)));
+			item_descs.push(LI(BUTTON({onclick: ev => itemdetails(source.name)}, source.name)));
 			/* Maybe TODO: Put actual images on the elements. Currently freezes OBS hard (if it's even supported).
 			if (show_preview_images && source.render)
 				send_request("TakeSourceScreenshot", {sourceName: source.name, embedPictureFormat: "png", width: 100})
@@ -267,7 +268,7 @@ function update(name, sources) {
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
-		const src = document.createElement("TR"); //TODO: Use build() rather than innerHTML
+		const src = document.createElement("TR"); //TODO: Use chocfactory rather than innerHTML
 		src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span class=percent></span><button type=button>Mute</button></td>";
 		const th = src.firstChild;
 		th.insertBefore(document.createTextNode(source.name), th.firstChild);
