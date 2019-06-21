@@ -199,10 +199,15 @@ function update_element(el, xfrm) {
 		case 0: yofs /= 2; break; //Center
 		case 8: break; //Bottom
 	}
-	el.style.width = max(xfrm.width * display_scale, 15) + "px";
-	el.style.height = max(xfrm.height * display_scale, 15) + "px";
-	el.style.left = ((xfrm.position.x - xofs) * display_scale) + "px";
-	el.style.top = ((xfrm.position.y - yofs) * display_scale) + "px";
+	let left = xfrm.position.x - xofs, top = xfrm.position.y - yofs;
+	let right = left + xfrm.width, bottom = top + xfrm.height;
+	if (left < 0) left = 0; if (top < 0) top = 0;
+	if (right >= canvasx) right = canvasx - 1;
+	if (bottom >= canvasy) bottom = canvasy - 1;
+	el.style.width = max((right - left) * display_scale, 15) + "px";
+	el.style.height = max((bottom - top) * display_scale, 15) + "px";
+	el.style.left = (left * display_scale) + "px";
+	el.style.top = (top * display_scale) + "px";
 	el.dataset.grav_x = xofs;
 	el.dataset.grav_y = yofs;
 	el.dataset.base_cx = xfrm.sourceWidth;
