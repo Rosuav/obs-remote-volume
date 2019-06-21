@@ -17,6 +17,8 @@
     be a pain for the latter.
     - May be best to update volume only if it's been X milliseconds since the
       last change that we sent???
+* Have a (one-shot? toggled?) way to grab an image from every source in the
+  scene, thus giving a viable preview, not just a wireframe
 
 
 To test a new build of OBS while live:
