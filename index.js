@@ -1,3 +1,5 @@
+import build, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
+
 const canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with *very* new obs-websocket builds. Otherwise, we assume.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
 let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
@@ -95,27 +97,6 @@ function stopdragging(ev) {
 		this.style.resize = this.onpointermove = dragging = null;
 		this.releasePointerCapture(ev.pointerId);
 	}
-}
-
-function set_content(elem, children) {
-	while (elem.lastChild) elem.removeChild(elem.lastChild);
-	if (!Array.isArray(children)) children = [children];
-	for (let child of children) {
-		if (child === "") continue;
-		if (typeof child === "string") child = document.createTextNode(child);
-		elem.appendChild(child);
-	}
-	return elem;
-}
-function build(tag, attributes, children) {
-	const ret = document.createElement(tag);
-	if (attributes) for (let attr in attributes) {
-		if (attr.startsWith("data-")) //Simplistic - we don't transform "data-foo-bar" into "fooBar" per HTML.
-			ret.dataset[attr.slice(5)] = attributes[attr];
-		else ret[attr] = attributes[attr];
-	}
-	if (children) set_content(ret, children);
-	return ret;
 }
 
 const dropdowns = {
