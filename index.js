@@ -216,12 +216,13 @@ function update_element(el, xfrm) {
 	el.style.zIndex = xfrm.locked ? 1 : 1000;
 }
 
+const rhs = document.getElementById("layout_info"), flexbox = rhs.parentElement;
+let need_width; //Locked in once; when in non-wide mode, the rhs DOM element actually changes width.
 function calc_scale() {
-	const rhs = document.getElementById("layout_info"), flexbox = rhs.parentElement;
-	flexbox.classList.remove("vertical"); //Set it horizontal for measurement
+	if (!need_width) {need_width = rhs.clientWidth; if (!need_width) return display_scale;}
 	let width = flexbox.clientWidth;
-	const wide = width > rhs.clientWidth * 2;
-	if (wide) width -= rhs.clientWidth;
+	const wide = width > need_width * 2;
+	if (wide) width -= need_width;
 	flexbox.classList.toggle("vertical", !wide);
 	if (width <= 0) return display_scale; //Can't calculate. Don't change scale.
 	const maxscale = width / canvasx;
