@@ -1,5 +1,5 @@
 import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
-const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON} = choc;
+const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc;
 
 const canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with *very* new obs-websocket builds. Otherwise, we assume.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
@@ -229,11 +229,10 @@ function update(name, sources) {
 	layout.style.height = (canvasy * display_scale) + "px";
 	document.getElementById("scene_name").innerText = name;
 	const vol = document.getElementById("volumes").firstChild;
-	vol.innerHTML = "";
 	if (layout) while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
 	source_elements = {};
 	const item_descs = [];
-	sources.forEach(source => {
+	set_content(vol, sources.map(source => {
 		//Using forEach for the closure :)
 		const typeinfo = sourcetypes[source.type];
 		if (layout && typeinfo && typeinfo.caps.hasVideo) {
@@ -266,25 +265,25 @@ function update(name, sources) {
 					.catch(err => console.error("Couldn't get image for", source.name, err));
 			*/
 		}
-		if (typeinfo && !typeinfo.caps.hasAudio) return; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
+		if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
-		const src = document.createElement("TR"); //TODO: Use chocfactory rather than innerHTML
-		src.innerHTML = "<th></th><td><input class=volslider type=range min=0 max=1 step=any></td><td><span class=percent></span><button type=button>Mute</button></td>";
-		const th = src.firstChild;
-		th.insertBefore(document.createTextNode(source.name), th.firstChild);
-		const inp = src.querySelector("input");
-		inp.value = Math.sqrt(source.volume);
-		src.querySelector("span").innerText = (source.volume*100).toFixed(2);
-		inp.oninput = ev => {
-			const val = ev.target.value * ev.target.value;
-			ev.target.closest("tr").querySelector("span").innerText = (val*100).toFixed(2);
-			send_request("SetVolume", {"source": source.name, "volume": val});
-		}
-		src.querySelector("button").onclick = ev => {
-			send_request("ToggleMute", {"source": source.name});
-		}
-		vol.appendChild(src);
-	})
+		return TR([
+			TH(source.name),
+			TD(INPUT({
+				className: "volslider", type: "range",
+				min: 0, max: 1, step: "any", "value": Math.sqrt(source.volume),
+				oninput: ev => {
+					const val = ev.target.value * ev.target.value;
+					ev.target.closest("tr").querySelector("span").innerText = (val*100).toFixed(2);
+					send_request("SetVolume", {"source": source.name, "volume": val});
+				},
+			})),
+			TD([
+				SPAN({className: "percent"}, (source.volume*100).toFixed(2)),
+				BUTTON({type: "button", onclick: () => send_request("ToggleMute", {"source": source.name})}, "Mute")
+			]),
+		]);
+	}));
 	if (layout) set_content("#sceneitems", item_descs);
 }
 
