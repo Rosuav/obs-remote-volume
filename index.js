@@ -350,19 +350,17 @@ function setup()
 	}
 	socket.onopen = async () => {
 		console.log("Connected");
-		send_request("GetVersion")
-			.then(data => {
-				console.info("Running on OBS " + data["obs-studio-version"]
-					+ " and obs-websocket " + data["obs-websocket-version"]);
-				if (data["obs-websocket-version"] >= "4.3.0") {
-					layout = document.getElementById("layout");
-					const mgr = layout.closest("details");
-					mgr.classList.remove("hidden");
-					mgr.ontoggle = checksize;
-					document.getElementById("sceneitems").closest("details").classList.remove("hidden");
-					layout.innerHTML = "";
-				}
-			});
+		const ver = await send_request("GetVersion");
+		console.info("Running on OBS " + ver["obs-studio-version"]
+			+ " and obs-websocket " + ver["obs-websocket-version"]);
+		if (ver["obs-websocket-version"] >= "4.3.0") {
+			layout = document.getElementById("layout");
+			const mgr = layout.closest("details");
+			mgr.classList.remove("hidden");
+			mgr.ontoggle = checksize;
+			document.getElementById("sceneitems").closest("details").classList.remove("hidden");
+			layout.innerHTML = "";
+		}
 		try {
 			(await send_request("GetSourceTypesList"))
 				.types.forEach(type => sourcetypes[type.typeId] = type);
