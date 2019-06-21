@@ -7,7 +7,6 @@
   currently disconnected, and allowing the user to reconnect. Won't be perfect
   (it's possible to lose traffic transfer without a disconnection signal), but
   would be better than pretending all's fine but having no socket.
-* Put a drop shadow or border or something on the top-right status box
 * Respond to SourceMuteStateChanged and SourceVolumeChanged
   - Note that they both loop back, which is convenient for the former, but may
     be a pain for the latter.
