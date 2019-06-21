@@ -29,6 +29,10 @@ details {
 	display: none;
 }
 
+.vertical {
+	flex-direction: column;
+}
+
 #layout {
 	margin: 5px;
 	border: 5px ridge;

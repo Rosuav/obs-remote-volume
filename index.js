@@ -217,8 +217,12 @@ function update_element(el, xfrm) {
 }
 
 function calc_scale() {
-	const rhs = document.getElementById("layout_info");
-	const width = rhs.parentElement.clientWidth - rhs.clientWidth;
+	const rhs = document.getElementById("layout_info"), flexbox = rhs.parentElement;
+	flexbox.classList.remove("vertical"); //Set it horizontal for measurement
+	let width = flexbox.clientWidth;
+	const wide = width > rhs.clientWidth * 2;
+	if (wide) width -= rhs.clientWidth;
+	flexbox.classList.toggle("vertical", !wide);
 	if (width <= 0) return display_scale; //Can't calculate. Don't change scale.
 	const maxscale = width / canvasx;
 	const scale = Math.floor(maxscale * 32) / 32; //Round down to a value that can be safely represented
