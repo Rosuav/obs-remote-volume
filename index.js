@@ -10,6 +10,12 @@ let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
 
+if (!window.ResizeObserver) {
+	//Older browsers don't have this. Prevent crashes, but don't try to actually implement anything.
+	const p = (window.ResizeObserver = function(callback) { }).prototype;
+	p.observe = p.unobserve = function(el) { };
+}
+
 //NOTE: Resizing when gravity is not top-left actually manipulates the position
 //as well as the scale. This may be a tad odd, but it's the best we can do, short
 //of implementing our own grab handles.
