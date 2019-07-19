@@ -351,10 +351,10 @@ const events = {
 function setup()
 {
 	console.log("Initializing");
-	const params = /#(.*)@(.*)/.exec(window.location.hash || "");
-	let server = "localhost", pwd = null;
-	if (params) {server = params[2]; pwd = params[1];}
-	const socket = new WebSocket("ws://" + server + ":4444/"); //Hard coded port for now
+	const params = /#(.*)@([^:]*)(?::([0-9]+))?/.exec(window.location.hash || "");
+	let server = "localhost", pwd = null, port = "4444";
+	if (params) {server = params[2]; pwd = params[1]; port = params[3] || "4444"}
+	const socket = new WebSocket("ws://" + server + ":" + port);
 	let counter = 0;
 	const pending = {};
 	send_request = (type, data={}) => new Promise((res, rej) => {
