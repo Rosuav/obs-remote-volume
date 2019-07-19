@@ -351,6 +351,7 @@ function setup()
 	let counter = 0;
 	const pending = {};
 	send_request = (type, data={}) => new Promise((res, rej) => {
+		if (socket.readyState !== 1) return rej("Socket not open");
 		const id = "msg" + counter++;
 		data = Object.assign({"request-type": type, "message-id": id}, data);
 		socket.send(JSON.stringify(data));
