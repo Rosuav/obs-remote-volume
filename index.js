@@ -287,7 +287,7 @@ function update(name, sources=[]) {
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
 		return TR([
 			TH(source.name),
-			TD(INPUT({
+			TD(source_elements["!volume-" + source.name] = INPUT({
 				className: "volslider", type: "range",
 				min: 0, max: 1, step: "any", "value": Math.sqrt(source.volume),
 				oninput: ev => {
@@ -298,7 +298,8 @@ function update(name, sources=[]) {
 			})),
 			TD([
 				SPAN({className: "percent"}, (source.volume*100).toFixed(2)),
-				BUTTON({type: "button", onclick: () => send_request("ToggleMute", {"source": source.name})},
+				source_elements["!mute-" + source.name] = BUTTON({type: "button",
+					onclick: () => send_request("ToggleMute", {"source": source.name})},
 					//NOTE: source.muted is actually never sent as of 20190719.
 					source.muted ? "Unmute" : "Mute")
 			]),
