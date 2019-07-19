@@ -15,6 +15,7 @@ if (!window.ResizeObserver) {
 	const p = (window.ResizeObserver = function(callback) { }).prototype;
 	p.observe = p.unobserve = function(el) { };
 }
+//const show_preview_images = 1;
 
 //NOTE: Resizing when gravity is not top-left actually manipulates the position
 //as well as the scale. This may be a tad odd, but it's the best we can do, short
@@ -279,9 +280,9 @@ function update(name, sources=[]) {
 			/* Maybe TODO: Put actual images on the elements. Currently freezes OBS hard (if it's even supported).
 			if (show_preview_images && source.render)
 				send_request("TakeSourceScreenshot", {sourceName: source.name, embedPictureFormat: "png", width: 100})
-					.then(resp => {console.log("Got image for", source.name); el.style.backgroundImage = resp.img})
+					.then(resp => {console.log("Got image for", source.name); el.style.backgroundImage = "url(" + resp.img + ")"})
 					.catch(err => console.error("Couldn't get image for", source.name, err));
-			*/
+			// */
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
