@@ -15,7 +15,7 @@
 * Have a (one-shot? toggled?) way to grab an image from every source in the
   scene, thus giving a viable preview, not just a wireframe
   - Possibly problematic. Check the code comment re crashing OBS.
-  - Maybe it'd be okay if we stagger them??
+  - Needs upstream support and investigation.
 
 
 To test a new build of OBS while live:
