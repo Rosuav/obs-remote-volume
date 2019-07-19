@@ -241,11 +241,13 @@ function calc_scale() {
 function update(name, sources) {
 	//console.log("Sources:", sources);
 	display_scale = calc_scale();
-	layout.style.width = (canvasx * display_scale) + "px";
-	layout.style.height = (canvasy * display_scale) + "px";
 	document.getElementById("scene_name").innerText = name;
 	const vol = document.getElementById("volumes").firstChild;
-	if (layout) while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
+	if (layout) {
+		layout.style.width = (canvasx * display_scale) + "px";
+		layout.style.height = (canvasy * display_scale) + "px";
+		while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
+	}
 	source_elements = {};
 	const item_descs = [];
 	set_content(vol, sources.map(source => {
