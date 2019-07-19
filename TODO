@@ -10,6 +10,9 @@
     be a pain for the latter.
     - May be best to update volume only if it's been X milliseconds since the
       last change that we sent???
+  - Would need help from upstream regarding mute status - currently it's not
+    being sent. Consider using full:true for this as well? See PR:
+    https://github.com/Palakis/obs-websocket/pull/324#issuecomment-513176003
 * Have a (one-shot? toggled?) way to grab an image from every source in the
   scene, thus giving a viable preview, not just a wireframe
   - Possibly problematic. Check the code comment re crashing OBS.

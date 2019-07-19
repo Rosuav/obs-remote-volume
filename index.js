@@ -298,7 +298,9 @@ function update(name, sources=[]) {
 			})),
 			TD([
 				SPAN({className: "percent"}, (source.volume*100).toFixed(2)),
-				BUTTON({type: "button", onclick: () => send_request("ToggleMute", {"source": source.name})}, "Mute")
+				BUTTON({type: "button", onclick: () => send_request("ToggleMute", {"source": source.name})},
+					//NOTE: source.muted is actually never sent as of 20190719.
+					source.muted ? "Unmute" : "Mute")
 			]),
 		]);
 	}));
