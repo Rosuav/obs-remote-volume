@@ -5,9 +5,8 @@
   - Might be solved now that source types are sought synchronously
 * Scale the volume sliders if the window isn't wide enough
   - Probably not needed now that the status box isn't crashing into them?
-* Respond to SourceMuteStateChanged and SourceVolumeChanged
-  - Note that they both loop back, which is convenient for the former, but may
-    be a pain for the latter.
+* Respond to SourceVolumeChanged
+  - Note that it loops back, which may be a pain.
     - May be best to update volume only if it's been X milliseconds since the
       last change that we sent???
   - Would need help from upstream regarding mute status - currently it's not

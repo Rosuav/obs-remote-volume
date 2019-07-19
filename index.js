@@ -342,6 +342,10 @@ const events = {
 			el.style.zIndex = data["item-locked"] ? 1 : 1000;
 		}
 	},
+	SourceMuteStateChanged: data => {
+		const el = source_elements["!mute-" + data["sourceName"]];
+		if (el) el.innerText = data.muted ? "Unmute" : "Mute";
+	},
 };
 
 function setup()
