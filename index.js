@@ -238,7 +238,7 @@ function calc_scale() {
 	return min(scale, 0.75);
 }
 
-function update(name, sources) {
+function update(name, sources=[]) {
 	//console.log("Sources:", sources);
 	display_scale = calc_scale();
 	document.getElementById("scene_name").innerText = name;
@@ -412,6 +412,10 @@ function setup()
 			return;
 		}
 		console.log("Unknown packet:", data);
+	};
+	socket.onclose = () => {
+		console.log("Socket closed");
+		update("<disconnected>", []);
 	};
 	document.getElementById("itemprops_cancel").onclick = ev => document.getElementById("itemprops").close();
 }
