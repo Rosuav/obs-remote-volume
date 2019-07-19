@@ -364,6 +364,7 @@ function setup()
 	}
 	socket.onopen = async () => {
 		console.log("Connected");
+		document.getElementById("reconnect").classList.add("hidden");
 		const ver = await send_request("GetVersion");
 		console.info("Running on OBS " + ver["obs-studio-version"]
 			+ " and obs-websocket " + ver["obs-websocket-version"]);
@@ -416,7 +417,11 @@ function setup()
 	socket.onclose = () => {
 		console.log("Socket closed");
 		update("<disconnected>", []);
+		document.getElementById("layout").closest("details").classList.add("hidden");
+		document.getElementById("sceneitems").closest("details").classList.add("hidden");
+		document.getElementById("reconnect").classList.remove("hidden");
 	};
 	document.getElementById("itemprops_cancel").onclick = ev => document.getElementById("itemprops").close();
 }
+document.getElementById("reconnect").onclick = setup;
 setup();
