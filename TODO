@@ -1,4 +1,6 @@
 * Cope with cropped scene elements?
+  - It's possible to "crop" in the transform, or "crop/pad" as a filter, or add
+    "crop" attributes to certain source types (incl window capture). Test all.
 * Figure out why I lost my volume controls during gaming stream
   - Might be solved now that source types are sought synchronously
 * Scale the volume sliders if the window isn't wide enough
