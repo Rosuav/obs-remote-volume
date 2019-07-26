@@ -326,7 +326,7 @@ const events = {
 			if (dom) dom.innerText = data[key];
 		}
 	},
-	SwitchScenes: data => update(data["scene-name"], data.sources),
+	SwitchScenes: data => update(data["scene-name"], data.sources), //If GetCurrentScene grows a verbose flag, this will need to do a call.
 	SceneItemTransformChanged: data => {
 		const el = source_elements[data["item-name"]];
 		//NOTE: If a scene item is moved in OBS while being dragged here, we will
