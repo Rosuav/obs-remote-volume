@@ -27,3 +27,5 @@ $ rm -rf *; cmake -DLIBOBS_INCLUDE_DIR=/home/rosuav/obs-studio/libobs -DCMAKE_IN
 $ make -j6; make install
 $ cd /home/rosuav/tmp/obs
 $ LD_LIBRARY_PATH=/home/rosuav/tmp/obs/lib bin/obs
+$ cd /home/rosuav/obs-remote-volume; python3 -m http.server
+http://localhost:8000/#@localhost:4445
