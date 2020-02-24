@@ -16,6 +16,7 @@
   scene, thus giving a viable preview, not just a wireframe
   - Possibly problematic. Check the code comment re crashing OBS.
   - Needs upstream support and investigation.
+* OBS-Studio b360168 added the ability to "lock volume". Check what that does.
 
 
 To test a new build of OBS while live:
