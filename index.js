@@ -336,7 +336,7 @@ const events = {
 		if (!el || el === dragging) return;
 		update_element(el, data.transform);
 	},
-	SceneItemLockedChanged: data => {
+	SceneItemLockChanged: data => {
 		const el = source_elements[data["item-name"]];
 		if (el) {
 			el.classList.toggle("locked", data["item-locked"]);
