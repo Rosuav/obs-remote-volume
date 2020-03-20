@@ -17,6 +17,8 @@
   - Possibly problematic. Check the code comment re crashing OBS.
   - Needs upstream support and investigation.
 * OBS-Studio b360168 added the ability to "lock volume". Check what that does.
+  - Is the locked status transmitted? Should we (a) respect it, and (b) be able
+    to toggle it?
 
 
 To test a new build of OBS while live:
