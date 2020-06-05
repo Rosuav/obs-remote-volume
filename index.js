@@ -389,16 +389,16 @@ function setup()
 			document.getElementById("sceneitems").closest("details").classList.remove("hidden");
 			layout.innerHTML = "";
 		}
-		try {
-			(await send_request("GetSourceTypesList"))
-				.types.forEach(type => sourcetypes[type.typeId] = type);
-		} catch (err) {} //If we can't get the source types, don't bother. It's a nice-to-have only.
 		const auth = await send_request("GetAuthRequired");
 		if (auth.authRequired) {
 			const hash = forge_sha256(pwd + auth.salt);
 			const resp = forge_sha256(hash + auth.challenge);
 			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
 		}
+		try {
+			(await send_request("GetSourceTypesList"))
+				.types.forEach(type => sourcetypes[type.typeId] = type);
+		} catch (err) {} //If we can't get the source types, don't bother. It's a nice-to-have only.
 		if (ver["obs-websocket-version"] >= "4.6.0") {
 			const vidinfo = await send_request("GetVideoInfo");
 			canvasx = vidinfo.baseWidth; canvasy = vidinfo.baseHeight;
