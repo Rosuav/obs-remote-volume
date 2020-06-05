@@ -352,10 +352,15 @@ const events = {
 function setup()
 {
 	console.log("Initializing");
-	const params = /#(.*)@([^:]*)(?::([0-9]+))?/.exec(window.location.hash || "");
-	let server = "localhost", pwd = null, port = "4444";
-	if (params) {server = params[2]; pwd = params[1]; port = params[3] || "4444"}
-	const socket = new WebSocket("ws://" + server + ":" + port);
+	const params = /#(.*)@([a-z]+:\/\/)?([^:]*)(?::([0-9]+))?/.exec(window.location.hash || "");
+	let proto = "ws://", server = "localhost", pwd = null, port = "4444";
+	if (params) {
+		if (["wss://", "ssl://", "https://"].includes(params[2])) proto = "wss://";
+		server = params[3]; pwd = params[1];
+		port = params[4] || (proto === "wss://" ? "4445" : "4444");
+	}
+	console.log("Connect to", proto + server, port)
+	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
 	const pending = {};
 	send_request = (type, data={}) => new Promise((res, rej) => {
