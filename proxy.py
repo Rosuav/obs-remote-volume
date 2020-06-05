@@ -4,7 +4,7 @@
 # To encrypt the connection, you will need a valid certificate from
 # a source that the browser will trust. One good option is LetsEncrypt
 # which doesn't cost anything and can easily be automated. However,
-# it may be necessary to reformat the private key.
+# it may be necessary to reformat the private key:
 # openssl rsa -in testkey.pem -out privkey.pem
 CERT_FILE = "certificate.pem"
 KEY_FILE = "privkey.pem"
