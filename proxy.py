@@ -1,4 +1,5 @@
 # Set up a basic TLS proxy in front of the OBS Websocket
+# Requires Python 3.7 or greater.
 
 # To encrypt the connection, you will need a valid certificate from
 # a source that the browser will trust. One good option is LetsEncrypt
