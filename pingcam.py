@@ -17,13 +17,19 @@ while True:
 		break
 	except ConnectionRefusedError:
 		time.sleep(10) # Retry till OBS is fully up
-data = {"request-type": "SetSourceSettings", "message-id": "fixcam",
-	"sourceName": "Webcam", "sourceSettings": {}}
-ws.send(json.dumps(data))
+sources = ["Webcam", "Cards cam"]
+for source in sources:
+	data = {"request-type": "SetSourceSettings", "message-id": "fix " + source,
+		"sourceName": source, "sourceSettings": {}}
+	ws.send(json.dumps(data))
 while ws.connected:
 	data = ws.recv()
 	if not data: break
 	data = json.loads(data)
-	if data.get("message-id") == "fixcam":
-		print("* Camera should be fixed *")
-		ws.close() # Will break the loop.
+	id = data.get("message-id")
+	if id.startswith("fix "):
+		try: sources.remove(id[4:])
+		except ValueError: pass
+		if not sources: # All done!
+			print("* Camera should be fixed *")
+			ws.close() # Will break the loop.
