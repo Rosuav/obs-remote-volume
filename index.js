@@ -15,7 +15,7 @@ if (!window.ResizeObserver) {
 	const p = (window.ResizeObserver = function(callback) { }).prototype;
 	p.observe = p.unobserve = function(el) { };
 }
-//const show_preview_images = 1;
+const show_preview_images = 0;
 
 //NOTE: Resizing when gravity is not top-left actually manipulates the position
 //as well as the scale. This may be a tad odd, but it's the best we can do, short
@@ -239,6 +239,16 @@ function calc_scale() {
 	return min(scale, 0.75);
 }
 
+async function set_bg_img(el, sourcename, width) {
+	try {
+		const resp = await send_request("TakeSourceScreenshot", {sourceName: sourcename, embedPictureFormat: "png", width});
+		console.log("Got image for", sourcename);
+		el.style.backgroundImage = "url(" + resp.img + ")";
+		el.style.opacity="0.25";
+	}
+	catch (err) {console.error("Couldn't get image for", source.name, err);}
+}
+
 function update(name, sources=[]) {
 	//console.log("Sources:", sources);
 	display_scale = calc_scale();
@@ -277,12 +287,8 @@ function update(name, sources=[]) {
 			layout.appendChild(el);
 			source_elements[source.name] = el;
 			item_descs.push(LI(BUTTON({onclick: ev => itemdetails(source.name)}, source.name)));
-			/* Maybe TODO: Put actual images on the elements. Currently freezes OBS hard (if it's even supported).
-			if (show_preview_images && source.render)
-				send_request("TakeSourceScreenshot", {sourceName: source.name, embedPictureFormat: "png", width: 100})
-					.then(resp => {console.log("Got image for", source.name); el.style.backgroundImage = "url(" + resp.img + ")"})
-					.catch(err => console.error("Couldn't get image for", source.name, err));
-			// */
+			//Optionally put actual images on the elements. Not all that useful in its current state.
+			if (show_preview_images && source.render) set_bg_img(el, source.name, source.c_x);
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.

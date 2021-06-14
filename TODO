@@ -14,8 +14,8 @@
     https://github.com/Palakis/obs-websocket/pull/324#issuecomment-513176003
 * Have a (one-shot? toggled?) way to grab an image from every source in the
   scene, thus giving a viable preview, not just a wireframe
-  - Possibly problematic. Check the code comment re crashing OBS.
-  - Needs upstream support and investigation.
+  - Problematic with overlays - they're either going to show a constant image
+    or stay permanently blank. Unideal in many other situations too.
 * OBS-Studio b360168 added the ability to "lock volume". Check what that does.
   - Is the locked status transmitted? Should we (a) respect it, and (b) be able
     to toggle it?
