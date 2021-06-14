@@ -20,16 +20,16 @@
   - Is the locked status transmitted? Should we (a) respect it, and (b) be able
     to toggle it?
 
-To grab a version of CEF that supports all features and actually works in OBS:
-(Don't use 3770 as it has font size issues, and 4044 isn't supported by OBS.)
-$ wget http://opensource.spotify.com/cefbuilds/cef_binary_76.1.13%2Bgf19c584%2Bchromium-76.0.3809.132_linux64_minimal.tar.bz2 -O cef_binary_3809_linux64.tar.bz2
-$ tar xjf cef_binary_3809_linux64.tar.bz2
-$ mkdir cef_binary_3809_linux64/build; cd cef_binary_3809_linux64/build
+Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
+$ tar xjf cef_binary_4280_linux64.tar.bz2
+$ mkdir cef_binary_4280_linux64/build; cd cef_binary_4280_linux64/build
 $ cmake ..; make -j6
+
+Not currently using PipeWire. Remove ENABLE_PIPEWIRE=OFF if that becomes an option.
 
 To test a new build of OBS while live:
 $ cd obs-studio/build
-$ rm -rf *; cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_3809_linux64" -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
+$ rm -rf *; cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_4280_linux64" -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs -DENABLE_PIPEWIRE=OFF ..
 $ make -j6 && make install
 $ cd obs-websocket/build
 $ rm -rf *; cmake -DLIBOBS_INCLUDE_DIR=/home/rosuav/obs-studio/libobs -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
