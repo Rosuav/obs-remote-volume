@@ -19,6 +19,31 @@
 * OBS-Studio b360168 added the ability to "lock volume". Check what that does.
   - Is the locked status transmitted? Should we (a) respect it, and (b) be able
     to toggle it?
+* Support OBS WebSocket 5.0
+  - On connect, listen for an incoming message before sending anything
+    {"d":{"obsWebSocketVersion":"5.0.1","rpcVersion":1},"op":0}
+  - If message received that matches this format, initialize as v5 protocol
+  - If message received with "update-type", initialize as v4 protocol
+  - If no message received after timeout (100ms?), initialize as v4 protocol.
+  - To initialize as v4, follow all current post-connection logic (see the
+    socket.onopen callback - GetVersion, GetAuthRequired, etc)
+  - To initialize as v5:
+    - Identify https://github.com/obsproject/obs-websocket/blob/master/docs/generated/protocol.md#identify-opcode-1
+      - RPC version 1 (the only one currently supported)
+      - Authentication if the Hello message (op 0) specified it; this replaces
+        the explicit GetAuthRequired check
+    - Configure transformations of all calls
+      - Is it better to assume v4, assume v5, or build our own XKCD 927 protocol
+        on top of both of them?
+  - Attempt connection on port 4455 first, then 4444, unless a port is explicitly
+    given. Port 4455 should respond with a v5 greeting.
+* Subsume the role of the T2T2 scene-switcher
+  - OBS 28 and OBS WS 5 are completely incompatible with OBS 27/WS 4, and T2 looks
+    unlikely to upgrade in a timely manner.
+  - Don't need ALL the functionality; the main parts are the scene switcher and the
+    stream status (start/stop stream/record). May also be of value to allow arbitrary
+    embeds (iframe).
+
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
