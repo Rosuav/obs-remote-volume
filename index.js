@@ -4,6 +4,7 @@ const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc;
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
 let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
+const obsenum = {};
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
 let source_elements = {}; //Map a source name to its DOM element
@@ -355,6 +356,22 @@ const events = {
 	},
 };
 
+async function protofetch() {
+	//Is this the best URL to use? Should we lock to a specific version tag rather than master?
+	const url = "https://raw.githubusercontent.com/obsproject/obs-websocket/master/docs/generated/protocol.json";
+	const data = await (await fetch(url)).json();
+	data.enums.forEach(e => {
+		const en = obsenum[e.enumType] = { };
+		e.enumIdentifiers.forEach(id => {
+			en[id.enumIdentifier] = id.enumValue;
+			en[id.enumValue] = id.enumIdentifier; //Reverse mapping for console output
+		});
+	});
+	console.log(obsenum);
+	window.obsenum = obsenum;
+}
+const protocol_fetched = protofetch();
+
 function setup()
 {
 	console.log("Initializing");
@@ -392,6 +409,7 @@ function setup()
 		document.getElementById("reconnect").classList.add("hidden");
 		if (handshake === "guess") await new Promise(r => setTimeout(handshake_guess = r, 100, "v4"));
 		handshake_guess = null;
+		if (handshake === "v5") await protocol_fetched; //Ensure that we have the enumerations available
 		const ver = await send_request("GetVersion");
 		console.info("Running on OBS " + ver["obs-studio-version"]
 			+ " and obs-websocket " + ver["obs-websocket-version"]);
@@ -420,9 +438,15 @@ function setup()
 		const scene = await send_request("GetCurrentScene");
 		update(scene.name, scene.sources);
 	}
-	socket.onmessage = (ev) => {
+	socket.onmessage = async (ev) => {
 		const data = JSON.parse(ev.data);
 		if (handshake_guess && data.op !== undefined && data.d) handshake_guess("v5");
+		if (handshake === "v5") {
+			await protocol_fetched;
+			const opcode = obsenum.WebSocketOpCode[data.op]; //Textual version
+			console.log("v5 message", opcode, data.d);
+			return;
+		}
 		if (data["update-type"])
 		{
 			const func = events[data["update-type"]];
