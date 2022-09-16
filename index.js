@@ -419,10 +419,12 @@ function setup()
 		handshake_guess = null;
 		if (handshake === "v5") await protocol_fetched; //Ensure that we have the enumerations available
 		const auth = await send_request("GetAuthRequired");
-		if (auth.authRequired) {
-			const hash = forge_sha256(pwd + auth.salt);
-			const resp = forge_sha256(hash + auth.challenge);
-			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
+		if (auth.authRequired || auth.authentication) {
+			const authinfo = auth.authentication || auth;
+			const hash = forge_sha256(pwd + authinfo.salt);
+			const resp = forge_sha256(hash + authinfo.challenge);
+			if (handshake === "v5") await send_request("Identify", {rpcVersion: 1, authentication: resp});
+			else await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
 		}
 		const ver = await send_request("GetVersion");
 		console.info("Running on OBS " + ver["obs-studio-version"]
