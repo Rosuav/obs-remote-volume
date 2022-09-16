@@ -391,12 +391,20 @@ function setup()
 	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
 	const pending = {};
+	let hello_msg = null, hello_msg_id = null;
 	send_request = (type, data={}) => new Promise((res, rej) => {
 		if (socket.readyState !== 1) return rej("Socket not open");
 		const id = "msg" + counter++;
-		data = Object.assign({"request-type": type, "message-id": id}, data);
-		socket.send(JSON.stringify(data));
+		if (handshake === "v4") data = {"request-type": type, "message-id": id, ...data};
+		else data = {op: obsenum.WebSocketOpCode[type], d: data};
 		pending[id] = [res, rej];
+		//Special case: GetAuthRequired is not a message in v5
+		if (handshake === "v5" && type === "GetAuthRequired") {
+			if (hello_msg) res(hello_msg); //Got it already? Respond immediately.
+			else hello_msg_id = id; //Wait for the server to send it.
+			return;
+		}
+		socket.send(JSON.stringify(data));
 	});
 	window.req = (type, data) => { //For console testing
 		send_request(type, data)
@@ -407,9 +415,15 @@ function setup()
 	socket.onopen = async () => {
 		console.log("Connected");
 		document.getElementById("reconnect").classList.add("hidden");
-		if (handshake === "guess") await new Promise(r => setTimeout(handshake_guess = r, 100, "v4"));
+		if (handshake === "guess") handshake = await new Promise(r => setTimeout(handshake_guess = r, 100, "v4"));
 		handshake_guess = null;
 		if (handshake === "v5") await protocol_fetched; //Ensure that we have the enumerations available
+		const auth = await send_request("GetAuthRequired");
+		if (auth.authRequired) {
+			const hash = forge_sha256(pwd + auth.salt);
+			const resp = forge_sha256(hash + auth.challenge);
+			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
+		}
 		const ver = await send_request("GetVersion");
 		console.info("Running on OBS " + ver["obs-studio-version"]
 			+ " and obs-websocket " + ver["obs-websocket-version"]);
@@ -420,12 +434,6 @@ function setup()
 			mgr.ontoggle = checksize;
 			document.getElementById("sceneitems").closest("details").classList.remove("hidden");
 			layout.innerHTML = "";
-		}
-		const auth = await send_request("GetAuthRequired");
-		if (auth.authRequired) {
-			const hash = forge_sha256(pwd + auth.salt);
-			const resp = forge_sha256(hash + auth.challenge);
-			await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
 		}
 		try {
 			(await send_request("GetSourceTypesList"))
@@ -440,10 +448,17 @@ function setup()
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
-		if (handshake_guess && data.op !== undefined && data.d) handshake_guess("v5");
+		if (handshake_guess && data.op !== undefined && data.d) handshake_guess(handshake = "v5");
 		if (handshake === "v5") {
 			const opcode = obsenum.WebSocketOpCode[data.op]; //Textual version
 			console.log("v5 message", opcode, data.d);
+			if (opcode === "Hello") {
+				hello_msg = data.d;
+				if (hello_msg_id) {
+					pending[hello_msg_id][0](data.d);
+					delete pending[hello_msg_id];
+				}
+			}
 			return;
 		}
 		if (data["update-type"])
