@@ -326,7 +326,7 @@ async function checksize(ev) {
 }
 
 const events = {
-	StreamStatus: data => {
+	StreamStatus: data => { //Not available in v5, but not used anyway
 		window.laststatus = data; //For interactive inspection
 		for (const key of Object.keys(data)) {
 			const dom = document.getElementById("status_" + key.split("-").join("_"));
