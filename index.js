@@ -4,7 +4,7 @@ const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc;
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
 let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
-const obsenum = {};
+const obsenum = {WebSocketOpCode: {0: "Hello"}}; //Seed with the only message we absolutely have to be able to comprehend initially
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
 let source_elements = {}; //Map a source name to its DOM element
@@ -438,11 +438,10 @@ function setup()
 		const scene = await send_request("GetCurrentScene");
 		update(scene.name, scene.sources);
 	}
-	socket.onmessage = async (ev) => {
+	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
 		if (handshake_guess && data.op !== undefined && data.d) handshake_guess("v5");
 		if (handshake === "v5") {
-			await protocol_fetched;
 			const opcode = obsenum.WebSocketOpCode[data.op]; //Textual version
 			console.log("v5 message", opcode, data.d);
 			return;
