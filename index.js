@@ -359,13 +359,18 @@ function setup()
 {
 	console.log("Initializing");
 	const params = /#(.*)@([a-z]+:\/\/)?([^:]*)(?::([0-9]+))?/.exec(window.location.hash || "");
+	//Currently defaulting to the v4 port. Explicitly give a parameter eg "#@sikorsky:4455" to
+	//use the v5 protocol (by explicitly selecting its port).
 	let proto = "ws://", server = "localhost", pwd = null, port = "4444";
 	if (params) {
 		if (["wss://", "ssl://", "https://"].includes(params[2])) proto = "wss://";
 		server = params[3]; pwd = params[1];
 		port = params[4] || (proto === "wss://" ? "4445" : "4444");
 	}
-	console.log("Connect to", proto + server, port)
+	let handshake = "guess"; //Or "v4" or "v5".
+	if (port === "4444" || port === "4445") handshake = "v4"; //Assume that the v4 protocol is used exclusively here
+	else if (port === "4455") handshake = "v5"; //TODO: Pick a suitable v5 SSL port (4555? 4456?)
+	console.log("Connect to", proto + server, port, "handshake", handshake)
 	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
 	const pending = {};
@@ -381,9 +386,12 @@ function setup()
 			.then(data => console.log(data))
 			.catch(err => console.error(err));
 	}
+	let handshake_guess;
 	socket.onopen = async () => {
 		console.log("Connected");
 		document.getElementById("reconnect").classList.add("hidden");
+		if (handshake === "guess") await new Promise(r => setTimeout(handshake_guess = r, 100, "v4"));
+		handshake_guess = null;
 		const ver = await send_request("GetVersion");
 		console.info("Running on OBS " + ver["obs-studio-version"]
 			+ " and obs-websocket " + ver["obs-websocket-version"]);
@@ -414,6 +422,7 @@ function setup()
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
+		if (handshake_guess && data.op !== undefined && data.d) handshake_guess("v5");
 		if (data["update-type"])
 		{
 			const func = events[data["update-type"]];
