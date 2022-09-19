@@ -401,6 +401,13 @@ function setup()
 			//Standard request.
 			if (handshake === "v4") data = {"request-type": type, "message-id": id, ...data};
 			else data = {op, d: {requestType: type, requestId: id, requestData: data}};
+		} else if (op === "RequestBatch") {
+			//Batch of requests. Give it a single ID, and return the array of responses.
+			if (handshake === "v4") return rej("Batches are a v5 feature.");
+			data = {op: obsenum.WebSocketOpCode[op], d: {
+				requestId: id,
+				requests: data.map(r => ({requestType: type, requestData: r})),
+			}};
 		} else {
 			//Some other sort of message. Pass the textual or numeric opcode as the op.
 			//The type here is actually the (textual) opcode of the response (if null, no response needed).
@@ -452,7 +459,7 @@ function setup()
 			(await send_request("GetSourceTypesList"))
 				.types.forEach(type => sourcetypes[type.typeId] = type);
 		} catch (err) {} //If we can't get the source types, don't bother. It's a nice-to-have only.
-		//else (await send_request("GetInputKindList")).inputKinds.forEach(
+		//else (await send_request("GetInputKindList")).inputKinds.forEach( //Currently there's no capabilities on the input kinds
 		if (obsver >= "4.6.0") {
 			const vidinfo = await send_request(v4v5("GetVideoInfo", "GetVideoSettings"));
 			canvasx = vidinfo.baseWidth; canvasy = vidinfo.baseHeight;
@@ -466,6 +473,10 @@ function setup()
 			//TODO: Create scene selection buttons for scenes.scenes[].sceneName
 			const sceneitems = (await send_request("GetSceneItemList", {sceneName: scenename})).sceneItems;
 			console.log(scenename, sceneitems);
+			const volumes = await send_request("GetInputVolume",
+				sceneitems.map(i => ({inputName: i.sourceName})),
+				"RequestBatch");
+			console.log(volumes);
 			update(scenename, sceneitems);
 		}
 	}
@@ -484,6 +495,7 @@ function setup()
 				if (data.d.requestStatus.result) ret = data.d.responseData;
 				else fail = 1; //Return the full raw data.d dump
 			}
+			else if (opcode === "RequestBatchResponse") [id, ret] = [data.d.requestId, data.d.results];
 			if (pending[id]) {
 				pending[id][fail](ret);
 				delete pending[id];
