@@ -301,13 +301,16 @@ function update(name, sources=[]) {
 				oninput: ev => {
 					const val = ev.target.value * ev.target.value;
 					ev.target.closest("tr").querySelector("span").innerText = (val*100).toFixed(2);
-					send_request("SetVolume", {"source": source.name, "volume": val});
+					send_request(v4v5("SetVolume", "SetInputVolume"), {
+						[v4v5("source", "inputName")]: name,
+						[v4v5("volume", "inputVolumeMul")]: val,
+					});
 				},
 			})),
 			TD([
 				SPAN({className: "percent"}, (Math.sqrt(source.volume)*100).toFixed(2)),
-				source_elements["!mute-" + source.name] = BUTTON({type: "button",
-					onclick: () => send_request("ToggleMute", {"source": source.name})},
+				source_elements["!mute-" + name] = BUTTON({type: "button",
+					onclick: () => send_request("ToggleMute", {"source": name})},
 					//NOTE: source.muted is actually never sent as of 20190719.
 					source.muted ? "Unmute" : "Mute")
 			]),
@@ -325,11 +328,9 @@ async function full_update() {
 		const scenename = scenes.currentProgramSceneName;
 		//TODO: Create scene selection buttons for scenes.scenes[].sceneName
 		const sceneitems = (await send_request("GetSceneItemList", {sceneName: scenename})).sceneItems;
-		console.log(scenename, sceneitems);
 		const volumes = await send_request("GetInputVolume",
 			sceneitems.map(i => ({inputName: i.sourceName})),
 			"RequestBatch");
-		console.log(volumes);
 		volumes.forEach((v, i) => {
 			const item = sceneitems[i];
 			const t = sourcetypes[item.inputKind] = {caps: { }};
@@ -445,6 +446,7 @@ function setup()
 			else responseids["Hello"] = id; //Wait for the server to send it.
 			return;
 		}
+		//console.log("Sending", data);
 		socket.send(JSON.stringify(data));
 	});
 	window.req = (type, data) => { //For console testing
