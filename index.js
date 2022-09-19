@@ -294,9 +294,10 @@ function update(name, sources=[]) {
 		}
 		if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
+		const name = source.name || source.sourceName;
 		return TR([
-			TH(source.name || source.sourceName),
-			TD(source_elements["!volume-" + source.name] = INPUT({
+			TH(name),
+			TD(source_elements["!volume-" + name] = INPUT({
 				className: "volslider", type: "range",
 				min: 0, max: 1, step: "any", "value": Math.sqrt(source.volume),
 				oninput: ev => {
