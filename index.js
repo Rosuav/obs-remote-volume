@@ -10,6 +10,8 @@ const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if
 let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
+let handshake = "guess"; //Or "v4" or "v5"
+const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 
 if (!window.ResizeObserver) {
 	//Older browsers don't have this. Prevent crashes, but don't try to actually implement anything.
@@ -263,7 +265,6 @@ function update(name, sources=[]) {
 	source_elements = {};
 	const item_descs = [];
 	set_content(vol, sources.map(source => {
-		//Using forEach for the closure :)
 		const typeinfo = sourcetypes[source.type];
 		if (layout && typeinfo && typeinfo.caps.hasVideo) {
 			//console.log(`Source: (${source.x},${source.y})-(${source.x+source.cx},${source.y+source.cy}) -- ${source.name}`);
@@ -294,7 +295,7 @@ function update(name, sources=[]) {
 		if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
 		return TR([
-			TH(source.name),
+			TH(source.name || source.sourceName),
 			TD(source_elements["!volume-" + source.name] = INPUT({
 				className: "volslider", type: "range",
 				min: 0, max: 1, step: "any", "value": Math.sqrt(source.volume),
@@ -384,7 +385,7 @@ function setup()
 		server = params[3]; pwd = params[1];
 		port = params[4] || (proto === "wss://" ? "4445" : "4444");
 	}
-	let handshake = "guess"; //Or "v4" or "v5".
+	handshake = "guess"; //Resume guesswork each connection
 	if (port === "4444" || port === "4445") handshake = "v4"; //Assume that the v4 protocol is used exclusively here
 	else if (port === "4455") handshake = "v5"; //TODO: Pick a suitable v5 SSL port (4555? 4456?)
 	console.log("Connect to", proto + server, port, "handshake", handshake)
@@ -398,7 +399,7 @@ function setup()
 		if (op === 6) {
 			//Standard request.
 			if (handshake === "v4") data = {"request-type": type, "message-id": id, ...data};
-			else data = {op, d: {requestType: type, requestId: id, ...data}};
+			else data = {op, d: {requestType: type, requestId: id, requestData: data}};
 		} else {
 			//Some other sort of message. Pass the textual or numeric opcode as the op.
 			//The type here is actually the (textual) opcode of the response (if null, no response needed).
@@ -413,7 +414,6 @@ function setup()
 			else responseids["Hello"] = id; //Wait for the server to send it.
 			return;
 		}
-		console.log("Sending", data);
 		socket.send(JSON.stringify(data));
 	});
 	window.req = (type, data) => { //For console testing
@@ -422,7 +422,6 @@ function setup()
 			.catch(err => console.error(err));
 	}
 	let handshake_guess;
-	const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 	socket.onopen = async () => {
 		console.log("Connected");
 		document.getElementById("reconnect").classList.add("hidden");
@@ -448,30 +447,44 @@ function setup()
 			document.getElementById("sceneitems").closest("details").classList.remove("hidden");
 			layout.innerHTML = "";
 		}
-		try {
+		if (handshake === "v4") try {
 			(await send_request("GetSourceTypesList"))
 				.types.forEach(type => sourcetypes[type.typeId] = type);
 		} catch (err) {} //If we can't get the source types, don't bother. It's a nice-to-have only.
+		//else (await send_request("GetInputKindList")).inputKinds.forEach(
 		if (obsver >= "4.6.0") {
 			const vidinfo = await send_request(v4v5("GetVideoInfo", "GetVideoSettings"));
 			canvasx = vidinfo.baseWidth; canvasy = vidinfo.baseHeight;
 		}
-		const scene = await send_request("GetCurrentScene");
-		update(scene.name, scene.sources);
+		if (handshake === "v4") {
+			const scene = await send_request("GetCurrentScene");
+			update(scene.name, scene.sources);
+		} else {
+			const scenes = await send_request("GetSceneList")
+			const scenename = scenes.currentProgramSceneName;
+			//TODO: Create scene selection buttons for scenes.scenes[].sceneName
+			const sceneitems = (await send_request("GetSceneItemList", {sceneName: scenename})).sceneItems;
+			console.log(scenename, sceneitems);
+			update(scenename, sceneitems);
+		}
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
 		if (handshake_guess && data.op !== undefined && data.d) handshake_guess(handshake = "v5");
 		if (handshake === "v5") {
 			const opcode = obsenum.WebSocketOpCode[data.op]; //Textual version
-			let ret = data.d;
-			console.log("v5 message", opcode, data.d);
+			let ret = data.d, fail = 0;
+			//console.log("v5 message", opcode, data.d);
 			if (opcode === "Hello") hello_msg = data.d;
 			let id = responseids[opcode];
 			if (id) delete responseids[opcode];
-			else if (opcode === "RequestResponse") [id, ret] = [data.d.requestId, data.d.responseData];
+			else if (opcode === "RequestResponse") {
+				id = data.d.requestId;
+				if (data.d.requestStatus.result) ret = data.d.responseData;
+				else fail = 1; //Return the full raw data.d dump
+			}
 			if (pending[id]) {
-				pending[id][0](ret);
+				pending[id][fail](ret);
 				delete pending[id];
 			}
 			return;
