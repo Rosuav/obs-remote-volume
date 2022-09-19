@@ -390,20 +390,30 @@ function setup()
 	console.log("Connect to", proto + server, port, "handshake", handshake)
 	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
-	const pending = {};
-	let hello_msg = null, hello_msg_id = null;
-	send_request = (type, data={}) => new Promise((res, rej) => {
+	const pending = {}, responseids = {};
+	let hello_msg = null;
+	send_request = (type, data={}, op=6) => new Promise((res, rej) => {
 		if (socket.readyState !== 1) return rej("Socket not open");
 		const id = "msg" + counter++;
-		if (handshake === "v4") data = {"request-type": type, "message-id": id, ...data};
-		else data = {op: obsenum.WebSocketOpCode[type], d: data};
+		if (op === 6) {
+			//Standard request.
+			if (handshake === "v4") data = {"request-type": type, "message-id": id, ...data};
+			else data = {op, d: {requestType: type, requestId: id, ...data}};
+		} else {
+			//Some other sort of message. Pass the textual or numeric opcode as the op.
+			//The type here is actually the (textual) opcode of the response (if null, no response needed).
+			if (typeof op !== "number") op = obsenum.WebSocketOpCode[op];
+			if (type) responseids[type] = id;
+			data = {op, d: data};
+		}
 		pending[id] = [res, rej];
 		//Special case: GetAuthRequired is not a message in v5
 		if (handshake === "v5" && type === "GetAuthRequired") {
 			if (hello_msg) res(hello_msg); //Got it already? Respond immediately.
-			else hello_msg_id = id; //Wait for the server to send it.
+			else responseids["Hello"] = id; //Wait for the server to send it.
 			return;
 		}
+		console.log("Sending", data);
 		socket.send(JSON.stringify(data));
 	});
 	window.req = (type, data) => { //For console testing
@@ -412,6 +422,7 @@ function setup()
 			.catch(err => console.error(err));
 	}
 	let handshake_guess;
+	const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 	socket.onopen = async () => {
 		console.log("Connected");
 		document.getElementById("reconnect").classList.add("hidden");
@@ -423,13 +434,13 @@ function setup()
 			const authinfo = auth.authentication || auth;
 			const hash = forge_sha256(pwd + authinfo.salt);
 			const resp = forge_sha256(hash + authinfo.challenge);
-			if (handshake === "v5") await send_request("Identify", {rpcVersion: 1, authentication: resp});
+			if (handshake === "v5") await send_request("Identified", {rpcVersion: 1, authentication: resp}, "Identify");
 			else await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
 		}
 		const ver = await send_request("GetVersion");
-		console.info("Running on OBS " + ver["obs-studio-version"]
-			+ " and obs-websocket " + ver["obs-websocket-version"]);
-		if (ver["obs-websocket-version"] >= "4.3.0") {
+		const obsver = ver[v4v5("obs-studio-version", "obsVersion")];
+		console.info("Running on OBS " + obsver + " and obs-websocket " + ver[v4v5("obs-websocket-version", "obsWebSocketVersion")]);
+		if (obsver >= "4.3.0") {
 			layout = document.getElementById("layout");
 			const mgr = layout.closest("details");
 			mgr.classList.remove("hidden");
@@ -441,8 +452,8 @@ function setup()
 			(await send_request("GetSourceTypesList"))
 				.types.forEach(type => sourcetypes[type.typeId] = type);
 		} catch (err) {} //If we can't get the source types, don't bother. It's a nice-to-have only.
-		if (ver["obs-websocket-version"] >= "4.6.0") {
-			const vidinfo = await send_request("GetVideoInfo");
+		if (obsver >= "4.6.0") {
+			const vidinfo = await send_request(v4v5("GetVideoInfo", "GetVideoSettings"));
 			canvasx = vidinfo.baseWidth; canvasy = vidinfo.baseHeight;
 		}
 		const scene = await send_request("GetCurrentScene");
@@ -453,13 +464,15 @@ function setup()
 		if (handshake_guess && data.op !== undefined && data.d) handshake_guess(handshake = "v5");
 		if (handshake === "v5") {
 			const opcode = obsenum.WebSocketOpCode[data.op]; //Textual version
+			let ret = data.d;
 			console.log("v5 message", opcode, data.d);
-			if (opcode === "Hello") {
-				hello_msg = data.d;
-				if (hello_msg_id) {
-					pending[hello_msg_id][0](data.d);
-					delete pending[hello_msg_id];
-				}
+			if (opcode === "Hello") hello_msg = data.d;
+			let id = responseids[opcode];
+			if (id) delete responseids[opcode];
+			else if (opcode === "RequestResponse") [id, ret] = [data.d.requestId, data.d.responseData];
+			if (pending[id]) {
+				pending[id][0](ret);
+				delete pending[id];
 			}
 			return;
 		}
