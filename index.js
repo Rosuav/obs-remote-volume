@@ -331,11 +331,13 @@ async function full_update() {
 			"RequestBatch");
 		console.log(volumes);
 		volumes.forEach((v, i) => {
-			const t = sourcetypes[sceneitems[i].inputKind] = {caps: { }};
+			const item = sceneitems[i];
+			const t = sourcetypes[item.inputKind] = {caps: { }};
 			//Requests that succeed definitely indicate input kinds that have audio.
 			//We assume for now that failure is caused by the input not having
 			//audio, although it's possible there are other errors.
 			t.caps.hasAudio = v.requestStatus.result;
+			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
 		});
 		update(scenename, sceneitems);
 	}
