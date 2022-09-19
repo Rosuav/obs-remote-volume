@@ -187,9 +187,7 @@ async function itemdetails(item) {
 		console.log("Updating", item, updates);
 		updates.item = item;
 		await send_request("SetSceneItemProperties", updates);
-		//After making any changes, do a full update. Simpler that way.
-		const scene = await send_request("GetCurrentScene");
-		update(scene.name, scene.sources);
+		full_update(); //After making any changes, do a full update. Simpler that way.
 	};
 	modal.showModal();
 }
@@ -318,13 +316,29 @@ function update(name, sources=[]) {
 	if (layout) set_content("#sceneitems", item_descs);
 }
 
+async function full_update() {
+	if (handshake === "v4") {
+		const scene = await send_request("GetCurrentScene");
+		update(scene.name, scene.sources);
+	} else {
+		const scenes = await send_request("GetSceneList")
+		const scenename = scenes.currentProgramSceneName;
+		//TODO: Create scene selection buttons for scenes.scenes[].sceneName
+		const sceneitems = (await send_request("GetSceneItemList", {sceneName: scenename})).sceneItems;
+		console.log(scenename, sceneitems);
+		const volumes = await send_request("GetInputVolume",
+			sceneitems.map(i => ({inputName: i.sourceName})),
+			"RequestBatch");
+		console.log(volumes);
+		update(scenename, sceneitems);
+	}
+}
+
 async function checksize(ev) {
 	if (!ev.target.open) return; //No point rechecking when the manager is closed	
 	const scale = calc_scale();
 	if (scale === display_scale) return;
-	//Scale has changed. Fully update everything.
-	const scene = await send_request("GetCurrentScene");
-	update(scene.name, scene.sources);
+	full_update(); //Scale has changed. Fully update everything.
 }
 
 const events = {
@@ -464,21 +478,7 @@ function setup()
 			const vidinfo = await send_request(v4v5("GetVideoInfo", "GetVideoSettings"));
 			canvasx = vidinfo.baseWidth; canvasy = vidinfo.baseHeight;
 		}
-		if (handshake === "v4") {
-			const scene = await send_request("GetCurrentScene");
-			update(scene.name, scene.sources);
-		} else {
-			const scenes = await send_request("GetSceneList")
-			const scenename = scenes.currentProgramSceneName;
-			//TODO: Create scene selection buttons for scenes.scenes[].sceneName
-			const sceneitems = (await send_request("GetSceneItemList", {sceneName: scenename})).sceneItems;
-			console.log(scenename, sceneitems);
-			const volumes = await send_request("GetInputVolume",
-				sceneitems.map(i => ({inputName: i.sourceName})),
-				"RequestBatch");
-			console.log(volumes);
-			update(scenename, sceneitems);
-		}
+		full_update();
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
