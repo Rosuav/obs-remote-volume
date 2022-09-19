@@ -263,7 +263,7 @@ function update(name, sources=[]) {
 	source_elements = {};
 	const item_descs = [];
 	set_content(vol, sources.map(source => {
-		const typeinfo = sourcetypes[source.type];
+		const typeinfo = sourcetypes[source.type || source.inputKind];
 		if (layout && typeinfo && typeinfo.caps.hasVideo) {
 			//console.log(`Source: (${source.x},${source.y})-(${source.x+source.cx},${source.y+source.cy}) -- ${source.name}`);
 			//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
@@ -330,6 +330,13 @@ async function full_update() {
 			sceneitems.map(i => ({inputName: i.sourceName})),
 			"RequestBatch");
 		console.log(volumes);
+		volumes.forEach((v, i) => {
+			const t = sourcetypes[sceneitems[i].inputKind] = {caps: { }};
+			//Requests that succeed definitely indicate input kinds that have audio.
+			//We assume for now that failure is caused by the input not having
+			//audio, although it's possible there are other errors.
+			t.caps.hasAudio = v.requestStatus.result;
+		});
 		update(scenename, sceneitems);
 	}
 }
