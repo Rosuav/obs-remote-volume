@@ -1,3 +1,5 @@
+* {box-sizing: border-box;}
+
 #volumes th {
 	text-align: right;
 }
@@ -19,9 +21,31 @@ details {
 	border: 2px solid blue;
 }
 
-.hidden {
-	display: none;
+/* Hidden means it isn't currently applicable; inactive means disabled by user. */
+.hidden {display: none;}
+.inactive {display: none;}
+
+body {
+	margin: 0;
+	width: 100vw; height: 100vh;
+	padding: 8px;
 }
+main {
+	/*display: grid;*/
+	grid: repeat(2, 1fr) / repeat(1, 1fr);
+	gap: 5px;
+	width: 100%; height: 100%;
+}
+
+/*section {
+	background: #a0f0c0;
+	border: 2px solid rebeccapurple;
+}*/
+
+#connect {grid-area: 1 / 1 / -1 / -1;}
+#mixer {grid-area: span 1 / span 1;}
+#layoutmgr {grid-area: span 1 / span 1;}
+#desc {grid-area: span 1 / span 1;}
 
 .vertical {
 	flex-direction: column;
