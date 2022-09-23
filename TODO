@@ -39,8 +39,6 @@
   - Don't need ALL the functionality; the main parts are the scene switcher and the
     stream status (start/stop stream/record). May also be of value to allow arbitrary
     embeds (iframe).
-* On startup, if no password given and authentication required, prompt for password.
-  This may time out the websocket, but if so, just reconnect and authenticate/identify.
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
