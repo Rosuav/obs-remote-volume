@@ -15,7 +15,16 @@
 <tr><th>Dropped frames:</th><td id=status_num_dropped_frames></td></tr>
 </table>
 </div>
-<button id=reconnect>Reconnect to OBS</button>
+<form id=connect>
+<table>
+<tr><td>Protocol:</td><td><label><input type=checkbox id=ssl> SSL</label> <label><input type=checkbox checked id=v5> V5 (OBS 28+)</label></td></tr>
+<tr><td><label for=ip>Server IP or name:</label></td><td><input id=ip size=20 value=localhost> eg <code>localhost</code></td></tr>
+<tr><td><label for=port>Port:</label></td><td><input id=port type=number min=1 value=4455 max=65535> default is 4444 on v4, 4455 on v5</td></tr>
+<tr><td><label for=password>Password:</label></td><td><input id=password size=20></td></tr>
+<tr><td><label for=uri>Connect URI:</label></td><td><input id=uri size=40 value="obsws://localhost:4455/"></td></tr>
+</table>
+<button type=button id=reconnect>Connect to OBS</button>
+</form>
 <table id=volumes><tbody></tbody></table>
 <details class=hidden><summary>Layout management</summary>
 <div style="display: flex">

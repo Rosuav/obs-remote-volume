@@ -1,4 +1,4 @@
-import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
+import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc;
 
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
@@ -382,6 +382,32 @@ const events = {
 	},
 };
 
+function parse_uri(string) {
+	//Parse the URI and put the components into the other fields
+	const uri = /^([a-z]+:\/\/)?(?:([^@]*)@)?([^:/]+)(?::([0-9]+))?\/?(.*)$/.exec(string);
+	console.log(uri);
+	if (!uri) return "Unparseable";
+	const [_, proto, pwd1, ip, port, pwd2] = uri;
+	DOM("#ssl").checked = ["obswss://", "wss://", "ssl://", "https://"].includes(proto);
+	const v5 = ["obswss://", "obsws://"].includes(proto);
+	DOM("#v5").checked = v5;
+	DOM("#ip").value = ip;
+	DOM("#port").value = port || (v5 ? 4455 : 4444);
+	DOM("#password").value = pwd1 || pwd2 || "";
+}
+function build_uri() {
+	const proto = (
+		(DOM("#v5").checked ? "obsws" : "ws") +
+		(DOM("#ssl").checked ? "s" : "")
+	);
+	DOM("#uri").value = `${proto}://${DOM("#ip").value}:${DOM("#port").value}/${DOM("#password").value}`;
+}
+
+on("input", "#connect input", e => {
+	if (e.match.id === "uri") parse_uri(e.match.value);
+	else build_uri();
+});
+
 async function protofetch() {
 	//Is this the best URL to use? Should we lock to a specific version tag rather than master?
 	const url = "https://raw.githubusercontent.com/obsproject/obs-websocket/master/docs/generated/protocol.json";
@@ -401,18 +427,11 @@ const protocol_fetched = protofetch();
 function setup()
 {
 	console.log("Initializing");
-	const params = /#(.*)@([a-z]+:\/\/)?([^:]*)(?::([0-9]+))?/.exec(window.location.hash || "");
-	//Currently defaulting to the v4 port. Explicitly give a parameter eg "#@sikorsky:4455" to
-	//use the v5 protocol (by explicitly selecting its port).
-	let proto = "ws://", server = "localhost", pwd = null, port = "4444";
-	if (params) {
-		if (["wss://", "ssl://", "https://"].includes(params[2])) proto = "wss://";
-		server = params[3]; pwd = params[1];
-		port = params[4] || (proto === "wss://" ? "4445" : "4444");
-	}
-	handshake = "guess"; //Resume guesswork each connection
-	if (port === "4444" || port === "4445") handshake = "v4"; //Assume that the v4 protocol is used exclusively here
-	else if (port === "4455") handshake = "v5"; //TODO: Pick a suitable v5 SSL port (4555? 4456?)
+	//handshake = "guess"; //TODO: Have a good default that lets people not specify protocol
+	handshake = DOM("#v5").checked ? "v5" : "v4";
+	const proto = DOM("#ssl").checked ? "wss://" : "ws://";
+	const server = DOM("#ip").value, pwd = DOM("#password").value, port = DOM("#port").value;
+	history.replaceState(null, "", "#" + DOM("#uri").value);
 	console.log("Connect to", proto + server, port, "handshake", handshake)
 	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
@@ -457,7 +476,7 @@ function setup()
 	let handshake_guess;
 	socket.onopen = async () => {
 		console.log("Connected");
-		document.getElementById("reconnect").classList.add("hidden");
+		DOM("#connect").classList.add("hidden");
 		if (handshake === "guess") handshake = await new Promise(r => setTimeout(handshake_guess = r, 100, "v4"));
 		handshake_guess = null;
 		if (handshake === "v5") await protocol_fetched; //Ensure that we have the enumerations available
@@ -537,9 +556,11 @@ function setup()
 		update("<disconnected>", []);
 		document.getElementById("layout").closest("details").classList.add("hidden");
 		document.getElementById("sceneitems").closest("details").classList.add("hidden");
-		document.getElementById("reconnect").classList.remove("hidden");
+		DOM("#connect").classList.remove("hidden");
 	};
 	document.getElementById("itemprops_cancel").onclick = ev => document.getElementById("itemprops").close();
 }
-document.getElementById("reconnect").onclick = setup;
+const hash = (window.location.hash || "#").slice(1);
+if (hash) {parse_uri(hash); build_uri();}
+DOM("#reconnect").onclick = setup;
 setup();
