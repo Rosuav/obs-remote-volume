@@ -1,10 +1,4 @@
-#status {
-	display: none; /* Not currently needed. Hidden but available if wanted. */
-	position: absolute;
-	top: 0; right: 0;
-}
-
-#status th, #volumes th {
+#volumes th {
 	text-align: right;
 }
 

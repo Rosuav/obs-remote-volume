@@ -250,10 +250,9 @@ async function set_bg_img(el, sourcename, width) {
 	catch (err) {console.error("Couldn't get image for", source.name, err);}
 }
 
-function update(name, sources=[]) {
+function update(sources) {
 	//console.log("Sources:", sources);
 	display_scale = calc_scale();
-	document.getElementById("scene_name").innerText = name;
 	const vol = document.getElementById("volumes").firstChild;
 	if (layout) {
 		layout.style.width = (canvasx * display_scale) + "px";
@@ -322,7 +321,7 @@ function update(name, sources=[]) {
 async function full_update() {
 	if (handshake === "v4") {
 		const scene = await send_request("GetCurrentScene");
-		update(scene.name, scene.sources);
+		update(scene.sources);
 	} else {
 		const scenes = await send_request("GetSceneList")
 		const scenename = scenes.currentProgramSceneName;
@@ -340,7 +339,7 @@ async function full_update() {
 			t.caps.hasAudio = v.requestStatus.result;
 			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
 		});
-		update(scenename, sceneitems);
+		update(sceneitems);
 	}
 }
 
@@ -352,14 +351,7 @@ async function checksize(ev) {
 }
 
 const events = {
-	StreamStatus: data => { //Not available in v5, but not used anyway
-		window.laststatus = data; //For interactive inspection
-		for (const key of Object.keys(data)) {
-			const dom = document.getElementById("status_" + key.split("-").join("_"));
-			if (dom) dom.innerText = data[key];
-		}
-	},
-	SwitchScenes: data => update(data["scene-name"], data.sources), //If GetCurrentScene grows a verbose flag, this will need to do a call.
+	SwitchScenes: data => update(data.sources), //If GetCurrentScene grows a verbose flag, this will need to do a call.
 	SceneItemTransformChanged: data => {
 		const el = source_elements[data["item-name"]];
 		//NOTE: If a scene item is moved in OBS while being dragged here, we will
@@ -553,7 +545,7 @@ function setup()
 	};
 	socket.onclose = () => {
 		console.log("Socket closed");
-		update("<disconnected>", []);
+		update([]);
 		document.getElementById("layout").closest("details").classList.add("hidden");
 		document.getElementById("sceneitems").closest("details").classList.add("hidden");
 		DOM("#connect").classList.remove("hidden");
