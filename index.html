@@ -8,7 +8,7 @@
 <link rel=stylesheet href="index.css">
 </head>
 <body>
-<form id=connect>
+<section id=connect>
 <table>
 <tr><td>Protocol:</td><td><label><input type=checkbox id=ssl> SSL</label> <label><input type=checkbox checked id=v5> V5 (OBS 28+)</label></td></tr>
 <tr><td><label for=ip>Server IP or name:</label></td><td><input id=ip size=20 value=localhost> eg <code>localhost</code></td></tr>
@@ -16,9 +16,12 @@
 <tr><td><label for=password>Password:</label></td><td><input id=password size=20></td></tr>
 <tr><td><label for=uri>Connect URI:</label></td><td><input id=uri size=40 value="obsws://localhost:4455/"></td></tr>
 </table>
-<button type=button id=reconnect>Connect to OBS</button>
-</form>
+<button id=reconnect>Connect to OBS</button>
+</section>
+<section id=mixer>
 <table id=volumes><tbody></tbody></table>
+</section>
+<section id=layoutmgr>
 <details class=hidden><summary>Layout management</summary>
 <div style="display: flex">
 <div id=layout>Not rendering the layout (you shouldn't normally see this text)</div>
@@ -42,6 +45,8 @@
 <ul></ul>
 <button id=itemprops_apply>Apply</button>
 </dialog>
+</section>
+<section id=desc>
 <p>
 To use this with your OBS, go to http://vol.rosuav.com/#PASSWORD@COMPUTER where the password
 is what you've set up in OBS-Remote (ignored if no authentication) and the computer is
@@ -52,5 +57,6 @@ When connected to OBS, this will allow you to make fine adjustments to your stre
 without actually clicking on the OBS main window. This allows you to make adjustments from your
 laptop or tablet (or possibly even phone), without moving away from what you were doing.
 </p>
+</section>
 </body>
 </html>
