@@ -15,3 +15,13 @@ header {
 	background: rebeccapurple;
 	padding: 2px;
 }
+
+section {
+	background: #a0f0c0;
+}
+
+#toolbox section {
+	margin: 2px;
+	border: 1px solid blue;
+	padding: 2px;
+}
