@@ -3,17 +3,17 @@
 body {
 	margin: 0;
 	width: 100vw; height: 100vh;
-	padding: 8px;
+	display: flex;
+	flex-direction: column;
 }
 main {
-	width: 100%; height: 100%;
+	flex: 1 1;
 }
 
 header {
-	position: absolute;
-	top: 0; left: 0; right: 0;
 	background: rebeccapurple;
 	padding: 2px;
+	flex: 0 0;
 }
 
 section {
