@@ -17,7 +17,8 @@ console.log(rendered_layout)
 function build(layout, parent, self) {
 	console.log("Build", layout);
 	let ret = null;
-	const layoutidx = rendered_layout.push(layout);
+	const layoutidx = rendered_layout.length;
+	rendered_layout.push(layout);
 	switch (layout.type) {
 		//A box has 2+ children and lays them out with a horizontal or vertical flexbox.
 		case "box": ret = DIV({
