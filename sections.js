@@ -28,8 +28,9 @@ function build(layout, parent, self) {
 		//and renders them as left+right or top+bottom depending on orientation.
 		case "split": ret = DIV("UNIMPLEMENTED: Split " + layout.orientation); break;
 		//A section provides a standard element.
-		case "section": ret = SECTION({id: layout.id, draggable: "true"}, sections[layout.id](layout)); break;
+		case "section": ret = SECTION({id: layout.id, draggable: "true", class: "droptarget"}, sections[layout.id](layout)); break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); break;
+		case "shadow": ret = DIV({class: "shadow droptarget"}); break;
 		default: break;
 	}
 	if (!ret) ret = DIV({class: "droptarget", style: "width: 100%; height: 100%"}); //Empty slot in a split or master

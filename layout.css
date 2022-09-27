@@ -18,6 +18,12 @@ header {
 
 section {
 	background: #a0f0c0;
+	/* Give sections a border of the same colour as the background.
+	With this (or with any border), the background colour spreads to the
+	full size of the parent; without it, a paragraph margin at the start
+	of the section's children will be uncoloured. */
+	border: 1px solid #a0f0c0;
+	width: 100%; height: 100%;
 }
 
 #toolbox section {
@@ -25,3 +31,17 @@ section {
 	border: 1px solid blue;
 	padding: 2px;
 }
+
+.shadow {
+	background: aliceblue;
+	width: 100%; height: 100%;
+}
+
+.box {
+	display: flex;
+	width: 100%; height: 100%;
+	gap: 2px;
+	background: #fee; /* Highlight boxes, for testing */
+}
+.box.horizontal {flex-direction: row;}
+.box.vertical {flex-direction: column;}

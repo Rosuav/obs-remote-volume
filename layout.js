@@ -13,8 +13,10 @@ function rerender() {
 }
 rerender();
 
+let shadow = null;
 on("dragenter", ".droptarget", e => e.preventDefault());
 on("dragover", ".droptarget", e => {
+	if (e.defaultPrevented) return;
 	//Checking the transfer data somehow doesn't work in Chrome, but does in
 	//Firefox. For now, just let whatever happen, and deal with it in the
 	//Drop event below.
@@ -23,6 +25,27 @@ on("dragover", ".droptarget", e => {
 	e.preventDefault();
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
 	//e.dataTransfer.dropEffect = "move";
+	console.log(rendered_layout)
+	const {parentidx, selfidx} = e.match.dataset;
+	if (shadow) return;
+	const cur = rendered_layout[parentidx].children[selfidx].type; //Could be undefined
+	if (cur === "shadow") return; //Already a shadow there.
+	if (!cur) rendered_layout[parentidx].children[selfidx] = shadow = {type: "shadow"}; //Replace a lack of element with a shadow.
+	else {
+		//Add a shadow here. TODO: All the different options.
+		rendered_layout[parentidx].children[selfidx] = {
+			type: "box", orientation: "vertical",
+			children: [
+				rendered_layout[parentidx].children[selfidx],
+				shadow = {type: "shadow"},
+			],
+		};
+	}
+	set_content("main", render(rendered_layout[0].children[0]));
+});
+
+on("dragleave", ".droptarget", e => {
+	console.log("Drag leave!");
 });
 
 on("drop", ".droptarget", e => {
@@ -31,10 +54,9 @@ on("drop", ".droptarget", e => {
 	e.preventDefault();
 	const id = e.dataTransfer.getData("application/prs.obs-rc-section");
 	console.log("ID to insert:", id);
-	console.log(e.match);
-	const idx = +e.match.dataset.parentidx;
-	console.log("Index", idx);
-	console.log("Rendered:", rendered_layout[idx]);
-	rendered_layout[idx].children[e.match.dataset.selfidx] = {type: "section", id};
+	if (!shadow) return;
+	//TODO: If dropping something other than a section (eg a split), assign something else
+	Object.assign(shadow, {type: "section", id});
+	shadow = null;
 	set_content("main", render(rendered_layout[0].children[0]));
 });
