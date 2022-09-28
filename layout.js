@@ -16,16 +16,36 @@ rerender();
 let shadow = null;
 
 function remove_shadow_from(elem) {
-	//Removing a shadow comes in a few forms.
-	//1) If this is a shadow, return a null object.
+	//Removing a shadow comes in a few forms. This never mutates; it either
+	//returns an existing object (not necessarily elem itself) unchanged,
+	//or a new object.
+	//1) If this is a shadow, return a null object. But if it's a new shadow,
+	//   keep it (as a regular shadow).
+	if (elem.type === "shadow") return { };
+	if (elem.type === "newshadow") return shadow = {type: "shadow"};
 	//2) If this is a box:
-	//2a) If it has one child, return that child with its shadow removed.
-	//    (Shouldn't happen. A box should always have multiple children.)
-	//2b) If it has two children, one shadow and one not, return the other child.
-	//2c) Otherwise, filter out any shadows from the children, and keep the box.
-	//    Recursively remove shadows from the remaining children.
+	if (elem.type === "box") switch (elem.children.length) {
+		//2a) If it has one child, return that child with its shadow removed.
+		//    (Shouldn't happen. A box should always have multiple children.)
+		case 0: return { };
+		case 1: return remove_shadow_from(elem.children[0]);
+		//2b) If it has two children, one shadow and one not, return the other child.
+		case 2:
+			if (elem.children[0].type === "shadow") return elem.children[1];
+			if (elem.children[1].type === "shadow") return elem.children[0];
+			//Else fall through
+		default:
+			//2c) Otherwise, filter out any shadows from the children, and keep the box.
+			//    Recursively remove shadows from the remaining children.
+			return {...elem, children: elem.children.filter(c => c.type !== "shadow").map(remove_shadow_from)};
+	}
 	//3) If this has any other children, remove shadows from each child, keeping
-	//   their positions unchanged.
+	//   their positions unchanged. Note the distinction from 2c above; with a
+	//   box, collapse out shadows and shorten the array, but with other types,
+	//   keep a null entry. This allows a splitbox to have precisely two children
+	//   at all times, and removing an element from one side won't move the other
+	//   element across (which would be VERY annoying).
+	if (elem.children) return {...elem, children: elem.children.map(remove_shadow_from)};
 	return elem;
 }
 function remove_shadow() {
@@ -45,22 +65,23 @@ on("dragover", ".droptarget", e => {
 	e.preventDefault();
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
 	//e.dataTransfer.dropEffect = "move";
-	console.log(rendered_layout)
 	const {parentidx, selfidx} = e.match.dataset;
-	if (shadow) return;
+	console.log("Drag over", parentidx, selfidx, JSON.parse(JSON.stringify(rendered_layout)));
 	const cur = rendered_layout[parentidx].children[selfidx].type; //Could be undefined
 	if (cur === "shadow") return; //Already a shadow there.
-	if (!cur) rendered_layout[parentidx].children[selfidx] = shadow = {type: "shadow"}; //Replace a lack of element with a shadow.
+	if (!cur) rendered_layout[parentidx].children[selfidx] = {type: "newshadow"}; //Replace a lack of element with a shadow.
 	else {
 		//Add a shadow here. TODO: All the different options.
 		rendered_layout[parentidx].children[selfidx] = {
 			type: "box", orientation: "vertical",
 			children: [
 				rendered_layout[parentidx].children[selfidx],
-				shadow = {type: "shadow"},
+				{type: "newshadow"},
 			],
 		};
+		console.log("After insertion:", JSON.parse(JSON.stringify(rendered_layout)));
 	}
+	remove_shadow(); //Make sure there aren't multiple shadows
 	set_content("main", render(rendered_layout[0].children[0]));
 });
 
@@ -78,5 +99,7 @@ on("drop", ".droptarget", e => {
 	//TODO: If dropping something other than a section (eg a split), assign something else
 	Object.assign(shadow, {type: "section", id});
 	shadow = null;
+	remove_shadow();
+	console.log("Shadow is now", shadow);
 	set_content("main", render(rendered_layout[0].children[0]));
 });

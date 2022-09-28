@@ -9,6 +9,9 @@ const sections = {
 	demo2: cfg => [
 		P("Or drag this thing instead!"),
 	],
+	demo3: cfg => [
+		P("Here's a third thing to play with."),
+	],
 };
 
 export const rendered_layout = [];

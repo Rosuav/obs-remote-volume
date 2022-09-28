@@ -8,6 +8,7 @@ import {render} from "./sections.js";
 set_content("main", render({type: "box", orientation: "vertical", children: [
 	{type: "section", id: "demo1"},
 	{type: "section", id: "demo2"},
+	{type: "section", id: "demo3"},
 	{type: "split", orientation: "horizontal"},
 	{type: "split", orientation: "vertical"},
 ]}));
