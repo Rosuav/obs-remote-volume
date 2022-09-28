@@ -14,6 +14,26 @@ function rerender() {
 rerender();
 
 let shadow = null;
+
+function remove_shadow_from(elem) {
+	//Removing a shadow comes in a few forms.
+	//1) If this is a shadow, return a null object.
+	//2) If this is a box:
+	//2a) If it has one child, return that child with its shadow removed.
+	//    (Shouldn't happen. A box should always have multiple children.)
+	//2b) If it has two children, one shadow and one not, return the other child.
+	//2c) Otherwise, filter out any shadows from the children, and keep the box.
+	//    Recursively remove shadows from the remaining children.
+	//3) If this has any other children, remove shadows from each child, keeping
+	//   their positions unchanged.
+	return elem;
+}
+function remove_shadow() {
+	//Shine a nice bright light on the rendered layout, removing any shadow we come across
+	//Assumes that rendered_layout[0] is the master object.
+	rendered_layout[0] = remove_shadow_from(rendered_layout[0]);
+}
+
 on("dragenter", ".droptarget", e => e.preventDefault());
 on("dragover", ".droptarget", e => {
 	if (e.defaultPrevented) return;
