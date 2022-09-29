@@ -66,19 +66,46 @@ on("dragover", ".droptarget", e => {
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
 	//e.dataTransfer.dropEffect = "move";
 	const {parentidx, selfidx} = e.match.dataset;
-	console.log("Drag over", parentidx, selfidx, JSON.parse(JSON.stringify(rendered_layout)));
+	//console.log("Drag over", parentidx, selfidx, JSON.parse(JSON.stringify(rendered_layout)));
 	const cur = rendered_layout[parentidx].children[selfidx].type; //Could be undefined
 	if (cur === "shadow") return; //Already a shadow there.
 	if (!cur) rendered_layout[parentidx].children[selfidx] = {type: "newshadow"}; //Replace a lack of element with a shadow.
 	else {
-		//Add a shadow here. TODO: All the different options.
-		rendered_layout[parentidx].children[selfidx] = {
-			type: "box", orientation: "vertical",
-			children: [
-				rendered_layout[parentidx].children[selfidx],
-				{type: "newshadow"},
-			],
-		};
+		//Add a shadow adjacent to this element.
+		//First, find out which side the mouse cursor is nearest to.
+		const box = e.match.getBoundingClientRect();
+		//Measure distance to edges: left, top, right, bottom
+		const edges = [
+			e.clientX - box.left,
+			e.clientY - box.top,
+			box.right - e.clientX,
+			box.bottom - e.clientY,
+		];
+		let nearest = 0;
+		for (let i = 1; i < edges.length; ++i)
+			if (edges[i] < edges[nearest]) nearest = i;
+		//nearest is now 0/1/2/3 for left/top/right/bottom
+		console.log(["Left", "Top", "Right", "Bottom"][nearest]);
+		if (
+			//If the section is inside a box of the appropriate orientation,
+			//insert the new element into the existing box.
+			rendered_layout[parentidx].type === "box" &&
+				(rendered_layout[parentidx].orientation === "vertical")
+				=== ((nearest&1) === 1)
+		) {
+			console.log("MATCHING BOX");
+			rendered_layout[parentidx].children.splice(selfidx + (nearest > 1), 0, {type: "newshadow"});
+		}
+		//Otherwise create a box of the appropriate orientation and put both elements into it.
+		else {
+			const chld = [{type: "newshadow"}, rendered_layout[parentidx].children[selfidx]];
+			if (nearest > 1) chld.reverse();
+			console.log("NONMATCHING", chld);
+			rendered_layout[parentidx].children[selfidx] = {
+				type: "box", orientation: (nearest&1) ? "vertical" : "horizontal",
+				children: chld,
+			};
+		}
 		console.log("After insertion:", JSON.parse(JSON.stringify(rendered_layout)));
 	}
 	remove_shadow(); //Make sure there aren't multiple shadows
@@ -86,7 +113,10 @@ on("dragover", ".droptarget", e => {
 });
 
 on("dragleave", ".droptarget", e => {
-	console.log("Drag leave!");
+	//FIXME: This is firing at times when it needn't. Figure out why,
+	//then reenable shadow removal.
+	//console.log("Drag leave!");
+	//remove_shadow();
 });
 
 on("drop", ".droptarget", e => {
