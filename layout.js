@@ -1,6 +1,6 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {} = choc; //autoimport
-import {render, rendered_layout} from "./sections.js";
+import {render, rendered_layout, startdrag} from "./sections.js";
 
 DOM("#layoutmode").onclick = () => {
 	const win = window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
@@ -53,6 +53,14 @@ function remove_shadow() {
 	//Assumes that rendered_layout[0] is the master object.
 	set_content("main", render(remove_shadow_from(rendered_layout[0].children[0])));
 }
+
+on("dragstart", "section", e => {
+	startdrag(e, e.match.id);
+	const {parentidx, selfidx} = e.match.dataset;
+	//Replace the current element with a shadow, thus (effectively) removing it.
+	rendered_layout[parentidx].children[selfidx] = {type: "newshadow"};
+	setTimeout(remove_shadow, 0); //Don't remove the element while we're handling the event
+});
 
 on("dragenter", ".droptarget", e => e.preventDefault());
 on("dragover", ".droptarget", e => {

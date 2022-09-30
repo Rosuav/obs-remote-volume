@@ -1,6 +1,6 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {} = choc; //autoimport
-import {render} from "./sections.js";
+import {render, startdrag} from "./sections.js";
 
 //TODO: Spawn entries for every section not in the main layout
 //plus one for Horizontal Split, one for Vertical Split
@@ -13,12 +13,7 @@ set_content("main", render({type: "box", orientation: "vertical", children: [
 	{type: "split", orientation: "vertical"},
 ]}));
 
-on("dragstart", "section", e => {
-	console.log("Dragging", e.match.id);
-	e.dataTransfer.setData("application/prs.obs-rc-section", e.match.id);
-	e.dataTransfer.setData("text/plain", "[OBS Remote Control section, drag/drop to manage layout]");
-	e.dataTransfer.effectAllowed = "copyMove";
-});
+on("dragstart", "section", e => startdrag(e, e.match.id));
 
 on("dragend", "section", e => {
 	console.log("Dragging complete", e.match.id);
