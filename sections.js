@@ -35,7 +35,8 @@ function build(layout, parent, self) {
 			//TODO: Use the saved split bar position, defaulting to 50% if none set
 			children[0].style[layout.orientation === "vertical" ? "height" : "width"] = "50%";
 			ret = DIV({
-				class: "split " + (layout.orientation === "vertical" ? "vertical" : "horizontal"),
+				class: "draggable split " + (layout.orientation === "vertical" ? "vertical" : "horizontal"),
+				draggable: "true",
 			}, [
 				children[0],
 				DIV({class: "splitbar"}),
@@ -44,7 +45,7 @@ function build(layout, parent, self) {
 			break;
 		}
 		//A section provides a standard element.
-		case "section": ret = SECTION({id: layout.id, draggable: "true", class: "droptarget"}, sections[layout.id](layout)); break;
+		case "section": ret = SECTION({id: layout.id, draggable: "true", class: "draggable droptarget"}, sections[layout.id](layout)); break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); break;
 		default: break;
@@ -61,8 +62,8 @@ export function render(layout) {
 	return build(layout, 0, 0);
 }
 
-export function startdrag(e, id) {
-	e.dataTransfer.setData("application/prs.obs-rc-element", "section/" + id);
-	e.dataTransfer.setData("text/plain", "[OBS Remote Control section, drag/drop to manage layout]");
+export function startdrag(e, type, id) {
+	e.dataTransfer.setData("application/prs.obs-rc-element", type + "/" + id);
+	e.dataTransfer.setData("text/plain", "[OBS Remote Control " + type + ", drag/drop to manage layout]");
 	e.dataTransfer.effectAllowed = "copyMove";
 }

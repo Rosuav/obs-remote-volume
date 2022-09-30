@@ -54,8 +54,10 @@ function remove_shadow() {
 	set_content("main", render(remove_shadow_from(rendered_layout[0].children[0])));
 }
 
-on("dragstart", "section", e => {
-	startdrag(e, e.match.id);
+on("dragstart", ".draggable", e => {
+	//TODO: If you drag a splitbox, ensure that the children AND the split position
+	//move as a single unit.
+	startdrag(e, "section", e.match.id);
 	const {parentidx, selfidx} = e.match.dataset;
 	//Replace the current element with a shadow, thus (effectively) removing it.
 	rendered_layout[parentidx].children[selfidx] = {type: "newshadow"};
@@ -128,6 +130,7 @@ on("drop", ".droptarget", e => {
 	console.log(e);
 	e.preventDefault();
 	const elem = e.dataTransfer.getData("application/prs.obs-rc-element");
+	console.log("Drop elem", elem);
 	if (!elem || !shadow) return;
 	const [type, id] = elem.split("/");
 	console.log("Dropping:", type, id);

@@ -56,4 +56,6 @@ section {
 }
 .horizontal > .splitbar {cursor: col-resize;}
 .vertical > .splitbar {cursor: row-resize;}
+#toolbox .splitbar {cursor: unset;} /* ID is more specific than class, easier than fiddling with :not() */
 .split > *:last-child {flex: 1 1 0;}
+#toolbox .split {min-height: 1.5em;}
