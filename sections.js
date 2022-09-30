@@ -62,7 +62,7 @@ export function render(layout) {
 }
 
 export function startdrag(e, id) {
-	e.dataTransfer.setData("application/prs.obs-rc-section", id);
+	e.dataTransfer.setData("application/prs.obs-rc-element", "section/" + id);
 	e.dataTransfer.setData("text/plain", "[OBS Remote Control section, drag/drop to manage layout]");
 	e.dataTransfer.effectAllowed = "copyMove";
 }

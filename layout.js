@@ -68,7 +68,7 @@ on("dragover", ".droptarget", e => {
 	//Checking the transfer data somehow doesn't work in Chrome, but does in
 	//Firefox. For now, just let whatever happen, and deal with it in the
 	//Drop event below.
-	//const id = e.dataTransfer.getData("application/prs.obs-rc-section");
+	//const id = e.dataTransfer.getData("application/prs.obs-rc-element");
 	//if (!id) return;
 	e.preventDefault();
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
@@ -127,11 +127,14 @@ on("drop", ".droptarget", e => {
 	if (e.defaultPrevented) return;
 	console.log(e);
 	e.preventDefault();
-	const id = e.dataTransfer.getData("application/prs.obs-rc-section");
-	console.log("ID to insert:", id);
-	if (!shadow) return;
-	//TODO: If dropping something other than a section (eg a split), assign something else
-	Object.assign(shadow, {type: "section", id});
+	const elem = e.dataTransfer.getData("application/prs.obs-rc-element");
+	if (!elem || !shadow) return;
+	const [type, id] = elem.split("/");
+	console.log("Dropping:", type, id);
+	switch (type) {
+		case "section": Object.assign(shadow, {type: "section", id}); break;
+		default: break;
+	}
 	shadow = null;
 	remove_shadow();
 });
