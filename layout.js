@@ -135,3 +135,27 @@ on("drop", ".droptarget", e => {
 	shadow = null;
 	remove_shadow();
 });
+
+//Split bar dragging
+let splitorigin = 0, splitvert = null;
+on("pointerdown", ".splitbar", e => {
+	if (e.button) return; //Only left clicks
+	e.preventDefault();
+	e.match.setPointerCapture(e.pointerId);
+	splitvert = e.match.parentElement.classList.contains("vertical");
+	const box = e.match.getBoundingClientRect();
+	if (splitvert) splitorigin = e.clientY - box.top;
+	else splitorigin = e.clientX - box.left;
+});
+on("pointermove", ".splitbar", e => {
+	if (splitvert === null) return; //Not dragging a split bar.
+	const box = e.match.parentElement.getBoundingClientRect();
+	const splitpos = splitvert ? e.clientY - box.top - splitorigin
+			: e.clientX - box.left - splitorigin;
+	//TODO: Record splitpos as this split bar's new official position
+	e.match.parentElement.firstElementChild.style[splitvert ? "height" : "width"] = splitpos + "px";
+});
+on("pointerup", ".splitbar", e => {
+	e.match.releasePointerCapture(e.pointerId);
+	splitvert = null;
+});

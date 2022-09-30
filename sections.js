@@ -30,7 +30,19 @@ function build(layout, parent, self) {
 		break;
 		//A splitbar has precisely two children (either or both of which can be null),
 		//and renders them as left+right or top+bottom depending on orientation.
-		case "split": ret = DIV("UNIMPLEMENTED: Split " + layout.orientation); break;
+		case "split": {
+			const children = layout.children.map((l,i) => build(l, layoutidx, i));
+			//TODO: Use the saved split bar position, defaulting to 50% if none set
+			children[0].style[layout.orientation === "vertical" ? "height" : "width"] = "50%";
+			ret = DIV({
+				class: "split " + (layout.orientation === "vertical" ? "vertical" : "horizontal"),
+			}, [
+				children[0],
+				DIV({class: "splitbar"}),
+				children[1],
+			]);
+			break;
+		}
 		//A section provides a standard element.
 		case "section": ret = SECTION({id: layout.id, draggable: "true", class: "droptarget"}, sections[layout.id](layout)); break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); break;

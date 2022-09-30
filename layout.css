@@ -37,11 +37,23 @@ section {
 	width: 100%; height: 100%;
 }
 
-.box {
+.box,.split {
 	display: flex;
 	width: 100%; height: 100%;
 	gap: 2px;
 	background: #fee; /* Highlight boxes, for testing */
 }
-.box.horizontal {flex-direction: row;}
-.box.vertical {flex-direction: column;}
+.horizontal {flex-direction: row;}
+.vertical {flex-direction: column;}
+
+.split > :not(.splitbar) {
+	overflow: clip;
+	width: unset; height: unset;
+}
+.splitbar {
+	flex: 0 0;
+	border: 3px outset #a0f0c0;
+}
+.horizontal > .splitbar {cursor: col-resize;}
+.vertical > .splitbar {cursor: row-resize;}
+.split > *:last-child {flex: 1 1 0;}

@@ -9,8 +9,8 @@ set_content("main", render({type: "box", orientation: "vertical", children: [
 	{type: "section", id: "demo1"},
 	{type: "section", id: "demo2"},
 	{type: "section", id: "demo3"},
-	{type: "split", orientation: "horizontal"},
-	{type: "split", orientation: "vertical"},
+	{type: "split", orientation: "horizontal", children: [{}, {}]},
+	{type: "split", orientation: "vertical", children: [{}, {}]},
 ]}));
 
 on("dragstart", "section", e => startdrag(e, e.match.id));
