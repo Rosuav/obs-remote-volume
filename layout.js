@@ -31,8 +31,8 @@ function remove_shadow_from(elem) {
 		case 1: return remove_shadow_from(elem.children[0]);
 		//2b) If it has two children, one shadow and one not, return the other child.
 		case 2:
-			if (elem.children[0].type === "shadow") return elem.children[1];
-			if (elem.children[1].type === "shadow") return elem.children[0];
+			if (elem.children[0].type === "shadow") return remove_shadow_from(elem.children[1]);
+			if (elem.children[1].type === "shadow") return remove_shadow_from(elem.children[0]);
 			//Else fall through
 		default:
 			//2c) Otherwise, filter out any shadows from the children, and keep the box.
@@ -54,7 +54,6 @@ function remove_shadow() {
 	rendered_layout[0] = remove_shadow_from(rendered_layout[0]);
 }
 
-let nextdragover = 0;
 on("dragenter", ".droptarget", e => e.preventDefault());
 on("dragover", ".droptarget", e => {
 	if (e.defaultPrevented) return;
@@ -64,9 +63,6 @@ on("dragover", ".droptarget", e => {
 	//const id = e.dataTransfer.getData("application/prs.obs-rc-section");
 	//if (!id) return;
 	e.preventDefault();
-	const now = +new Date;
-	if (now < nextdragover) return;
-	nextdragover = now + 1000;
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
 	//e.dataTransfer.dropEffect = "move";
 	const {parentidx, selfidx} = e.match.dataset;
@@ -104,7 +100,7 @@ on("dragover", ".droptarget", e => {
 		else {
 			const chld = [{type: "newshadow"}, rendered_layout[parentidx].children[selfidx]];
 			if (nearest > 1) chld.reverse();
-			console.log("NONMATCHING", chld);
+			console.log("NONMATCHING", JSON.parse(JSON.stringify(chld)));
 			rendered_layout[parentidx].children[selfidx] = {
 				type: "box", orientation: (nearest&1) ? "vertical" : "horizontal",
 				children: chld,
