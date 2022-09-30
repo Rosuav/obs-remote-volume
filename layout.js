@@ -113,10 +113,8 @@ on("dragover", ".droptarget", e => {
 });
 
 on("dragleave", ".droptarget", e => {
-	//FIXME: This is firing at times when it needn't. Figure out why,
-	//then reenable shadow removal.
-	//console.log("Drag leave!");
-	//remove_shadow();
+	remove_shadow();
+	set_content("main", render(rendered_layout[0].children[0]));
 });
 
 on("drop", ".droptarget", e => {
