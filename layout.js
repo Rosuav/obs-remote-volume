@@ -51,7 +51,7 @@ function remove_shadow_from(elem) {
 function remove_shadow() {
 	//Shine a nice bright light on the rendered layout, removing any shadow we come across
 	//Assumes that rendered_layout[0] is the master object.
-	rendered_layout[0] = remove_shadow_from(rendered_layout[0]);
+	set_content("main", render(remove_shadow_from(rendered_layout[0].children[0])));
 }
 
 on("dragenter", ".droptarget", e => e.preventDefault());
@@ -109,12 +109,10 @@ on("dragover", ".droptarget", e => {
 		console.log("After insertion:", JSON.parse(JSON.stringify(rendered_layout)));
 	}
 	remove_shadow(); //Make sure there aren't multiple shadows
-	set_content("main", render(rendered_layout[0].children[0]));
 });
 
 on("dragleave", ".droptarget", e => {
 	remove_shadow();
-	set_content("main", render(rendered_layout[0].children[0]));
 });
 
 on("drop", ".droptarget", e => {
@@ -128,6 +126,4 @@ on("drop", ".droptarget", e => {
 	Object.assign(shadow, {type: "section", id});
 	shadow = null;
 	remove_shadow();
-	console.log("Shadow is now", shadow);
-	set_content("main", render(rendered_layout[0].children[0]));
 });
