@@ -54,6 +54,7 @@ function remove_shadow() {
 	rendered_layout[0] = remove_shadow_from(rendered_layout[0]);
 }
 
+let nextdragover = 0;
 on("dragenter", ".droptarget", e => e.preventDefault());
 on("dragover", ".droptarget", e => {
 	if (e.defaultPrevented) return;
@@ -63,6 +64,9 @@ on("dragover", ".droptarget", e => {
 	//const id = e.dataTransfer.getData("application/prs.obs-rc-section");
 	//if (!id) return;
 	e.preventDefault();
+	const now = +new Date;
+	if (now < nextdragover) return;
+	nextdragover = now + 1000;
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
 	//e.dataTransfer.dropEffect = "move";
 	const {parentidx, selfidx} = e.match.dataset;
@@ -93,8 +97,8 @@ on("dragover", ".droptarget", e => {
 				(rendered_layout[parentidx].orientation === "vertical")
 				=== ((nearest&1) === 1)
 		) {
-			console.log("MATCHING BOX");
-			rendered_layout[parentidx].children.splice(selfidx + (nearest > 1), 0, {type: "newshadow"});
+			console.log("MATCHING BOX", selfidx, +selfidx + (nearest > 1));
+			rendered_layout[parentidx].children.splice(+selfidx + (nearest > 1), 0, {type: "newshadow"});
 		}
 		//Otherwise create a box of the appropriate orientation and put both elements into it.
 		else {
