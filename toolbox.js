@@ -23,4 +23,6 @@ on("dragstart", "section", e => {
 on("dragend", "section", e => {
 	console.log("Dragging complete", e.match.id);
 	console.log("Effect:", e.dataTransfer.dropEffect);
+	//TODO: Wait long enough that Local Storage should have been updated by the other page,
+	//then rerender based on what isn't currently being used.
 });
