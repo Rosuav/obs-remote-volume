@@ -57,7 +57,7 @@ function remove_shadow() {
 on("dragstart", ".draggable", e => {
 	//TODO: If you drag a splitbox, ensure that the children AND the split position
 	//move as a single unit.
-	startdrag(e, "section", e.match.id);
+	startdrag(e);
 	const {parentidx, selfidx} = e.match.dataset;
 	//Replace the current element with a shadow, thus (effectively) removing it.
 	rendered_layout[parentidx].children[selfidx] = {type: "newshadow"};
@@ -70,8 +70,8 @@ on("dragover", ".droptarget", e => {
 	//Checking the transfer data somehow doesn't work in Chrome, but does in
 	//Firefox. For now, just let whatever happen, and deal with it in the
 	//Drop event below.
-	//const id = e.dataTransfer.getData("application/prs.obs-rc-element");
-	//if (!id) return;
+	//const layout = e.dataTransfer.getData("application/prs.obs-rc-element");
+	//if (!layout) return;
 	e.preventDefault();
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
 	//e.dataTransfer.dropEffect = "move";
@@ -129,14 +129,19 @@ on("drop", ".droptarget", e => {
 	if (e.defaultPrevented) return;
 	console.log(e);
 	e.preventDefault();
-	const elem = e.dataTransfer.getData("application/prs.obs-rc-element");
-	console.log("Drop elem", elem);
-	if (!elem || !shadow) return;
-	const [type, id] = elem.split("/");
-	console.log("Dropping:", type, id);
-	switch (type) {
-		case "section": Object.assign(shadow, {type: "section", id}); break;
-		default: break;
+	if (!shadow) return;
+	try {
+		const elem = JSON.parse(e.dataTransfer.getData("application/prs.obs-rc-element") || "{}");
+		console.log("Dropping:", elem);
+		switch (elem.type) {
+			case "section": Object.assign(shadow, {type: "section", id: elem.id}); break;
+			default: break;
+		}
+	}
+	catch (e) {
+		//Shouldn't normally happen, but in case it does, dump it to the console.
+		console.warn("Bad parse");
+		console.warn(e);
 	}
 	shadow = null;
 	remove_shadow();

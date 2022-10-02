@@ -53,6 +53,7 @@ function build(layout, parent, self) {
 	if (!ret) ret = DIV({class: "droptarget", style: "width: 100%; height: 100%"}); //Empty slot in a split or master
 	ret.dataset.parentidx = parent;
 	ret.dataset.selfidx = self;
+	if (ret.draggable) ret.dataset.draglayout = JSON.stringify(layout);
 	return ret;
 }
 export function render(layout) {
@@ -62,8 +63,9 @@ export function render(layout) {
 	return build(layout, 0, 0);
 }
 
-export function startdrag(e, type, id) {
-	e.dataTransfer.setData("application/prs.obs-rc-element", type + "/" + id);
-	e.dataTransfer.setData("text/plain", "[OBS Remote Control " + type + ", drag/drop to manage layout]");
+export function startdrag(e, layout) {
+	if (!layout) layout = e.match.dataset.draglayout;
+	e.dataTransfer.setData("application/prs.obs-rc-element", layout);
+	e.dataTransfer.setData("text/plain", "[OBS Remote Control element, drag/drop to manage layout]");
 	e.dataTransfer.effectAllowed = "copyMove";
 }

@@ -13,11 +13,7 @@ set_content("main", render({type: "box", orientation: "vertical", children: [
 	{type: "split", orientation: "vertical", children: [{}, {}]},
 ]}));
 
-on("dragstart", ".draggable", e => {
-	if (e.match.tagName === "SECTION") startdrag(e, "section", e.match.id);
-	//TODO: If other draggable types, set other drag types. Yaknow, makes sense right?
-});
-
+on("dragstart", ".draggable", e => startdrag(e));
 on("dragend", "section", e => {
 	console.log("Dragging complete", e.match.id);
 	console.log("Effect:", e.dataTransfer.dropEffect);
