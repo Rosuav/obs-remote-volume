@@ -125,6 +125,26 @@ on("dragleave", ".droptarget", e => {
 	remove_shadow();
 });
 
+function safe_parse_element(elem) {
+	//Parse an untrusted element object and return something which,
+	//if possible, represents the original intention
+	if (typeof elem !== "object") return { };
+	switch (elem.type) {
+		case "section": return {type: "section", id: elem.id};
+		case "split": return {
+			type: "split",
+			orientation: elem.orientation === "vertical" ? "vertical" : "horizontal",
+			splitpos: typeof elem.splitpos === "number" ? elem.splitpos : null,
+			children: Array.isArray(elem.children) ? [
+				safe_parse_element(elem.children[0]),
+				safe_parse_element(elem.children[1]),
+			] : [{}, {}],
+		};
+		default: break;
+	}
+	return { };
+}
+
 on("drop", ".droptarget", e => {
 	if (e.defaultPrevented) return;
 	console.log(e);
@@ -133,10 +153,7 @@ on("drop", ".droptarget", e => {
 	try {
 		const elem = JSON.parse(e.dataTransfer.getData("application/prs.obs-rc-element") || "{}");
 		console.log("Dropping:", elem);
-		switch (elem.type) {
-			case "section": Object.assign(shadow, {type: "section", id: elem.id}); break;
-			default: break;
-		}
+		Object.assign(shadow, safe_parse_element(elem));
 	}
 	catch (e) {
 		//Shouldn't normally happen, but in case it does, dump it to the console.
