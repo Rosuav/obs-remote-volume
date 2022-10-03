@@ -37,7 +37,6 @@ function build(layout, parent, self) {
 				typeof layout.splitpos === "number" ? layout.splitpos + "px" : "50%";
 			ret = DIV({
 				class: "draggable split " + (layout.orientation === "vertical" ? "vertical" : "horizontal"),
-				draggable: "true",
 			}, [
 				children[0],
 				DIV({class: "splitbar"}),
@@ -46,24 +45,27 @@ function build(layout, parent, self) {
 			break;
 		}
 		//A section provides a standard element.
-		case "section": ret = SECTION({id: layout.id, draggable: "true", class: "draggable droptarget"}, sections[layout.id](layout)); break;
+		case "section": ret = SECTION({id: layout.id, class: "draggable droptarget"}, sections[layout.id](layout)); break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); break;
 		case "iframe":
 			if (layout.titlebar || 1) { //Or if we're in edit mode - always have title bar while editing
-				ret = DIV({class: "box vertical draggable", draggable: "true"}, [
+				ret = DIV({class: "box vertical draggable"}, [
 					DIV({class: "titlebar"}, layout.title || layout.src || "Embedded Web Page"),
 					IFRAME({src: layout.src || "iframedemo.html"}),
 				]);
 			}
-			else ret = IFRAME({src: layout.src || "iframedemo.html", class: "draggable", draggable: "true"});
+			else ret = IFRAME({src: layout.src || "iframedemo.html", class: "draggable"});
 			break;
 		default: break;
 	}
 	if (!ret) ret = DIV({class: "droptarget", style: "width: 100%; height: 100%"}); //Empty slot in a split or master
 	ret.dataset.parentidx = parent;
 	ret.dataset.selfidx = self;
-	if (ret.draggable) ret.dataset.draglayout = JSON.stringify(layout);
+	if (ret.classList.contains("draggable")) {
+		ret.draggable = true;
+		ret.dataset.draglayout = JSON.stringify(layout);
+	}
 	return ret;
 }
 export function render(layout) {
