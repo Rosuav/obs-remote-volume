@@ -180,9 +180,37 @@ on("drop", ".droptarget", e => {
 	e.preventDefault();
 	if (!shadow) return;
 	try {
-		const elem = JSON.parse(e.dataTransfer.getData("application/prs.obs-rc-element") || "{}");
+		let elem = JSON.parse(e.dataTransfer.getData("application/prs.obs-rc-element") || "{}");
 		console.log("Dropping:", elem);
-		Object.assign(shadow, safe_parse_element(elem));
+		elem = safe_parse_element(elem);
+		//SPECIAL CASE: If you drop a brand new empty split bar into a box of the
+		//correct orientation, replace the box and put the children into the split.
+		if (elem.type === "split" && e.match.classList.contains("shadow")) { //If we're not dropping onto a shadow, something's wrong
+			const {parentidx, selfidx} = e.match.dataset;
+			const parent = rendered_layout[parentidx];
+			if (parent.type === "box" && elem.orientation === parent.orientation) {
+				const box = e.match.parentElement.getBoundingClientRect();
+				const size = elem.orientation === "vertical" ? box.height : box.width;
+				//(These could be "top" and "bottom" but same difference)
+				const left = parent.children.slice(0, selfidx);
+				const right = parent.children.slice(+selfidx + 1);
+				//If the split bar is at one end or the other, allow one slot of
+				//extra space that side. Other than that, divide the available
+				//space according to the current division.
+				const nleft = left.length || 1, nright = right.length || 1;
+				//Okay. Let's turn this box into a splitbox.
+				parent.type = "split";
+				parent.splitpos = size * nleft / (nleft + nright);
+				parent.children = [
+					//These boxes could be empty, or contain only one child. It'll get
+					//cleaned up by remove_shadow().
+					{type: "box", orientation: elem.orientation, children: left},
+					{type: "box", orientation: elem.orientation, children: right},
+				];
+				shadow = null; //Okay! We're done.
+			}
+		}
+		if (shadow) Object.assign(shadow, elem);
 	}
 	catch (e) {
 		//Shouldn't normally happen, but in case it does, dump it to the console.
