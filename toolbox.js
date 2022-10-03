@@ -11,6 +11,7 @@ set_content("main", render({type: "box", orientation: "vertical", children: [
 	{type: "section", id: "demo3"},
 	{type: "split", orientation: "horizontal", children: [{}, {}]},
 	{type: "split", orientation: "vertical", children: [{}, {}]},
+	{type: "iframe"},
 ]}));
 
 on("dragstart", ".draggable", e => startdrag(e));

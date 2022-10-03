@@ -148,6 +148,12 @@ function safe_parse_element(elem) {
 				orientation: elem.orientation === "vertical" ? "vertical" : "horizontal",
 				children: elem.children.map(safe_parse_element),
 			};
+		case "iframe": return {
+			type: "iframe",
+			titlebar: !!elem.titlebar,
+			title: typeof elem.title === "string" ? elem.title : null,
+			src: typeof elem.src === "string" ? elem.src : null,
+		};
 		default: break;
 	}
 	return { };

@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {DIV, LI, P, SECTION, UL} = choc; //autoimport
+const {DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
 
 const sections = {
 	demo1: cfg => [
@@ -49,6 +49,15 @@ function build(layout, parent, self) {
 		case "section": ret = SECTION({id: layout.id, draggable: "true", class: "draggable droptarget"}, sections[layout.id](layout)); break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); break;
+		case "iframe":
+			if (layout.titlebar || 1) { //Or if we're in edit mode - always have title bar while editing
+				ret = DIV({class: "box vertical draggable", draggable: "true"}, [
+					DIV({class: "titlebar"}, layout.title || layout.src || "Embedded Web Page"),
+					IFRAME({src: layout.src || "iframedemo.html"}),
+				]);
+			}
+			else ret = IFRAME({src: layout.src || "iframedemo.html", class: "draggable", draggable: "true"});
+			break;
 		default: break;
 	}
 	if (!ret) ret = DIV({class: "droptarget", style: "width: 100%; height: 100%"}); //Empty slot in a split or master
