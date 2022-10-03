@@ -82,3 +82,4 @@ iframe {
 
 .hidden {display: none;}
 #layout:not(.editmode) .editonly {display: none;}
+#layout.editmode .layoutonly {display: none;}
