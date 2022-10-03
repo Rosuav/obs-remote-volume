@@ -12,7 +12,7 @@ DOM("#layoutmode").onclick = e => {
 	else if (toolboxwin) toolboxwin.close();
 	set_content("main", render(rendered_layout[0].children[0], editmode));
 	set_content("#layoutmode", editmode ? "Save layout" : "Edit");
-	DOM("#cancel").classList.toggle("hidden", !editmode);
+	document.body.classList.toggle("editmode", editmode);
 };
 DOM("#cancel").onclick = e => {
 	editmode = false;
@@ -20,7 +20,7 @@ DOM("#cancel").onclick = e => {
 	rendered_layout[0].children[0] = JSON.parse(e.currentTarget.dataset.restorelayout);
 	remove_shadow(); //There probably won't be any, but just in case. Also saves automatically.
 	set_content("#layoutmode", "Edit");
-	DOM("#cancel").classList.add("hidden");
+	document.body.classList.remove("editmode");
 };
 
 function rerender() {

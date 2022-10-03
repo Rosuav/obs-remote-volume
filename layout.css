@@ -81,3 +81,4 @@ iframe {
 }
 
 .hidden {display: none;}
+#layout:not(.editmode) .editonly {display: none;}
