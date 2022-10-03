@@ -25,7 +25,7 @@ DOM("#cancel").onclick = e => {
 
 function rerender() {
 	const layout = localStorage.getItem("obs-remote-layout") || "{}";
-	set_content("main", render(JSON.parse(layout, editmode)));
+	set_content("main", render(JSON.parse(layout), editmode));
 }
 rerender();
 
