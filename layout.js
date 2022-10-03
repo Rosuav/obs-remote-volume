@@ -180,10 +180,19 @@ on("pointermove", ".splitbar", e => {
 	const box = e.match.parentElement.getBoundingClientRect();
 	const splitpos = splitvert ? e.clientY - box.top - splitorigin
 			: e.clientX - box.left - splitorigin;
-	//TODO: Record splitpos as this split bar's new official position
 	e.match.parentElement.firstElementChild.style[splitvert ? "height" : "width"] = splitpos + "px";
 });
 on("pointerup", ".splitbar", e => {
+	//Record splitpos as this split bar's new official position
 	e.match.releasePointerCapture(e.pointerId);
 	splitvert = null;
+	const splitbox = e.match.parentElement;
+	const {parentidx, selfidx} = splitbox.dataset;
+	const box = splitbox.getBoundingClientRect();
+	const splitpos = splitvert ? e.clientY - box.top - splitorigin
+			: e.clientX - box.left - splitorigin;
+	const layout = rendered_layout[parentidx].children[selfidx];
+	layout.splitpos = splitpos;
+	if (splitbox.draggable) splitbox.dataset.draglayout = JSON.stringify(layout);
+	//TODO: Save the layout
 });

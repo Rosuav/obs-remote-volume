@@ -32,8 +32,9 @@ function build(layout, parent, self) {
 		//and renders them as left+right or top+bottom depending on orientation.
 		case "split": {
 			const children = layout.children.map((l,i) => build(l, layoutidx, i));
-			//TODO: Use the saved split bar position, defaulting to 50% if none set
-			children[0].style[layout.orientation === "vertical" ? "height" : "width"] = "50%";
+			//Use the saved split bar position, defaulting to 50% if none set
+			children[0].style[layout.orientation === "vertical" ? "height" : "width"] =
+				typeof layout.splitpos === "number" ? layout.splitpos + "px" : "50%";
 			ret = DIV({
 				class: "draggable split " + (layout.orientation === "vertical" ? "vertical" : "horizontal"),
 				draggable: "true",
