@@ -69,7 +69,7 @@ function remove_shadow() {
 	//Assumes that rendered_layout[0] is the master object.
 	const layout = remove_shadow_from(rendered_layout[0].children[0]);
 	set_content("main", render(layout, editmode));
-	localStorage.setItem("obs-remote-layout", JSON.stringify(layout));
+	if (!editmode) localStorage.setItem("obs-remote-layout", JSON.stringify(layout));
 }
 
 on("dragstart", ".draggable", e => {
@@ -251,5 +251,5 @@ on("pointerup", ".splitbar", e => {
 	const layout = rendered_layout[parentidx].children[selfidx];
 	layout.splitpos = splitpos;
 	if (splitbox.draggable) splitbox.dataset.draglayout = JSON.stringify(layout);
-	localStorage.setItem("obs-remote-layout", JSON.stringify(rendered_layout[0].children[0]));
+	if (!editmode) localStorage.setItem("obs-remote-layout", JSON.stringify(rendered_layout[0].children[0]));
 });
