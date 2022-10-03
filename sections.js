@@ -60,8 +60,8 @@ function build(layout, parent, self) {
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); tb = drag = false; break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); tb = drag = false; break;
 		case "iframe":
-			//TODO: Reuse the iframe where possible. It may need to have an ID assigned.
-			ret = IFRAME({src: layout.src || "iframedemo.html"});
+			//Reuse the iframe where possible.
+			ret = DOM("#" + layout.id) || IFRAME({id: layout.id, src: layout.src || "iframedemo.html"});
 			if (layout.titlebar) {tb = true; deftitle = ret.contentDocument.title;}
 			break;
 		default: break;

@@ -167,6 +167,7 @@ function safe_parse_element(elem) {
 			titlebar: !!elem.titlebar,
 			title: typeof elem.title === "string" ? elem.title : null,
 			src: typeof elem.src === "string" ? elem.src : null,
+			id: (""+Math.random()).replace("0.", "iframe_"), //Generate an ID which the user may subsequently edit if desired
 		};
 		default: break;
 	}
