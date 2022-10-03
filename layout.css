@@ -13,6 +13,7 @@ main {
 
 header {
 	background: rebeccapurple;
+	color: white;
 	padding: 2px;
 	flex: 0 0;
 }
