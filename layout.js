@@ -81,9 +81,9 @@ on("dragstart", ".draggable", e => {
 	setTimeout(remove_shadow, 0); //Don't remove the element while we're handling the event
 });
 
-on("dragenter", ".droptarget", e => e.preventDefault());
+on("dragenter", ".droptarget", e => editmode && e.preventDefault());
 on("dragover", ".droptarget", e => {
-	if (e.defaultPrevented) return;
+	if (!editmode || e.defaultPrevented) return;
 	//Checking the transfer data somehow doesn't work in Chrome, but does in
 	//Firefox. For now, just let whatever happen, and deal with it in the
 	//Drop event below.
@@ -138,9 +138,7 @@ on("dragover", ".droptarget", e => {
 	remove_shadow(); //Make sure there aren't multiple shadows
 });
 
-on("dragleave", ".droptarget", e => {
-	remove_shadow();
-});
+on("dragleave", ".droptarget", e => editmode && remove_shadow());
 
 function safe_parse_element(elem) {
 	//Parse an untrusted element object and return something which,
@@ -176,7 +174,7 @@ function safe_parse_element(elem) {
 }
 
 on("drop", ".droptarget", e => {
-	if (e.defaultPrevented) return;
+	if (!editmode || e.defaultPrevented) return;
 	console.log(e);
 	e.preventDefault();
 	if (!shadow) return;
