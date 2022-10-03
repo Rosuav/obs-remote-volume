@@ -5,11 +5,9 @@ import {render, rendered_layout, startdrag} from "./sections.js";
 let editmode = false, toolboxwin;
 
 DOM("#layoutmode").onclick = e => {
-	if (editmode = !editmode) {
-		toolboxwin = window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
-		DOM("#cancel").dataset.restorelayout = JSON.stringify(rendered_layout[0].children[0]);
-	}
-	else if (toolboxwin) toolboxwin.close();
+	editmode = !editmode;
+	DOM("#cancel").dataset.restorelayout = JSON.stringify(rendered_layout[0].children[0]);
+	if (!editmode && toolboxwin) toolboxwin.close();
 	set_content("main", render(rendered_layout[0].children[0], editmode));
 	set_content("#layoutmode", editmode ? "Save layout" : "Edit");
 	document.body.classList.toggle("editmode", editmode);
@@ -22,6 +20,7 @@ DOM("#cancel").onclick = e => {
 	set_content("#layoutmode", "Edit");
 	document.body.classList.remove("editmode");
 };
+DOM("#opentoolbox").onclick = e => toolboxwin = window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
 
 function rerender() {
 	const layout = localStorage.getItem("obs-remote-layout") || "{}";
