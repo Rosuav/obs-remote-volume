@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
+const {BUTTON, DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
 
 const sections = {
 	demo1: cfg => [
@@ -71,7 +71,10 @@ function build(layout, parent, self) {
 	ret.dataset.selfidx = self;
 	if (tb) { //Some elements have titlebars in edit mode. It's possible for them to have them in layout mode too.
 		ret = DIV({class: "box vertical"}, [
-			DIV({class: "titlebar"}, layout.title || deftitle || typename[layout.type] || layout.type || "Element"),
+			DIV({class: "titlebar"}, [
+				layout.title || deftitle || typename[layout.type] || layout.type || "Element",
+				BUTTON({type: "button", class: "settings"}, "⚙"),
+			]),
 			ret,
 		]);
 		ret.dataset.parentidx = parent;
