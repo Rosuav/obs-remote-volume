@@ -1,6 +1,7 @@
-import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
+import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
 const {} = choc; //autoimport
 import {render, rendered_layout, startdrag} from "./sections.js";
+fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
 let editmode = false, toolboxwin;
 
@@ -249,4 +250,12 @@ on("pointerup", ".splitbar", e => {
 	layout.splitpos = splitpos;
 	if (splitbox.draggable) splitbox.dataset.draglayout = JSON.stringify(layout);
 	if (!editmode) localStorage.setItem("obs-remote-layout", JSON.stringify(rendered_layout[0].children[0]));
+});
+
+//Settings dialog
+//Note that the buttons technically exist, but are invisible, on the toolbox. There's no code on them.
+on("click", ".settings", e => {
+	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
+	console.log("GEAR", parentidx, selfidx);
+	DOM("#settingsdlg").showModal();
 });
