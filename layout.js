@@ -2,13 +2,25 @@ import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {} = choc; //autoimport
 import {render, rendered_layout, startdrag} from "./sections.js";
 
-let editmode = false;
+let editmode = false, toolboxwin;
 
 DOM("#layoutmode").onclick = e => {
-	if (editmode = !editmode) window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
+	if (editmode = !editmode) {
+		toolboxwin = window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
+		DOM("#cancel").dataset.restorelayout = JSON.stringify(rendered_layout[0].children[0]);
+	}
+	else if (toolboxwin) toolboxwin.close();
 	set_content("main", render(rendered_layout[0].children[0], editmode));
 	set_content("#layoutmode", editmode ? "Save layout" : "Edit");
 	DOM("#cancel").classList.toggle("hidden", !editmode);
+};
+DOM("#cancel").onclick = e => {
+	editmode = false;
+	if (toolboxwin) toolboxwin.close();
+	rendered_layout[0].children[0] = JSON.parse(e.currentTarget.dataset.restorelayout);
+	remove_shadow(); //There probably won't be any, but just in case. Also saves automatically.
+	set_content("#layoutmode", "Edit");
+	DOM("#cancel").classList.add("hidden");
 };
 
 function rerender() {
