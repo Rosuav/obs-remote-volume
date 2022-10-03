@@ -48,7 +48,8 @@ function build(layout, parent, self) {
 				class: "split " + (layout.orientation === "vertical" ? "vertical" : "horizontal"),
 			}, [
 				children[0],
-				DIV({class: "splitbar"}),
+				//TODO: Have a splitbox option to keep the splitbar at runtime
+				DIV({class: editmode ? "splitbar" : "divider"}),
 				children[1],
 			]);
 			break;

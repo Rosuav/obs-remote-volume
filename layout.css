@@ -52,10 +52,8 @@ section {
 	overflow: clip;
 	width: unset; height: unset;
 }
-.splitbar {
-	flex: 0 0;
-	border: 3px outset #a0f0c0;
-}
+.splitbar {flex: 0 0; border: 3px outset #a0f0c0;}
+.divider {flex: 0 0; border: 3px inset #a0f0c0;}
 .horizontal > .splitbar {cursor: col-resize;}
 .vertical > .splitbar {cursor: row-resize;}
 #toolbox .splitbar {cursor: unset;} /* ID is more specific than class, easier than fiddling with :not() */
