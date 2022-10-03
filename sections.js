@@ -2,23 +2,29 @@ import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {BUTTON, DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
 
 const sections = {
-	demo1: cfg => [
-		P("Drag this thing!"),
-		UL("Test list with a number of elements".split(" ").map(w => LI(w))),
-	],
-	demo2: cfg => [
-		P("Or drag this thing instead!"),
-	],
-	demo3: cfg => [
-		P("Here's a third thing to play with."),
-	],
+	demo1: {
+		title: "Demo With List",
+		render: cfg => [
+			P("Drag this thing!"),
+			UL("Test list with a number of elements".split(" ").map(w => LI(w))),
+		],
+	},
+	demo2: {
+		title: "Hey Look, A Thing",
+		render: cfg => [
+			P("Or drag this thing instead!"),
+		],
+	},
+	demo3: {
+		title: "Another Thing",
+		render: cfg => [
+			P("Here's a third thing to play with."),
+		],
+	},
 };
 
 const typename = {
 	split: "Split bar", iframe: "Embedded Web Page",
-	demo1: "Demo With List",
-	demo2: "Hey Look, A Thing",
-	demo3: "Another Thing",
 };
 
 export const rendered_layout = [];
@@ -55,8 +61,8 @@ function build(layout, parent, self) {
 			break;
 		}
 		case "section":
-			ret = SECTION({id: layout.id, class: "droptarget"}, sections[layout.id](layout));
-			deftitle = typename[layout.id] || "Section";
+			ret = SECTION({id: layout.id, class: "droptarget"}, sections[layout.id].render(layout));
+			deftitle = sections[layout.id].title;
 			break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); tb = drag = false; break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); tb = drag = false; break;
