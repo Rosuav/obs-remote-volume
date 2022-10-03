@@ -142,6 +142,13 @@ function safe_parse_element(elem) {
 				safe_parse_element(elem.children[1]),
 			] : [{}, {}],
 		};
+		case "box":
+			if (!Array.isArray(elem.children) || elem.children.length < 2) return { };
+			return {
+				type: "box",
+				orientation: elem.orientation === "vertical" ? "vertical" : "horizontal",
+				children: elem.children.map(safe_parse_element),
+			};
 		default: break;
 	}
 	return { };
