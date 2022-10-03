@@ -57,8 +57,7 @@ function remove_shadow() {
 }
 
 on("dragstart", ".draggable", e => {
-	//TODO: If you drag a splitbox, ensure that the children AND the split position
-	//move as a single unit.
+	e.stopPropagation();
 	startdrag(e);
 	const {parentidx, selfidx} = e.match.dataset;
 	//Replace the current element with a shadow, thus (effectively) removing it.
