@@ -2,14 +2,18 @@ import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {} = choc; //autoimport
 import {render, rendered_layout, startdrag} from "./sections.js";
 
-DOM("#layoutmode").onclick = () => {
-	const win = window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
-	console.log(win)
+let editmode = false;
+
+DOM("#layoutmode").onclick = e => {
+	if (editmode = !editmode) window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
+	set_content("main", render(rendered_layout[0].children[0], editmode));
+	set_content("#layoutmode", editmode ? "Save layout" : "Edit");
+	DOM("#cancel").classList.toggle("hidden", !editmode);
 };
 
 function rerender() {
 	const layout = localStorage.getItem("obs-remote-layout") || "{}";
-	set_content("main", render(JSON.parse(layout)));
+	set_content("main", render(JSON.parse(layout, editmode)));
 }
 rerender();
 
@@ -52,7 +56,7 @@ function remove_shadow() {
 	//Shine a nice bright light on the rendered layout, removing any shadow we come across
 	//Assumes that rendered_layout[0] is the master object.
 	const layout = remove_shadow_from(rendered_layout[0].children[0]);
-	set_content("main", render(layout));
+	set_content("main", render(layout, editmode));
 	localStorage.setItem("obs-remote-layout", JSON.stringify(layout));
 }
 

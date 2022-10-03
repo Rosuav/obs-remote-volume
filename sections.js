@@ -17,6 +17,7 @@ const sections = {
 export const rendered_layout = [];
 console.log(rendered_layout)
 
+let editmode = false;
 function build(layout, parent, self) {
 	console.log("Build", layout);
 	let ret = null;
@@ -62,14 +63,15 @@ function build(layout, parent, self) {
 	if (!ret) ret = DIV({class: "droptarget", style: "width: 100%; height: 100%"}); //Empty slot in a split or master
 	ret.dataset.parentidx = parent;
 	ret.dataset.selfidx = self;
-	if (ret.classList.contains("draggable")) {
+	if (editmode && ret.classList.contains("draggable")) {
 		ret.draggable = true;
 		ret.dataset.draglayout = JSON.stringify(layout);
 	}
 	return ret;
 }
-export function render(layout) {
+export function render(layout, editing) {
 	console.log("Render", layout);
+	editmode = editing;
 	rendered_layout[0] = {type: "master", children: [layout]};
 	rendered_layout.length = 1; //Truncate the array
 	return build(layout, 0, 0);
