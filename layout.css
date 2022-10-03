@@ -2,10 +2,11 @@
 
 body {
 	margin: 0;
-	width: 100vw; height: 100vh;
 	display: flex;
 	flex-direction: column;
 }
+body#layout {width: 100vw; height: 100vh;}
+body#toolbox {overflow-x: hidden;}
 main {
 	flex: 1 1;
 }
