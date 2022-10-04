@@ -92,7 +92,6 @@ on("dragover", ".droptarget", e => {
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
 	//e.dataTransfer.dropEffect = "move";
 	const {parentidx, selfidx} = e.match.dataset;
-	//console.log("Drag over", parentidx, selfidx, JSON.parse(JSON.stringify(rendered_layout)));
 	const cur = rendered_layout[parentidx].children[selfidx].type; //Could be undefined
 	if (cur === "shadow") return; //Already a shadow there.
 	if (!cur) rendered_layout[parentidx].children[selfidx] = {type: "newshadow"}; //Replace a lack of element with a shadow.
@@ -172,11 +171,15 @@ function safe_parse_element(elem) {
 
 on("drop", ".droptarget", e => {
 	if (!editmode || e.defaultPrevented) return;
+	console.log("Drop!");
+	console.log("Shadow:", shadow);
 	e.preventDefault();
 	if (!shadow) return;
 	try {
 		let elem = JSON.parse(e.dataTransfer.getData("application/prs.obs-rc-element") || "{}");
+		console.log("Raw elem:", elem);
 		elem = safe_parse_element(elem);
+		console.log("Cooked elem:", elem);
 		//SPECIAL CASE: If you drop a brand new empty split bar into a box of the
 		//correct orientation, replace the box and put the children into the split.
 		if (elem.type === "split" && e.match.classList.contains("shadow")) { //If we're not dropping onto a shadow, something's wrong
@@ -212,7 +215,9 @@ on("drop", ".droptarget", e => {
 		console.warn(e);
 	}
 	shadow = null;
+	console.log("Removing shadow");
 	remove_shadow();
+	console.log("Drop complete.");
 });
 
 //Split bar dragging
