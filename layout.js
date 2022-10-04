@@ -255,10 +255,11 @@ on("pointerup", ".splitbar", e => {
 
 //Settings dialog
 //Note that the buttons technically exist, but are invisible, on the toolbox. There's no code on them.
+let settings_layout = null;
 on("click", ".settings", e => {
 	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
 	console.log("GEAR", parentidx, selfidx);
-	const layout = rendered_layout[parentidx].children[selfidx];
+	const layout = settings_layout = rendered_layout[parentidx].children[selfidx];
 	const basis = get_basis_object(layout) || { };
 	set_content("#settingsdlg h3", basis.title ? "Settings for " + basis.title : "Settings");
 	let config = basis.config && TABLE(Object.entries(basis.config).map(([key, [desc, dflt]]) => TR([
@@ -270,3 +271,20 @@ on("click", ".settings", e => {
 	set_content("#settingsinner", config);
 	DOM("#settingsdlg").showModal();
 });
+
+DOM("#settingssave").onclick = e => {
+	const layout = settings_layout; settings_layout = null;
+	const basis = get_basis_object(layout) || { };
+	if (basis.config) Object.keys(basis.config).forEach(key => layout[key] = DOM("#settings_" + key).value);
+	if (basis.savesettings) basis.savesettings(layout);
+	console.log("New layout:", layout);
+	DOM("#settingsdlg").close();
+	remove_shadow();
+};
+
+DOM("#settingsdelete").onclick = e => {
+	const layout = settings_layout; settings_layout = null;
+	layout.type = "shadow"; //Deletion is easy. Just fade it out, then fade shadows to nothing!
+	DOM("#settingsdlg").close();
+	remove_shadow();
+};

@@ -27,12 +27,15 @@ const definitions = {
 		//Build a simple settings dialog by providing the layout config keys,
 		//their labels, and default values.
 		config: {
-			url: ["URL", ""],
+			src: ["URL", ""],
 		},
 		//If more flexibility is needed, this function can return whatever it
 		//needs to - the second arg is whatever was generated from the config
 		//above. It will be absent if config itself is absent.
 		//settingsdlg: (layout, table) => table,
+		//Similarly, extra flexibility on saving of settings can be done with
+		//this function, called after the other settings are applied:
+		//savesettings: layout => { },
 	},
 };
 export function get_basis_object(layout) {return definitions[layout.id] || definitions[layout.type] || { };}
@@ -76,11 +79,18 @@ function build(layout, parent, self) {
 			break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); tb = drag = false; break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); tb = drag = false; break;
-		case "iframe":
+		case "iframe": {
 			//Reuse the iframe where possible.
-			ret = DOM("#" + layout.id) || IFRAME({id: layout.id, src: layout.src || "iframedemo.html"});
+			const defn = JSON.stringify(layout);
+			ret = DOM("#" + layout.id);
+			//For some reason we're still getting a lot of flicker, even though it's
+			//correctly reusing the iframe elements. Hmm.
+			if (!ret || ret.dataset.defn !== defn)
+				//New or changed. Construct a brand-new iframe.
+				ret = IFRAME({id: layout.id, src: layout.src || "iframedemo.html", "data-defn": defn});
 			if (layout.titlebar) {tb = true; deftitle = ret.contentDocument.title || deftitle;}
 			break;
+		}
 		default: break;
 	}
 	if (!ret) {ret = DIV({class: "droptarget", style: "width: 100%; height: 100%"}); tb = drag = false;} //Empty slot in a split or master
