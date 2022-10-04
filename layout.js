@@ -255,6 +255,7 @@ on("click", ".settings", e => {
 		TD(LABEL({for: "settings_" + key}, desc)),
 		TD(
 			typeof dflt === "boolean" ? INPUT({type: "checkbox", id: "settings_" + key, checked: typeof layout[key] === "boolean" ? layout[key] : dflt})
+			: typeof dflt === "number" ? INPUT({type: "number", id: "settings_" + key, value: typeof layout[key] === "number" ? layout[key] : dflt})
 			: INPUT({id: "settings_" + key, value: typeof layout[key] === "string" ? layout[key] : dflt})
 		),
 	])));
@@ -270,6 +271,7 @@ DOM("#settingssave").onclick = e => {
 	if (basis.config) Object.entries(basis.config).forEach(([key, [desc, dflt]]) =>
 		layout[key] =
 			typeof dflt === "boolean" ? DOM("#settings_" + key).checked
+			: typeof dflt === "number" ? +DOM("#settings_" + key).value
 			: DOM("#settings_" + key).value
 	);
 	if (basis.savesettings) basis.savesettings(layout);
