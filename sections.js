@@ -2,20 +2,20 @@ import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {BUTTON, DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
 
 const definitions = {
-	demo1: {
+	section_demo1: {
 		title: "Demo With List",
 		render: layout => [
 			P("Drag this thing!"),
 			UL("Test list with a number of elements".split(" ").map(w => LI(w))),
 		],
 	},
-	demo2: {
+	section_demo2: {
 		title: "Hey Look, A Thing",
 		render: layout => [
 			P("Or drag this thing instead!"),
 		],
 	},
-	demo3: {
+	section_demo3: {
 		title: "Another Thing",
 		render: layout => [
 			P("Here's a third thing to play with."),
@@ -28,6 +28,7 @@ const definitions = {
 		//their labels, and default values.
 		config: {
 			src: ["URL", ""],
+			id: ["Unique ID", "demo"],
 		},
 		//If more flexibility is needed, this function can return whatever it
 		//needs to - the second arg is whatever was generated from the config
@@ -46,7 +47,7 @@ console.log(rendered_layout)
 let editmode = false;
 function build(layout, parent, self) {
 	let ret = null, tb = editmode, drag = editmode;
-	const basis = definitions[layout.id] || definitions[layout.type] || { };
+	const basis = definitions[layout.type + "_" + layout.subtype] || definitions[layout.type] || { };
 	let deftitle = basis.title;
 	const layoutidx = rendered_layout.length;
 	rendered_layout.push(layout);
@@ -75,19 +76,20 @@ function build(layout, parent, self) {
 			break;
 		}
 		case "section":
-			ret = SECTION({id: layout.id, class: "droptarget"}, basis.render(layout));
+			ret = SECTION({"data-subtype": layout.subtype, class: "droptarget"}, basis.render(layout));
 			break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); tb = drag = false; break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); tb = drag = false; break;
 		case "iframe": {
 			//Reuse the iframe where possible.
 			const defn = JSON.stringify(layout);
-			ret = DOM("#" + layout.id);
+			const id = "iframe_" + layout.id;
+			ret = DOM("#" + id);
 			//For some reason we're still getting a lot of flicker, even though it's
 			//correctly reusing the iframe elements. Hmm.
 			if (!ret || ret.dataset.defn !== defn)
 				//New or changed. Construct a brand-new iframe.
-				ret = IFRAME({id: layout.id, src: layout.src || "iframedemo.html", "data-defn": defn});
+				ret = IFRAME({id, src: layout.src || "iframedemo.html", "data-defn": defn});
 			if (layout.titlebar) {tb = true; deftitle = ret.contentDocument.title || deftitle;}
 			break;
 		}

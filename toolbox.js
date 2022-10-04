@@ -6,9 +6,9 @@ import {render, startdrag} from "./sections.js";
 //plus one for Horizontal Split, one for Vertical Split
 
 set_content("main", render({type: "box", orientation: "vertical", children: [
-	{type: "section", id: "demo1"},
-	{type: "section", id: "demo2"},
-	{type: "section", id: "demo3"},
+	{type: "section", subtype: "demo1"},
+	{type: "section", subtype: "demo2"},
+	{type: "section", subtype: "demo3"},
 	{type: "split", orientation: "horizontal", children: [{}, {}]},
 	{type: "split", orientation: "vertical", children: [{}, {}]},
 	{type: "iframe"},
@@ -18,6 +18,4 @@ on("dragstart", ".draggable", e => startdrag(e));
 on("dragend", "section", e => {
 	console.log("Dragging complete", e.match.id);
 	console.log("Effect:", e.dataTransfer.dropEffect);
-	//TODO: Wait long enough that Local Storage should have been updated by the other page,
-	//then rerender based on what isn't currently being used.
 });

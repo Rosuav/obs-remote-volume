@@ -144,7 +144,7 @@ function safe_parse_element(elem) {
 	//if possible, represents the original intention
 	if (typeof elem !== "object") return { };
 	switch (elem.type) {
-		case "section": return {type: "section", id: elem.id};
+		case "section": return {type: "section", subtype: elem.subtype};
 		case "split": return {
 			type: "split",
 			orientation: elem.orientation === "vertical" ? "vertical" : "horizontal",
@@ -166,7 +166,7 @@ function safe_parse_element(elem) {
 			titlebar: !!elem.titlebar,
 			title: typeof elem.title === "string" ? elem.title : null,
 			src: typeof elem.src === "string" ? elem.src : null,
-			id: (""+Math.random()).replace("0.", "iframe_"), //Generate an ID which the user may subsequently edit if desired
+			id: elem.id || (""+Math.random()).replace("0.", ""), //Generate an ID which the user may subsequently edit if desired
 		};
 		default: break;
 	}
@@ -180,7 +180,6 @@ on("drop", ".droptarget", e => {
 	if (!shadow) return;
 	try {
 		let elem = JSON.parse(e.dataTransfer.getData("application/prs.obs-rc-element") || "{}");
-		console.log("Dropping:", elem);
 		elem = safe_parse_element(elem);
 		//SPECIAL CASE: If you drop a brand new empty split bar into a box of the
 		//correct orientation, replace the box and put the children into the split.
