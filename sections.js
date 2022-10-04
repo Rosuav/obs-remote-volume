@@ -1,7 +1,7 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {BUTTON, DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
 
-const sections = {
+const definitions = {
 	demo1: {
 		title: "Demo With List",
 		render: cfg => [
@@ -21,10 +21,8 @@ const sections = {
 			P("Here's a third thing to play with."),
 		],
 	},
-};
-
-const typename = {
-	split: "Split bar", iframe: "Embedded Web Page",
+	split: {title: "Split bar"},
+	iframe: {title: "Embedded Web Page"},
 };
 
 export const rendered_layout = [];
@@ -33,7 +31,8 @@ console.log(rendered_layout)
 let editmode = false;
 function build(layout, parent, self) {
 	let ret = null, tb = editmode, drag = editmode;
-	let deftitle = null;
+	const basis = definitions[layout.id] || definitions[layout.type] || { };
+	let deftitle = basis.title;
 	const layoutidx = rendered_layout.length;
 	rendered_layout.push(layout);
 	switch (layout.type) {
@@ -61,15 +60,14 @@ function build(layout, parent, self) {
 			break;
 		}
 		case "section":
-			ret = SECTION({id: layout.id, class: "droptarget"}, sections[layout.id].render(layout));
-			deftitle = sections[layout.id].title;
+			ret = SECTION({id: layout.id, class: "droptarget"}, basis.render(layout));
 			break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); tb = drag = false; break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); tb = drag = false; break;
 		case "iframe":
 			//Reuse the iframe where possible.
 			ret = DOM("#" + layout.id) || IFRAME({id: layout.id, src: layout.src || "iframedemo.html"});
-			if (layout.titlebar) {tb = true; deftitle = ret.contentDocument.title;}
+			if (layout.titlebar) {tb = true; deftitle = ret.contentDocument.title || deftitle;}
 			break;
 		default: break;
 	}
@@ -79,7 +77,7 @@ function build(layout, parent, self) {
 	if (tb) { //Some elements have titlebars in edit mode. It's possible for them to have them in layout mode too.
 		ret = DIV({class: "box vertical"}, [
 			DIV({class: "titlebar"}, [
-				layout.title || deftitle || typename[layout.type] || layout.type || "Element",
+				layout.title || deftitle || basis.title || "Element",
 				BUTTON({type: "button", class: "settings"}, "⚙"),
 			]),
 			ret,
