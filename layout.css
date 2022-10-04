@@ -107,3 +107,11 @@ dialog > section > div {
 	position: relative;
 	right: -8px; top: -8px;
 }
+.buttonbox {
+	display: flex;
+	padding: 0; margin: 5px 0;
+	list-style-type: none;
+	gap: 5px;
+	align-items: flex-end;
+	flex-wrap: wrap;
+}

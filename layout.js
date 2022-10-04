@@ -1,6 +1,6 @@
 import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
-const {} = choc; //autoimport
-import {render, rendered_layout, startdrag} from "./sections.js";
+const {P} = choc; //autoimport
+import {render, rendered_layout, startdrag, get_basis_object} from "./sections.js";
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
 let editmode = false, toolboxwin;
@@ -257,5 +257,10 @@ on("pointerup", ".splitbar", e => {
 on("click", ".settings", e => {
 	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
 	console.log("GEAR", parentidx, selfidx);
+	const layout = rendered_layout[parentidx].children[selfidx];
+	const basis = get_basis_object(layout) || { };
+	set_content("#settingsdlg h3", basis.title ? "Settings for " + basis.title : "Settings");
+	if (basis.settingsdlg) set_content("#settingsinner", basis.settingsdlg(layout));
+	else set_content("#settingsinner", P("Component has no configuration settings.")); //Try to avoid this where possible
 	DOM("#settingsdlg").showModal();
 });

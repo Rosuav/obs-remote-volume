@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {BUTTON, DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
+const {BUTTON, DIV, IFRAME, INPUT, LABEL, LI, P, SECTION, TABLE, TD, TR, UL} = choc; //autoimport
 
 const definitions = {
 	demo1: {
@@ -22,8 +22,14 @@ const definitions = {
 		],
 	},
 	split: {title: "Split bar"},
-	iframe: {title: "Embedded Web Page"},
+	iframe: {
+		title: "Embedded Web Page",
+		settingsdlg: cfg => TABLE([
+			TR([TD(LABEL({for: "settings_url"}, "URL")), TD(INPUT({id: "settings_url", value: cfg.url || ""}))]),
+		]),
+	},
 };
+export function get_basis_object(layout) {return definitions[layout.id] || definitions[layout.type] || { };}
 
 export const rendered_layout = [];
 console.log(rendered_layout)
