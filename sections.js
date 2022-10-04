@@ -140,7 +140,6 @@ function build(layout, parent, self) {
 	return ret;
 }
 export function render(layout, editing) {
-	console.log("Render", layout);
 	editmode = editing;
 	rendered_layout[0] = {type: "master", children: [layout]};
 	rendered_layout.length = 1; //Truncate the array

@@ -111,7 +111,6 @@ on("dragover", ".droptarget", e => {
 		for (let i = 1; i < edges.length; ++i)
 			if (edges[i] < edges[nearest]) nearest = i;
 		//nearest is now 0/1/2/3 for left/top/right/bottom
-		console.log(["Left", "Top", "Right", "Bottom"][nearest]);
 		if (
 			//If the section is inside a box of the appropriate orientation,
 			//insert the new element into the existing box.
@@ -119,20 +118,17 @@ on("dragover", ".droptarget", e => {
 				(rendered_layout[parentidx].subtype === "vertical")
 				=== ((nearest&1) === 1)
 		) {
-			console.log("MATCHING BOX", selfidx, +selfidx + (nearest > 1));
 			rendered_layout[parentidx].children.splice(+selfidx + (nearest > 1), 0, {type: "newshadow"});
 		}
 		//Otherwise create a box of the appropriate orientation and put both elements into it.
 		else {
 			const chld = [{type: "newshadow"}, rendered_layout[parentidx].children[selfidx]];
 			if (nearest > 1) chld.reverse();
-			console.log("NONMATCHING", JSON.parse(JSON.stringify(chld)));
 			rendered_layout[parentidx].children[selfidx] = {
 				type: "box", subtype: (nearest&1) ? "vertical" : "horizontal",
 				children: chld,
 			};
 		}
-		console.log("After insertion:", JSON.parse(JSON.stringify(rendered_layout)));
 	}
 	remove_shadow(); //Make sure there aren't multiple shadows
 });
@@ -176,7 +172,6 @@ function safe_parse_element(elem) {
 
 on("drop", ".droptarget", e => {
 	if (!editmode || e.defaultPrevented) return;
-	console.log(e);
 	e.preventDefault();
 	if (!shadow) return;
 	try {
