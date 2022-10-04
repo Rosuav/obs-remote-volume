@@ -189,8 +189,9 @@ export function get_basis_object(layout) {return definitions[layout.type + "_" +
 
 export const rendered_layout = [];
 console.log(rendered_layout)
-const updateme = [];
+const updateme = []; let laststate = null;
 export function send_updates(state) {
+	laststate = state;
 	updateme.forEach(([basis, elem]) => basis.update(elem, state));
 }
 
@@ -275,7 +276,7 @@ function build(layout, parent, self) {
 		ret.draggable = true;
 		ret.dataset.draglayout = JSON.stringify(layout);
 	}
-	if (basis.update) updateme.push([basis, ret]);
+	if (basis.update) {updateme.push([basis, ret]); if (laststate) basis.update(ret, laststate);}
 	return ret;
 }
 export function render(layout, editing) {

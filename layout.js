@@ -29,7 +29,6 @@ DOM("#layoutmode").onclick = e => {
 	set_content("#layoutmode", editmode ? "Save layout" : "Edit");
 	document.body.classList.toggle("editmode", editmode);
 	remove_shadow(); //and save (if no longer editing)
-	//FIXME: Reapply state (which comes from index.js into sections.js, mnk mnk)
 };
 DOM("#cancel").onclick = e => {
 	editmode = false;
