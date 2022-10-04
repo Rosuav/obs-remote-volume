@@ -11,6 +11,7 @@ let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
 let handshake = "guess"; //Or "v4" or "v5"
+let connect_info = { };
 const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 
 if (!window.ResizeObserver) {
@@ -382,24 +383,30 @@ function parse_uri(string) {
 	console.log(uri);
 	if (!uri) return "Unparseable";
 	const [_, proto, pwd1, ip, port, pwd2] = uri;
-	DOM("#ssl").checked = ["obswss://", "wss://", "ssl://", "https://"].includes(proto);
+	const ssl = ["obswss://", "wss://", "ssl://", "https://"].includes(proto);
 	const v5 = ["obswss://", "obsws://"].includes(proto);
-	DOM("#v5").checked = v5;
-	DOM("#ip").value = ip;
-	DOM("#port").value = port || (v5 ? 4455 : 4444);
-	DOM("#password").value = pwd1 || pwd2 || "";
+	connect_info = {ssl, v5, ip, port: port || (v5 ? 4455 : 4444), password: pwd1 || pwd2 || ""};
 }
 function build_uri() {
 	const proto = (
-		(DOM("#v5").checked ? "obsws" : "ws") +
-		(DOM("#ssl").checked ? "s" : "")
+		(connect_info.v5 ? "obsws" : "ws") +
+		(connect_info.ssl ? "s" : "")
 	);
-	return DOM("#uri").value = `${proto}://${DOM("#ip").value}:${DOM("#port").value}/${DOM("#password").value}`;
+	return `${proto}://${connect_info.ip}:${connect_info.port}/${connect_info.password}`;
 }
 
 on("input", "#connect input", e => {
-	if (e.match.id === "uri") parse_uri(e.match.value);
-	else build_uri();
+	if (e.match.id === "uri") {
+		parse_uri(e.match.value);
+		Object.entries(connect_info).forEach(([id, val]) => {
+			const el = document.getElementById(id);
+			el[el.type === "checkbox" ? "checked" : "value"] = val;
+		});
+	}
+	else {
+		connect_info[e.match.id] = e.match[e.match.type === "checkbox" ? "checked" : "value"];
+		DOM("#uri").value = build_uri();
+	}
 });
 
 async function protofetch() {
@@ -422,10 +429,10 @@ function setup(uri)
 {
 	console.log("Initializing");
 	//handshake = "guess"; //TODO: Have a good default that lets people not specify protocol
-	handshake = DOM("#v5").checked ? "v5" : "v4";
-	const proto = DOM("#ssl").checked ? "wss://" : "ws://";
-	const server = DOM("#ip").value, pwd = DOM("#password").value, port = DOM("#port").value;
-	history.replaceState(null, "", "#" + DOM("#uri").value);
+	handshake = connect_info.v5 ? "v5" : "v4";
+	const proto = connect_info.ssl ? "wss://" : "ws://";
+	const server = connect_info.ip, pwd = connect_info.password, port = connect_info.port;
+	history.replaceState(null, "", "#" + build_uri());
 	console.log("Connect to", proto + server, port, "handshake", handshake)
 	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
@@ -470,7 +477,7 @@ function setup(uri)
 	let handshake_guess;
 	socket.onopen = async () => {
 		console.log("Connected");
-		DOM("#connect").classList.add("hidden");
+		//TODO: Unoverride the layout, showing what's chosen
 		if (handshake === "guess") handshake = await new Promise(r => setTimeout(handshake_guess = r, 100, "v4"));
 		handshake_guess = null;
 		if (handshake === "v5") await protocol_fetched; //Ensure that we have the enumerations available
@@ -548,11 +555,8 @@ function setup(uri)
 	socket.onclose = () => {
 		console.log("Socket closed");
 		update([]);
-		document.getElementById("layout").closest("details").classList.add("hidden");
-		document.getElementById("sceneitems").closest("details").classList.add("hidden");
-		DOM("#connect").classList.remove("hidden");
+		//TODO: Switch layout back to "not logged in" override
 	};
-	document.getElementById("itemprops_cancel").onclick = ev => document.getElementById("itemprops").close();
 }
 const hash = (window.location.hash || "#").slice(1);
 if (hash) {parse_uri(hash); setup(build_uri());}
