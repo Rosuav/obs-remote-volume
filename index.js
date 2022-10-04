@@ -16,7 +16,8 @@ let handshake = "guess"; //Or "v4" or "v5"
 let connect_info = { }, connected = false;
 const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 
-function repaint() {send_updates({connect_info});} //Ultimately a lot more state
+const state = {connect_info, sourcetypes, sources: [], source_elements}; //Updated and passed along to modules
+function repaint() {send_updates(state);}
 
 if (!window.ResizeObserver) {
 	//Older browsers don't have this. Prevent crashes, but don't try to actually implement anything.
@@ -258,7 +259,10 @@ async function set_bg_img(el, sourcename, width) {
 
 function update(sources) {
 	console.log("Sources:", sources);
-	return; //HACK. TODO: Pass the sources along to every section that needs them. Have a method in the basis object for same.
+	state.source_elements = source_elements = {};
+	state.sources = sources;
+	repaint();
+	return; //HACK. All code below here needs to be moved into section-specific code.
 	display_scale = calc_scale();
 	const vol = document.getElementById("volumes").firstChild;
 	if (layout) {
@@ -266,9 +270,8 @@ function update(sources) {
 		layout.style.height = (canvasy * display_scale) + "px";
 		while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
 	}
-	source_elements = {};
 	const item_descs = [];
-	set_content(vol, sources.map(source => {
+	sources.forEach(source => {
 		const typeinfo = sourcetypes[source.type || source.inputKind];
 		if (layout && typeinfo && typeinfo.caps.hasVideo) {
 			//console.log(`Source: (${source.x},${source.y})-(${source.x+source.cx},${source.y+source.cy}) -- ${source.name}`);
@@ -296,32 +299,7 @@ function update(sources) {
 			//Optionally put actual images on the elements. Not all that useful in its current state.
 			if (show_preview_images && source.render) set_bg_img(el, source.name, source.c_x);
 		}
-		if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
-		//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
-		const name = source.name || source.sourceName;
-		return TR([
-			TH(name),
-			TD(source_elements["!volume-" + name] = INPUT({
-				className: "volslider", type: "range",
-				min: 0, max: 1, step: "any", "value": Math.sqrt(source.volume),
-				oninput: ev => {
-					const val = ev.target.value * ev.target.value;
-					ev.target.closest("tr").querySelector("span").innerText = (val*100).toFixed(2);
-					send_request(v4v5("SetVolume", "SetInputVolume"), {
-						[v4v5("source", "inputName")]: name,
-						[v4v5("volume", "inputVolumeMul")]: val,
-					});
-				},
-			})),
-			TD([
-				SPAN({className: "percent"}, (Math.sqrt(source.volume)*100).toFixed(2)),
-				source_elements["!mute-" + name] = BUTTON({type: "button",
-					onclick: () => send_request("ToggleMute", {"source": name})},
-					//NOTE: source.muted is actually never sent as of 20190719.
-					source.muted ? "Unmute" : "Mute")
-			]),
-		]);
-	}));
+	});
 	if (layout) set_content("#sceneitems", item_descs);
 }
 
@@ -349,6 +327,18 @@ async function full_update() {
 		update(sceneitems);
 	}
 }
+
+on("input", ".volslider", e => {
+	const val = e.match.value ** 2;
+	const tr = e.match.closest("tr");
+	tr.querySelector("span").innerText = (val*100).toFixed(2);
+	send_request(v4v5("SetVolume", "SetInputVolume"), {
+		[v4v5("source", "inputName")]: tr.dataset.name,
+		[v4v5("volume", "inputVolumeMul")]: val,
+	});
+});
+on("click", ".mutebtn", e => send_request("ToggleMute", {"source": e.match.closest("tr").dataset.name}));
+
 
 async function checksize(ev) {
 	if (!ev.target.open) return; //No point rechecking when the manager is closed	
@@ -389,7 +379,7 @@ function parse_uri(string) {
 	const [_, proto, pwd1, ip, port, pwd2] = uri;
 	const ssl = ["obswss://", "wss://", "ssl://", "https://"].includes(proto);
 	const v5 = ["obswss://", "obsws://"].includes(proto);
-	connect_info = {ssl, v5, ip, port: port || (v5 ? 4455 : 4444), password: pwd1 || pwd2 || ""};
+	state.connect_info = connect_info = {ssl, v5, ip, port: port || (v5 ? 4455 : 4444), password: pwd1 || pwd2 || ""};
 	build_uri();
 }
 function build_uri() {

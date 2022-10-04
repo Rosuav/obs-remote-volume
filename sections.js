@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {BUTTON, CODE, DETAILS, DIV, H4, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SUMMARY, TABLE, TBODY, TD, TR, UL} = choc; //autoimport
+const {BUTTON, CODE, DETAILS, DIV, H4, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SPAN, SUMMARY, TABLE, TBODY, TD, TH, TR, UL} = choc; //autoimport
 
 const definitions = {
 	section: {
@@ -81,7 +81,27 @@ const definitions = {
 	},
 	section_mixer: {
 		title: "Volume mixer",
-		render: layout => TABLE({id: "volumes"}, TBODY())
+		render: layout => TABLE(TBODY()),
+		update: (elem, state) => set_content(elem.querySelector("tbody"), state.sources.map(source => {
+			const typeinfo = state.sourcetypes[source.type || source.inputKind];
+			if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
+			//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
+			const name = source.name || source.sourceName;
+			return TR({"data-name": name}, [
+				TH(name),
+				TD(state.source_elements["!volume-" + name] = INPUT({
+					class: "volslider", type: "range",
+					min: 0, max: 1, step: "any", "value": Math.sqrt(source.volume),
+				})),
+				TD([
+					SPAN({class: "percent"}, (Math.sqrt(source.volume)*100).toFixed(2)),
+					state.source_elements["!mute-" + name] = BUTTON(
+						{type: "button", class: "mutebtn"},
+						//NOTE: source.muted is actually never sent as of 20190719.
+						source.muted ? "Unmute" : "Mute")
+				]),
+			]);
+		})),
 	},
 	split: {
 		title: "Split bar",
