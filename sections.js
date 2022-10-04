@@ -148,6 +148,9 @@ export function render(layout, editing) {
 
 export function startdrag(e, layout) {
 	if (!layout) layout = e.match.dataset.draglayout;
+	//NOTE: Carrying the data in a dedicated MIME type (I was using application/prs.obs-rc-element)
+	//doesn't work on mobile. So if you drag from here to a textarea, you'll get a JSON layout
+	//representation, which is a bit weird, but whatever.
 	e.dataTransfer.setData("text/plain", layout);
 	e.dataTransfer.effectAllowed = "copyMove";
 }

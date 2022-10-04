@@ -219,6 +219,10 @@ let splitorigin = 0, splitvert = null;
 on("pointerdown", ".splitbar", e => {
 	if (e.button) return; //Only left clicks
 	e.preventDefault();
+	//NOTE: Pointer capture doesn't seem to work with touch dragging. No idea why.
+	//Might be worth delving into what pointerId is, but for now, split bar movement
+	//is a bit clunky on mobile. (It's not a Chrome version issue or anything; when
+	//a USB mouse is plugged in, it's fully capable of moving split bars just fine.)
 	e.match.setPointerCapture(e.pointerId);
 	splitvert = e.match.parentElement.classList.contains("vertical");
 	const box = e.match.getBoundingClientRect();
