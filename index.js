@@ -15,7 +15,12 @@ let handshake = "guess"; //Or "v4" or "v5"
 let connect_info = { }, connected = false;
 const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 
-const state = {connect_info, sourcetypes, sources: [], source_elements}; //Updated and passed along to modules
+const state = { //Updated and passed along to modules
+	connect_info,
+	sourcetypes, source_elements,
+	sources: [],
+	scenes: {scenes: [], currentProgramSceneName: ""},
+};
 function repaint() {send_updates(state);}
 
 if (!window.ResizeObserver) {
@@ -266,11 +271,15 @@ function update(sources) {
 }
 
 async function full_update() {
+	const scenes = await send_request("GetSceneList");
+	state.scenes = scenes;
 	if (handshake === "v4") {
 		const scene = await send_request("GetCurrentScene");
+		scenes.currentProgramSceneName = scenes["current-scene"];
+		scenes.scenes = scenes.scenes.map(s => ({sceneName: s.name}));
 		update(scene.sources);
 	} else {
-		const scenes = await send_request("GetSceneList")
+		scenes.scenes.reverse(); //HACK: Currently, OBS WS v5 seems to return them in the wrong order.
 		const scenename = scenes.currentProgramSceneName;
 		//TODO: Create scene selection buttons for scenes.scenes[].sceneName
 		const sceneitems = (await send_request("GetSceneItemList", {sceneName: scenename})).sceneItems;
