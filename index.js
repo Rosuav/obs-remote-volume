@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc;
+const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc; //autoimport
 
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
@@ -224,9 +224,10 @@ function update_element(el, xfrm) {
 	el.style.zIndex = xfrm.locked ? 1 : 1000;
 }
 
-const rhs = document.getElementById("layout_info"), flexbox = rhs.parentElement;
+//const rhs = document.getElementById("layout_info"), flexbox = rhs.parentElement; //Hacked out
 let need_width; //Locked in once; when in non-wide mode, the rhs DOM element actually changes width.
 function calc_scale() {
+	return display_scale; //HACK: Don't change scale for now. Ultimately, this will need to be done more dynamically (maybe with CSS Grid).
 	if (!need_width) {need_width = rhs.clientWidth; if (!need_width) return display_scale;}
 	let width = flexbox.clientWidth;
 	const wide = width > need_width * 2;
@@ -251,7 +252,8 @@ async function set_bg_img(el, sourcename, width) {
 }
 
 function update(sources) {
-	//console.log("Sources:", sources);
+	console.log("Sources:", sources);
+	return; //HACK. TODO: Pass the sources along to every section that needs them. Have a method in the basis object for same.
 	display_scale = calc_scale();
 	const vol = document.getElementById("volumes").firstChild;
 	if (layout) {
@@ -392,7 +394,7 @@ function build_uri() {
 		(DOM("#v5").checked ? "obsws" : "ws") +
 		(DOM("#ssl").checked ? "s" : "")
 	);
-	DOM("#uri").value = `${proto}://${DOM("#ip").value}:${DOM("#port").value}/${DOM("#password").value}`;
+	return DOM("#uri").value = `${proto}://${DOM("#ip").value}:${DOM("#port").value}/${DOM("#password").value}`;
 }
 
 on("input", "#connect input", e => {
@@ -416,7 +418,7 @@ async function protofetch() {
 }
 const protocol_fetched = protofetch();
 
-function setup()
+function setup(uri)
 {
 	console.log("Initializing");
 	//handshake = "guess"; //TODO: Have a good default that lets people not specify protocol
@@ -553,6 +555,5 @@ function setup()
 	document.getElementById("itemprops_cancel").onclick = ev => document.getElementById("itemprops").close();
 }
 const hash = (window.location.hash || "#").slice(1);
-if (hash) {parse_uri(hash); build_uri();}
-DOM("#reconnect").onclick = setup;
-setup();
+if (hash) {parse_uri(hash); setup(build_uri());}
+on("click", "#reconnect", e => setup(DOM("#uri").value));

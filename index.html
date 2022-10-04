@@ -1,64 +1,38 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OBS Remote Volume</title>
 <script src="forge_sha256.js"></script>
 <script type=module src="index.js"></script>
 <link rel=stylesheet href="index.css">
 </head>
-<body>
+<body id=layoutmode>
+<header class=droptarget data-parentidx=0 data-selfidx=0>
+<button type=button id=layoutmode>Edit</button>
+<button type=button id=cancel class=editonly>Cancel</button>
+<button type=button id=opentoolbox class=editonly>Toolbox</button>
+<span class=hidden>Select layout: <select><option>Foo</option><option>Bar</option><option>Quux</option></select> (unimpl)</span>
+</header>
 <main>
-<section id=connect>
-<table>
-<tr><td>Protocol:</td><td><label><input type=checkbox id=ssl> SSL</label> <label><input type=checkbox checked id=v5> V5 (OBS 28+)</label></td></tr>
-<tr><td><label for=ip>Server IP or name:</label></td><td><input id=ip size=20 value=localhost> eg <code>localhost</code></td></tr>
-<tr><td><label for=port>Port:</label></td><td><input id=port type=number min=1 value=4455 max=65535> default is 4444 on v4, 4455 on v5</td></tr>
-<tr><td><label for=password>Password:</label></td><td><input id=password size=20></td></tr>
-<tr><td><label for=uri>Connect URI:</label></td><td><input id=uri size=40 value="obsws://localhost:4455/"></td></tr>
-</table>
-<button id=reconnect>Connect to OBS</button>
-</section>
-<section id=mixer>
-<table id=volumes><tbody></tbody></table>
-</section>
-<section id=layoutmgr>
-<details class=hidden><summary>Layout management</summary>
-<div style="display: flex">
-<div id=layout>Not rendering the layout (you shouldn't normally see this text)</div>
-<div id=layout_info>
-<h4>Scene item management</h4>
-<ul>
-<li>Move items by holding Ctrl</li>
-<li>Resize using the grab handle bottom right</li>
-<li>Double-click any item to get details</li>
-<li>Locked items cannot be moved - see the item details below.</li>
-</ul>
-</div>
-</div>
-</details>
-<details class=hidden><summary>Scene items (click for item details)</summary>
-<ul id=sceneitems></ul>
-</details>
 <dialog id=itemprops>
 <button id=itemprops_cancel>x</button>
 <h3>Details for ...</h3>
 <ul></ul>
 <button id=itemprops_apply>Apply</button>
 </dialog>
-</section>
-<section id=desc>
-<p>
-To use this with your OBS, go to http://vol.rosuav.com/#PASSWORD@COMPUTER where the password
-is what you've set up in OBS-Remote (ignored if no authentication) and the computer is
-specified by IP address or computer name.
-</p>
-<p>
-When connected to OBS, this will allow you to make fine adjustments to your stream configuration
-without actually clicking on the OBS main window. This allows you to make adjustments from your
-laptop or tablet (or possibly even phone), without moving away from what you were doing.
-</p>
-</section>
+<dialog id=settingsdlg><section>
+<header><h3>Settings for ???</h3><div><button type=button class=dialog_cancel>x</button></div></header>
+<div>
+<p id=settings_inner>Settings go here</p>
+<ul class=buttonbox>
+	<li><button type=button id=settingssave>Save</button></li>
+	<li><button type=button class=dialog_close>Cancel</button></li>
+	<li><button type=button id=settingsdelete>Delete</button></li>
+</ul>
+</div>
+</section></dialog>
 </main>
 </body>
 </html>

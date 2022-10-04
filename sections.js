@@ -1,25 +1,83 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {BUTTON, DIV, IFRAME, LI, OPTION, P, SECTION, SELECT, UL} = choc; //autoimport
+const {BUTTON, CODE, DETAILS, DIV, H4, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SUMMARY, TABLE, TBODY, TD, TR, UL} = choc; //autoimport
 
 const definitions = {
-	section_demo1: {
-		title: "Demo With List",
+	section: {
+		title: "Unknown section",
 		render: layout => [
-			P("Drag this thing!"),
-			UL("Test list with a number of elements".split(" ").map(w => LI(w))),
+			P("Oops - it seems something has been renamed or removed."),
+			PRE(JSON.stringify(layout, null, 4)),
 		],
 	},
-	section_demo2: {
-		title: "Hey Look, A Thing",
+	section_desc: {
+		title: "Description",
 		render: layout => [
-			P("Or drag this thing instead!"),
+			P("To use this with your OBS, go to http://vol.rosuav.com/#PASSWORD@COMPUTER where the password "
+			+ "is what you've set up in OBS-Remote (ignored if no authentication) and the computer is "
+			+ "specified by IP address or computer name."),
+			P("When connected to OBS, this will allow you to make fine adjustments to your stream configuration "
+			+ "without actually clicking on the OBS main window. This allows you to make adjustments from your "
+			+ "laptop or tablet (or possibly even phone), without moving away from what you were doing."),
 		],
 	},
-	section_demo3: {
-		title: "Another Thing",
+	section_layoutmgr: {
+		title: "Scene details",
 		render: layout => [
-			P("Here's a third thing to play with."),
+			DETAILS({class: "hidden"}, [SUMMARY("Layout management"),
+				DIV({style: "display: flex"}, [
+					DIV({id: "layout"}, "Not rendering the layout (you shouldn't normally see this text)"),
+					DIV({id: "layout_info"}, [
+						H4("Scene item management"),
+						UL([
+							LI("Move items by holding Ctrl"),
+							LI("Resize using the grab handle bottom right"),
+							LI("Double-click any item to get details"),
+							LI("Locked items cannot be moved - see the item details below."),
+						]),
+					]),
+				]),
+			]),
+			DETAILS({class: "hidden"}, [SUMMARY("Scene items (click for item details)"),
+				UL({id: "sceneitems"}),
+			]),
 		],
+	},
+	section_connect: {
+		title: "Connect/login",
+		render: layout => [
+			TABLE([
+				TR([
+					TD("Protocol:"),
+					TD([
+						LABEL([INPUT({type: "checkbox", id: "ssl"}), " SSL"]),
+						" ",
+						LABEL([INPUT({type: "checkbox", id: "v5"}), " V5 (OBS 28+)"]),
+					]),
+				]),
+				TR([
+					TD(LABEL({for: "ip"}, "Server IP or name:")),
+					TD([INPUT({id: "ip", size: 20, value: "localhost"}), " eg ", CODE("localhost")]),
+				]),
+				TR([
+					TD(LABEL({for: "port"}, "Port:")),
+					TD([INPUT({id: "port", type: "number", min: 1, value: 4455, max: 65535}),
+						" default is 4444 on v4, 4455 on v5"]),
+				]),
+				TR([
+					TD(LABEL({for: "password"}, "Password:")),
+					TD(INPUT({id: "password", size: 20})),
+				]),
+				TR([
+					TD(LABEL({for: "uri"}, "Connect URI:")),
+					TD(INPUT({id: "uri", size: 40, value: "obsws://localhost:4455/"})),
+				]),
+			]),
+			BUTTON({id: "reconnect"}, "Connect to OBS"),
+		],
+	},
+	section_mixer: {
+		title: "Volume mixer",
+		render: layout => TABLE({id: "volumes"}, TBODY())
 	},
 	split: {
 		title: "Split bar",
