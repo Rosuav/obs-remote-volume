@@ -5,7 +5,6 @@ import {send_updates} from "./sections.js";
 
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
-let layout = null; //If set, it's the DOM node that we render the layout into. If not, don't render.
 const obsenum = {WebSocketOpCode: {0: "Hello"}}; //Seed with the only message we absolutely have to be able to comprehend initially
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
@@ -264,43 +263,6 @@ function update(sources) {
 	repaint();
 	return; //HACK. All code below here needs to be moved into section-specific code.
 	display_scale = calc_scale();
-	const vol = document.getElementById("volumes").firstChild;
-	if (layout) {
-		layout.style.width = (canvasx * display_scale) + "px";
-		layout.style.height = (canvasy * display_scale) + "px";
-		while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
-	}
-	const item_descs = [];
-	sources.forEach(source => {
-		const typeinfo = sourcetypes[source.type || source.inputKind];
-		if (layout && typeinfo && typeinfo.caps.hasVideo) {
-			//console.log(`Source: (${source.x},${source.y})-(${source.x+source.cx},${source.y+source.cy}) -- ${source.name}`);
-			//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
-			//TODO: Correctly handle item gravity (alignment)
-			const el = document.createElement("DIV");
-			el.appendChild(document.createTextNode(source.name));
-			el.dataset.sourcename = source.name;
-			update_element(el, {
-				width: source.cx, height: source.cy,
-				locked: source.locked,
-				//TODO: Alignment (gravity) is not provided by the SwitchScenes
-				//event, nor the GetCurrentScene query. Enhance them upstream,
-				//or query gravity some other way. For now, assume top-left.
-				position: {alignment: source.alignment, x: source.x, y: source.y},
-				sourceWidth: source.source_cx, sourceHeight: source.source_cy,
-			});
-			el.onpointerdown = startdragging;
-			el.onpointerup = stopdragging;
-			el.ondblclick = ev => itemdetails(source.name);
-			resizeObserver.observe(el);
-			layout.appendChild(el);
-			source_elements[source.name] = el;
-			item_descs.push(LI(BUTTON({onclick: ev => itemdetails(source.name)}, source.name)));
-			//Optionally put actual images on the elements. Not all that useful in its current state.
-			if (show_preview_images && source.render) set_bg_img(el, source.name, source.c_x);
-		}
-	});
-	if (layout) set_content("#sceneitems", item_descs);
 }
 
 async function full_update() {
@@ -487,12 +449,7 @@ function setup(uri)
 		const obsver = ver[v4v5("obs-studio-version", "obsVersion")];
 		console.info("Running on OBS " + obsver + " and obs-websocket " + ver[v4v5("obs-websocket-version", "obsWebSocketVersion")]);
 		if (obsver >= "4.3.0") {
-			layout = document.getElementById("layout");
-			const mgr = layout.closest("details");
-			mgr.classList.remove("hidden");
-			mgr.ontoggle = checksize;
-			document.getElementById("sceneitems").closest("details").classList.remove("hidden");
-			layout.innerHTML = "";
+			//DOM("#layout").closest("details").ontoggle = checksize; //TODO: Do this with on() once check_size actually works again
 		}
 		if (handshake === "v4") try {
 			(await send_request("GetSourceTypesList"))
@@ -560,13 +517,6 @@ if (hash) {parse_uri(hash); setup();}
 on("click", "#reconnect", e => setup(DOM("#uri").value));
 
 /* Next steps:
-2) Have a master renderer.
-   - If not logged in, render just the login
-   - If logged in, render the current layout
-3) Make the connection info properly work as a section.
-   - Have an internal format, probably an object, for connection info.
-   - Return this format from parse_uri, use it in build_uri
-   - Have DOM-management functions, bidirectional, to use this
 4) Make a default layout, or maybe several (see other TODOs re multilayout)
 5) Add a scene switcher section
 6) Hide the user's password.

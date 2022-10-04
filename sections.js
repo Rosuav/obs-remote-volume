@@ -25,7 +25,7 @@ const definitions = {
 		render: layout => [
 			DETAILS({class: "hidden"}, [SUMMARY("Layout management"),
 				DIV({style: "display: flex"}, [
-					DIV({id: "layout"}, "Not rendering the layout (you shouldn't normally see this text)"),
+					DIV({id: "scenepreview"}),
 					DIV({id: "layout_info"}, [
 						H4("Scene item management"),
 						UL([
@@ -41,6 +41,39 @@ const definitions = {
 				UL({id: "sceneitems"}),
 			]),
 		],
+		update: (elem, state) => {
+			const scenepreview = DOM("#scenepreview");
+			//scenepreview.style.width = (canvasx * display_scale) + "px";
+			//scenepreview.style.height = (canvasy * display_scale) + "px";
+			//while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
+			set_content("#sceneitems", state.sources.map(source => {
+				const typeinfo = state.sourcetypes[source.type || source.inputKind];
+				if (!typeinfo || !typeinfo.caps.hasVideo) return;
+				//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
+				//TODO: Correctly handle item gravity (alignment)
+				const el = document.createElement("DIV");
+				el.appendChild(document.createTextNode(source.name));
+				el.dataset.sourcename = source.name;
+				/*update_element(el, { //FIXME: Bring this into here??
+					width: source.cx, height: source.cy,
+					locked: source.locked,
+					//TODO: Alignment (gravity) is not provided by the SwitchScenes
+					//event, nor the GetCurrentScene query. Enhance them upstream,
+					//or query gravity some other way. For now, assume top-left.
+					position: {alignment: source.alignment, x: source.x, y: source.y},
+					sourceWidth: source.source_cx, sourceHeight: source.source_cy,
+				});*/
+				//el.onpointerdown = startdragging; //TODO: Do these with on() instead
+				//el.onpointerup = stopdragging;
+				//el.ondblclick = ev => itemdetails(source.name);
+				//resizeObserver.observe(el); //Hacked out for now
+				scenepreview.appendChild(el);
+				state.source_elements[source.name] = el;
+				//Optionally put actual images on the elements. Not all that useful in its current state.
+				//if (show_preview_images && source.render) set_bg_img(el, source.name, source.c_x);
+				return LI(BUTTON({onclick: ev => itemdetails(source.name)}, source.name));
+			}));
+		},
 	},
 	section_connect: {
 		title: "Connect/login",
