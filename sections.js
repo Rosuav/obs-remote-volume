@@ -88,8 +88,7 @@ function build(layout, parent, self) {
 				class: "split " + (layout.subtype === "vertical" ? "vertical" : "horizontal"),
 			}, [
 				children[0],
-				//TODO: Have a splitbox option to keep the splitbar at runtime
-				DIV({class: editmode ? "splitbar" : "divider"}),
+				DIV({class: editmode || layout.active ? "splitbar" : "divider"}),
 				children[1],
 			]);
 			break;

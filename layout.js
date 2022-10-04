@@ -149,6 +149,7 @@ function safe_parse_element(elem) {
 			type: "split",
 			subtype: elem.subtype === "vertical" ? "vertical" : "horizontal",
 			splitpos: typeof elem.splitpos === "number" ? elem.splitpos : null,
+			active: !!elem.active,
 			children: Array.isArray(elem.children) ? [
 				safe_parse_element(elem.children[0]),
 				safe_parse_element(elem.children[1]),
@@ -262,7 +263,10 @@ on("click", ".settings", e => {
 	set_content("#settingsdlg h3", basis.title ? "Settings for " + basis.title : "Settings");
 	let config = basis.config && TABLE(Object.entries(basis.config).map(([key, [desc, dflt]]) => TR([
 		TD(LABEL({for: "settings_" + key}, desc)),
-		TD(INPUT({id: "settings_" + key, value: typeof layout[key] === "string" ? layout[key] : dflt})),
+		TD(
+			typeof dflt === "boolean" ? INPUT({type: "checkbox", id: "settings_" + key, checked: typeof layout[key] === "boolean" ? layout[key] : dflt})
+			: INPUT({id: "settings_" + key, value: typeof layout[key] === "string" ? layout[key] : dflt})
+		),
 	])));
 	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
 	if (!config) config = P("Component has no configuration settings."); //Try to avoid this where possible
@@ -273,7 +277,11 @@ on("click", ".settings", e => {
 DOM("#settingssave").onclick = e => {
 	const layout = settings_layout; settings_layout = null;
 	const basis = get_basis_object(layout) || { };
-	if (basis.config) Object.keys(basis.config).forEach(key => layout[key] = DOM("#settings_" + key).value);
+	if (basis.config) Object.entries(basis.config).forEach(([key, [desc, dflt]]) =>
+		layout[key] =
+			typeof dflt === "boolean" ? DOM("#settings_" + key).checked
+			: DOM("#settings_" + key).value
+	);
 	if (basis.savesettings) basis.savesettings(layout);
 	DOM("#settingsdlg").close();
 	remove_shadow();
