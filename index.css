@@ -172,3 +172,19 @@ details {
 	position: absolute;
 	right: 1em; top: 1em;
 }
+
+[data-subtype=sceneswitch] > div {
+	display: grid;
+	/* grid-template-columns: repeat(????, 1fr); */ /* actual column count added at runtime */
+	gap: 10px;
+	width: 100%; height: 100%;
+}
+[data-subtype=sceneswitch] > div > div {
+	font-size: larger;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+[data-subtype=sceneswitch] > div > div:hover {background: aliceblue;}
+[data-subtype=sceneswitch] > div > div.current {background: #44ddcc;}
+[data-subtype=sceneswitch] > div > div.current:hover {background: #33ccbb;}

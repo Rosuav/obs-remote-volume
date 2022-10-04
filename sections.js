@@ -1,6 +1,9 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {BUTTON, CODE, DETAILS, DIV, H4, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SPAN, SUMMARY, TABLE, TBODY, TD, TH, TR, UL} = choc; //autoimport
 
+//TODO: Avoid using any CSS IDs anywhere in these definitions.
+//It should be perfectly reasonable to have the same section in two places
+//(which could happen with layout switching); look up based on the element.
 const definitions = {
 	section: {
 		title: "Unknown section",
@@ -135,6 +138,18 @@ const definitions = {
 				]),
 			]);
 		})),
+	},
+	section_sceneswitch: {
+		title: "Scene switcher",
+		config: {
+			columns: ["Columns", 4],
+		},
+		render: layout => DIV({style: "grid-template-columns: repeat(" + (layout.columns || 4) + ", 1fr)"}),
+		update: (elem, state) => set_content(elem.firstElementChild, state.scenes.scenes.map(scene => DIV(
+			{class: scene.sceneName === state.scenes.currentProgramSceneName ? "current" : "",
+				"data-sceneselect": scene.sceneName},
+			P(scene.sceneName),
+		))),
 	},
 	split: {
 		title: "Split bar",

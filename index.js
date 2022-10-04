@@ -310,6 +310,9 @@ on("input", ".volslider", e => {
 });
 on("click", ".mutebtn", e => send_request("ToggleMute", {"source": e.match.closest("tr").dataset.name}));
 
+on("click", "[data-sceneselect]", e =>
+	send_request(v4v5("SetCurrentScene", "SetCurrentProgramScene"),
+		{[v4v5("scene-name", "sceneName")]: e.match.dataset.sceneselect}));
 
 async function checksize(ev) {
 	if (!ev.target.open) return; //No point rechecking when the manager is closed	
