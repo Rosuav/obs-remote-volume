@@ -30,7 +30,7 @@ const definitions = {
 	split_horizontal: {title: "Horizontal split"},
 	split_vertical: {title: "Vertical split"},
 	iframe: {
-		title: "Embedded Web Page",
+		title: "Web Page",
 		//Build a simple settings dialog by providing the layout config keys,
 		//their labels, and default values.
 		config: {
