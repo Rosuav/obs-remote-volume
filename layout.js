@@ -19,8 +19,10 @@ Framework has been secured by having localStorage retain an array of one layout.
 
 let all_layouts = [{label: "Layout 1", content: { }}];
 let curlayout = 0; //Index into all_layouts
+let layout_override = null; //If present, will be rendered instead of regular layout
 
 DOM("#layoutmode").onclick = e => {
+	if (layout_override) return;
 	editmode = !editmode;
 	if (!editmode && toolboxwin) toolboxwin.close();
 	set_content("main", render(rendered_layout[0].children[0], editmode));
@@ -41,9 +43,11 @@ function rerender() {
 	const layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "[]");
 	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({label: "Layout " + (i+1), content: { }, ...l}));
 	if (!all_layouts.length) all_layouts.push({label: "Layout 1", content: { }});
-	set_content("main", render(all_layouts[curlayout].content, editmode));
+	if (layout_override) editmode = false;
+	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
 }
-rerender();
+export function select_layout(idx) {curlayout = idx; rerender();}
+export function override_layout(layout) {layout_override = layout; rerender();} //Set to null to unoverride
 
 let shadow = null;
 

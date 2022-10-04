@@ -5,8 +5,8 @@ body {
 	display: flex;
 	flex-direction: column;
 }
-body#layoutmode {width: 100vw; height: 100vh;}
-body#toolboxmode {overflow-x: hidden;}
+body#layoutbody {width: 100vw; height: 100vh;}
+body#toolboxbody {overflow-x: hidden;}
 
 main {
 	flex: 1 1;
@@ -76,9 +76,9 @@ iframe {
 }
 
 .hidden {display: none;}
-#layoutmode:not(.editmode) .editonly {display: none;}
-#layoutmode.editmode .layoutonly {display: none;}
-#toolboxmode .settings, #toolboxmode .addelem {display: none;}
+#layoutbody:not(.editmode) .editonly {display: none;}
+#layoutbody.editmode .layoutonly {display: none;}
+#toolboxbody .settings, #toolboxbody .addelem {display: none;}
 
 /* Create a scroll context inside dialogs */
 dialog > section {

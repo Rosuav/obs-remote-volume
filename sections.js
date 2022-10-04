@@ -74,6 +74,10 @@ const definitions = {
 			]),
 			BUTTON({id: "reconnect"}, "Connect to OBS"),
 		],
+		update: (elem, state) => Object.entries(state.connect_info).forEach(([id, val]) => {
+			const el = document.getElementById(id);
+			el[el.type === "checkbox" ? "checked" : "value"] = val;
+		}),
 	},
 	section_mixer: {
 		title: "Volume mixer",
@@ -117,6 +121,10 @@ export function get_basis_object(layout) {return definitions[layout.type + "_" +
 
 export const rendered_layout = [];
 console.log(rendered_layout)
+const updateme = [];
+export function send_updates(state) {
+	updateme.forEach(([basis, elem]) => basis.update(elem, state));
+}
 
 export const add_element_dropdown = () => SELECT({class: "addelem editonly"}, [
 	OPTION({disabled: true, value: "", selected: true}, "Add element"),
@@ -199,12 +207,14 @@ function build(layout, parent, self) {
 		ret.draggable = true;
 		ret.dataset.draglayout = JSON.stringify(layout);
 	}
+	if (basis.update) updateme.push([basis, ret]);
 	return ret;
 }
 export function render(layout, editing) {
 	editmode = editing;
 	rendered_layout[0] = {type: "master", children: [layout]};
 	rendered_layout.length = 1; //Truncate the array
+	updateme.length = 0;
 	return build(layout, 0, 0);
 }
 

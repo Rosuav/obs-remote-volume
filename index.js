@@ -1,5 +1,7 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc; //autoimport
+import {override_layout} from "./layout.js";
+import {send_updates} from "./sections.js";
 
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
@@ -11,8 +13,10 @@ let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
 let handshake = "guess"; //Or "v4" or "v5"
-let connect_info = { };
+let connect_info = { }, connected = false;
 const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
+
+function repaint() {send_updates({connect_info});} //Ultimately a lot more state
 
 if (!window.ResizeObserver) {
 	//Older browsers don't have this. Prevent crashes, but don't try to actually implement anything.
@@ -386,27 +390,23 @@ function parse_uri(string) {
 	const ssl = ["obswss://", "wss://", "ssl://", "https://"].includes(proto);
 	const v5 = ["obswss://", "obsws://"].includes(proto);
 	connect_info = {ssl, v5, ip, port: port || (v5 ? 4455 : 4444), password: pwd1 || pwd2 || ""};
+	build_uri();
 }
 function build_uri() {
 	const proto = (
 		(connect_info.v5 ? "obsws" : "ws") +
 		(connect_info.ssl ? "s" : "")
 	);
-	return `${proto}://${connect_info.ip}:${connect_info.port}/${connect_info.password}`;
+	connect_info.uri = `${proto}://${connect_info.ip}:${connect_info.port}/${connect_info.password}`;
 }
 
-on("input", "#connect input", e => {
-	if (e.match.id === "uri") {
-		parse_uri(e.match.value);
-		Object.entries(connect_info).forEach(([id, val]) => {
-			const el = document.getElementById(id);
-			el[el.type === "checkbox" ? "checked" : "value"] = val;
-		});
-	}
+on("input", "[data-subtype=connect] input", e => {
+	if (e.match.id === "uri") parse_uri(e.match.value);
 	else {
 		connect_info[e.match.id] = e.match[e.match.type === "checkbox" ? "checked" : "value"];
-		DOM("#uri").value = build_uri();
+		build_uri();
 	}
+	repaint();
 });
 
 async function protofetch() {
@@ -425,6 +425,11 @@ async function protofetch() {
 }
 const protocol_fetched = protofetch();
 
+function rerender() {
+	if (connected) override_layout(null);
+	else override_layout({type: "section", subtype: "connect"});
+	repaint();
+}
 function setup(uri)
 {
 	console.log("Initializing");
@@ -432,7 +437,7 @@ function setup(uri)
 	handshake = connect_info.v5 ? "v5" : "v4";
 	const proto = connect_info.ssl ? "wss://" : "ws://";
 	const server = connect_info.ip, pwd = connect_info.password, port = connect_info.port;
-	history.replaceState(null, "", "#" + build_uri());
+	history.replaceState(null, "", "#" + connect_info.uri);
 	console.log("Connect to", proto + server, port, "handshake", handshake)
 	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
@@ -477,7 +482,6 @@ function setup(uri)
 	let handshake_guess;
 	socket.onopen = async () => {
 		console.log("Connected");
-		//TODO: Unoverride the layout, showing what's chosen
 		if (handshake === "guess") handshake = await new Promise(r => setTimeout(handshake_guess = r, 100, "v4"));
 		handshake_guess = null;
 		if (handshake === "v5") await protocol_fetched; //Ensure that we have the enumerations available
@@ -509,6 +513,8 @@ function setup(uri)
 			const vidinfo = await send_request(v4v5("GetVideoInfo", "GetVideoSettings"));
 			canvasx = vidinfo.baseWidth; canvasy = vidinfo.baseHeight;
 		}
+		connected = true;
+		rerender();
 		full_update();
 	}
 	socket.onmessage = (ev) => {
@@ -554,16 +560,16 @@ function setup(uri)
 	};
 	socket.onclose = () => {
 		console.log("Socket closed");
-		update([]);
-		//TODO: Switch layout back to "not logged in" override
+		connected = false;
+		rerender();
 	};
 }
+rerender();
 const hash = (window.location.hash || "#").slice(1);
-if (hash) {parse_uri(hash); setup(build_uri());}
+if (hash) {parse_uri(hash); setup();}
 on("click", "#reconnect", e => setup(DOM("#uri").value));
 
 /* Next steps:
-1) Disconnect parse_uri and build_uri from the DOM
 2) Have a master renderer.
    - If not logged in, render just the login
    - If logged in, render the current layout
