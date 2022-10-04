@@ -263,7 +263,7 @@ on("click", ".settings", e => {
 	set_content("#settingsdlg h3", basis.title ? "Settings for " + basis.title : "Settings");
 	let config = basis.config && TABLE(Object.entries(basis.config).map(([key, [desc, dflt]]) => TR([
 		TD(LABEL({for: "settings_" + key}, desc)),
-		TD(INPUT({id: "settings_" + key, value: layout[key] || dflt})),
+		TD(INPUT({id: "settings_" + key, value: typeof layout[key] === "string" ? layout[key] : dflt})),
 	])));
 	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
 	if (!config) config = P("Component has no configuration settings."); //Try to avoid this where possible
