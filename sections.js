@@ -49,7 +49,11 @@ const definitions = {
 //Is this a good use for prototype inheritance? Effectively, split_horizontal inherits from split implicitly.
 Object.keys(definitions).forEach(key => {
 	const [t, s] = key.split("_");
-	if (s && definitions[t]) definitions[key] = Object.assign(Object.create(definitions[t]), definitions[key]);
+	if (s && definitions[t]) {
+		definitions[key] = Object.assign(Object.create(definitions[t]), definitions[key]);
+		definitions[t].active = false; //If there's a subtype definition, don't use the master
+	}
+	definitions[key].active = true;
 });
 export function get_basis_object(layout) {return definitions[layout.type + "_" + layout.subtype] || definitions[layout.type] || { };}
 
@@ -59,7 +63,7 @@ console.log(rendered_layout)
 export const add_element_dropdown = () => SELECT({class: "addelem editonly"}, [
 	OPTION({disabled: true, value: "", selected: true}, "Add element"),
 	Object.entries(definitions).map(([type, info]) =>
-		OPTION({value: type}, info.title)),
+		info.active && OPTION({value: type}, info.title)),
 	OPTION({value: ""}, "(cancel)"),
 ]);
 
