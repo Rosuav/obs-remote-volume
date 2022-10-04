@@ -100,12 +100,12 @@ on("dragover", ".droptarget", e => {
 		//Add a shadow adjacent to this element.
 		//First, find out which side the mouse cursor is nearest to.
 		const box = e.match.getBoundingClientRect();
-		//Measure distance to edges: left, top, right, bottom
+		//Measure distance to edges: left, top, right, bottom (proportions, not pixels)
 		const edges = [
-			e.clientX - box.left,
-			e.clientY - box.top,
-			box.right - e.clientX,
-			box.bottom - e.clientY,
+			(e.clientX - box.left) / box.width,
+			(e.clientY - box.top) / box.height,
+			(box.right - e.clientX) / box.width,
+			(box.bottom - e.clientY) / box.height,
 		];
 		let nearest = 0;
 		for (let i = 1; i < edges.length; ++i)
