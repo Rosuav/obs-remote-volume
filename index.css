@@ -51,9 +51,16 @@ main section {
 .divider {flex: 0 0; border: 3px inset #a0f0c0;}
 .horizontal > .splitbar {cursor: col-resize;}
 .vertical > .splitbar {cursor: row-resize;}
-#toolbox .splitbar {cursor: unset;} /* ID is more specific than class, easier than fiddling with :not() */
+#toolboxbody .splitbar {cursor: unset;} /* ID is more specific than class, easier than fiddling with :not() */
 .split > *:last-child {flex: 1 1 0;}
-#toolbox .split {min-height: 1.5em;}
+#toolboxbody .split {min-height: 1.5em;}
+#toolboxbody section {
+	height: 50px;
+	overflow: clip;
+	margin: 2px;
+	border: 1px solid blue;
+	padding: 2px;
+}
 
 .titlebar {
 	width: 100%;

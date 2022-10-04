@@ -11,6 +11,7 @@ const definitions = {
 			P("Oops - it seems something has been renamed or removed."),
 			PRE(JSON.stringify(layout, null, 4)),
 		],
+		safe_parse: elem => ({type: "section", subtype: elem.subtype}),
 	},
 	section_desc: {
 		title: "Description",
@@ -156,6 +157,16 @@ const definitions = {
 		config: {
 			active: ["Always active", false],
 		},
+		safe_parse: elem => ({
+			type: "split",
+			subtype: elem.subtype === "vertical" ? "vertical" : "horizontal",
+			splitpos: typeof elem.splitpos === "number" ? elem.splitpos : null,
+			active: !!elem.active,
+			children: Array.isArray(elem.children) ? [
+				safe_parse_element(elem.children[0]),
+				safe_parse_element(elem.children[1]),
+			] : [{}, {}],
+		}),
 	},
 	split_horizontal: {title: "Horizontal split"},
 	split_vertical: {title: "Vertical split"},
@@ -174,6 +185,24 @@ const definitions = {
 		//Similarly, extra flexibility on saving of settings can be done with
 		//this function, called after the other settings are applied:
 		//savesettings: layout => { },
+		safe_parse: elem => ({
+			type: "iframe",
+			titlebar: !!elem.titlebar,
+			title: typeof elem.title === "string" ? elem.title : null,
+			src: typeof elem.src === "string" ? elem.src : null,
+			id: elem.id || (""+Math.random()).replace("0.", ""), //Generate an ID which the user may subsequently edit if desired
+		}),
+	},
+	box: {
+		title: "Box (invisible)",
+		safe_parse: elem => {
+			if (!Array.isArray(elem.children) || elem.children.length < 2) return { }; //Block the box from showing up in toolbox
+			return {
+				type: "box",
+				subtype: elem.subtype === "vertical" ? "vertical" : "horizontal",
+				children: elem.children.map(safe_parse_element),
+			};
+		},
 	},
 };
 //Is this a good use for prototype inheritance? Effectively, split_horizontal inherits from split implicitly.
@@ -201,6 +230,15 @@ export const add_element_dropdown = () => SELECT({class: "addelem editonly"}, [
 		info.active && OPTION({value: type}, info.title)),
 	OPTION({value: ""}, "(cancel)"),
 ]);
+
+export function safe_parse_element(elem) {
+	//Parse an untrusted element object and return something which,
+	//if possible, represents the original intention
+	if (typeof elem !== "object") return { };
+	const basis = get_basis_object(elem);
+	if (basis && basis.safe_parse) return basis.safe_parse(elem);
+	return { };
+}
 
 let editmode = false;
 function build(layout, parent, self) {
@@ -280,6 +318,14 @@ function build(layout, parent, self) {
 	return ret;
 }
 export function render(layout, editing) {
+	if (editing === "toolbox") {
+		//Hack: Autopopulate the toolbox layout based on the definitions list
+		layout.children = Object.entries(definitions).map(([ts, basis]) => {
+			if (!basis.active || !basis.safe_parse) return null;
+			const [type, subtype] = ts.split("_");
+			return basis.safe_parse({type, subtype});
+		}).filter(e => e);
+	}
 	editmode = editing;
 	rendered_layout[0] = {type: "master", children: [layout]};
 	rendered_layout.length = 1; //Truncate the array

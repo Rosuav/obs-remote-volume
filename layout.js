@@ -1,6 +1,6 @@
 import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
 const {INPUT, LABEL, P, TABLE, TD, TR} = choc; //autoimport
-import {render, rendered_layout, startdrag, get_basis_object, add_element_dropdown} from "./sections.js";
+import {render, rendered_layout, startdrag, get_basis_object, add_element_dropdown, safe_parse_element} from "./sections.js";
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
 let editmode = false, toolboxwin;
@@ -157,41 +157,6 @@ on("dragover", ".droptarget", e => {
 });
 
 on("dragleave", ".droptarget", e => editmode && remove_shadow());
-
-function safe_parse_element(elem) {
-	//Parse an untrusted element object and return something which,
-	//if possible, represents the original intention
-	if (typeof elem !== "object") return { };
-	switch (elem.type) {
-		case "section": return {type: "section", subtype: elem.subtype};
-		case "split": return {
-			type: "split",
-			subtype: elem.subtype === "vertical" ? "vertical" : "horizontal",
-			splitpos: typeof elem.splitpos === "number" ? elem.splitpos : null,
-			active: !!elem.active,
-			children: Array.isArray(elem.children) ? [
-				safe_parse_element(elem.children[0]),
-				safe_parse_element(elem.children[1]),
-			] : [{}, {}],
-		};
-		case "box":
-			if (!Array.isArray(elem.children) || elem.children.length < 2) return { };
-			return {
-				type: "box",
-				subtype: elem.subtype === "vertical" ? "vertical" : "horizontal",
-				children: elem.children.map(safe_parse_element),
-			};
-		case "iframe": return {
-			type: "iframe",
-			titlebar: !!elem.titlebar,
-			title: typeof elem.title === "string" ? elem.title : null,
-			src: typeof elem.src === "string" ? elem.src : null,
-			id: elem.id || (""+Math.random()).replace("0.", ""), //Generate an ID which the user may subsequently edit if desired
-		};
-		default: break;
-	}
-	return { };
-}
 
 on("drop", ".droptarget", e => {
 	if (!editmode || e.defaultPrevented) return;
