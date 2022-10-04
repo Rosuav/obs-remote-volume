@@ -83,7 +83,7 @@ iframe {
 .hidden {display: none;}
 #layout:not(.editmode) .editonly {display: none;}
 #layout.editmode .layoutonly {display: none;}
-#toolbox .settings {display: none;}
+#toolbox .settings, #toolbox .addelem {display: none;}
 
 /* Create a scroll context inside dialogs */
 dialog > section {

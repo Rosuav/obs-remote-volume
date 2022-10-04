@@ -285,3 +285,14 @@ DOM("#settingsdelete").onclick = e => {
 	DOM("#settingsdlg").close();
 	remove_shadow();
 };
+
+on("click", ".addelem", e => {
+	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
+	const layout = rendered_layout[parentidx].children[selfidx];
+	console.log("ADD", parentidx, selfidx, layout);
+	const parts = e.match.value.split("_");
+	e.match.value = "";
+	//TODO: If layout.type is a thing, insert something around it.
+	Object.assign(layout, safe_parse_element({type: parts[0], subtype: parts[1]}));
+	remove_shadow();
+});

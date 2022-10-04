@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {BUTTON, DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
+const {BUTTON, DIV, IFRAME, LI, OPTION, P, SECTION, SELECT, UL} = choc; //autoimport
 
 const definitions = {
 	section_demo1: {
@@ -43,6 +43,13 @@ export function get_basis_object(layout) {return definitions[layout.id] || defin
 
 export const rendered_layout = [];
 console.log(rendered_layout)
+
+export const add_element_dropdown = () => SELECT({class: "addelem"}, [
+	OPTION({disabled: true, value: "", selected: true}, "Add element"),
+	Object.entries(definitions).map(([type, info]) =>
+		OPTION({value: type}, info.title)),
+	OPTION({value: ""}, "(cancel)"),
+]);
 
 let editmode = false;
 function build(layout, parent, self) {
@@ -95,7 +102,12 @@ function build(layout, parent, self) {
 		}
 		default: break;
 	}
-	if (!ret) {ret = DIV({class: "droptarget", style: "width: 100%; height: 100%"}); tb = drag = false;} //Empty slot in a split or master
+	if (!ret) {
+		//Empty slot in a split or master
+		ret = DIV({class: "droptarget", style: "width: 100%; height: 100%"},
+			editmode && add_element_dropdown());
+		tb = drag = false;
+	}
 	ret.dataset.parentidx = parent;
 	ret.dataset.selfidx = self;
 	if (tb) { //Some elements have titlebars in edit mode. It's possible for them to have them in layout mode too.
