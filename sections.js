@@ -21,6 +21,12 @@ const definitions = {
 			P("Here's a third thing to play with."),
 		],
 	},
+	split: {
+		title: "Split bar",
+		config: {
+			active: ["Always active", false],
+		},
+	},
 	split_horizontal: {title: "Horizontal split"},
 	split_vertical: {title: "Vertical split"},
 	iframe: {
@@ -40,7 +46,12 @@ const definitions = {
 		//savesettings: layout => { },
 	},
 };
-export function get_basis_object(layout) {return definitions[layout.id] || definitions[layout.type] || { };}
+//Is this a good use for prototype inheritance? Effectively, split_horizontal inherits from split implicitly.
+Object.keys(definitions).forEach(key => {
+	const [t, s] = key.split("_");
+	if (s && definitions[t]) definitions[key] = Object.assign(Object.create(definitions[t]), definitions[key]);
+});
+export function get_basis_object(layout) {return definitions[layout.type + "_" + layout.subtype] || definitions[layout.type] || { };}
 
 export const rendered_layout = [];
 console.log(rendered_layout)
