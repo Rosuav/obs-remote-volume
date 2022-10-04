@@ -116,7 +116,7 @@ on("dragover", ".droptarget", e => {
 			//If the section is inside a box of the appropriate orientation,
 			//insert the new element into the existing box.
 			rendered_layout[parentidx].type === "box" &&
-				(rendered_layout[parentidx].orientation === "vertical")
+				(rendered_layout[parentidx].subtype === "vertical")
 				=== ((nearest&1) === 1)
 		) {
 			console.log("MATCHING BOX", selfidx, +selfidx + (nearest > 1));
@@ -128,7 +128,7 @@ on("dragover", ".droptarget", e => {
 			if (nearest > 1) chld.reverse();
 			console.log("NONMATCHING", JSON.parse(JSON.stringify(chld)));
 			rendered_layout[parentidx].children[selfidx] = {
-				type: "box", orientation: (nearest&1) ? "vertical" : "horizontal",
+				type: "box", subtype: (nearest&1) ? "vertical" : "horizontal",
 				children: chld,
 			};
 		}
@@ -147,7 +147,7 @@ function safe_parse_element(elem) {
 		case "section": return {type: "section", subtype: elem.subtype};
 		case "split": return {
 			type: "split",
-			orientation: elem.orientation === "vertical" ? "vertical" : "horizontal",
+			subtype: elem.subtype === "vertical" ? "vertical" : "horizontal",
 			splitpos: typeof elem.splitpos === "number" ? elem.splitpos : null,
 			children: Array.isArray(elem.children) ? [
 				safe_parse_element(elem.children[0]),
@@ -158,7 +158,7 @@ function safe_parse_element(elem) {
 			if (!Array.isArray(elem.children) || elem.children.length < 2) return { };
 			return {
 				type: "box",
-				orientation: elem.orientation === "vertical" ? "vertical" : "horizontal",
+				subtype: elem.subtype === "vertical" ? "vertical" : "horizontal",
 				children: elem.children.map(safe_parse_element),
 			};
 		case "iframe": return {
@@ -186,9 +186,9 @@ on("drop", ".droptarget", e => {
 		if (elem.type === "split" && e.match.classList.contains("shadow")) { //If we're not dropping onto a shadow, something's wrong
 			const {parentidx, selfidx} = e.match.dataset;
 			const parent = rendered_layout[parentidx];
-			if (parent.type === "box" && elem.orientation === parent.orientation) {
+			if (parent.type === "box" && elem.subtype === parent.subtype) {
 				const box = e.match.parentElement.getBoundingClientRect();
-				const size = elem.orientation === "vertical" ? box.height : box.width;
+				const size = elem.subtype === "vertical" ? box.height : box.width;
 				//(These could be "top" and "bottom" but same difference)
 				const left = parent.children.slice(0, selfidx);
 				const right = parent.children.slice(+selfidx + 1);
@@ -202,8 +202,8 @@ on("drop", ".droptarget", e => {
 				parent.children = [
 					//These boxes could be empty, or contain only one child. It'll get
 					//cleaned up by remove_shadow().
-					{type: "box", orientation: elem.orientation, children: left},
-					{type: "box", orientation: elem.orientation, children: right},
+					{type: "box", subtype: elem.subtype, children: left},
+					{type: "box", subtype: elem.subtype, children: right},
 				];
 				shadow = null; //Okay! We're done.
 			}

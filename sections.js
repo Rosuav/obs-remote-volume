@@ -61,7 +61,7 @@ function build(layout, parent, self) {
 	switch (layout.type) {
 		//A box has 2+ children and lays them out with a horizontal or vertical flexbox.
 		case "box": ret = DIV({
-			class: "box " + (layout.orientation === "vertical" ? "vertical" : "horizontal"),
+			class: "box " + (layout.subtype === "vertical" ? "vertical" : "horizontal"),
 		}, layout.children.map((l,i) => build(l, layoutidx, i)));
 		tb = drag = false;
 		break;
@@ -70,10 +70,10 @@ function build(layout, parent, self) {
 		case "split": {
 			const children = layout.children.map((l,i) => build(l, layoutidx, i));
 			//Use the saved split bar position, defaulting to 50% if none set
-			children[0].style[layout.orientation === "vertical" ? "height" : "width"] =
+			children[0].style[layout.subtype === "vertical" ? "height" : "width"] =
 				typeof layout.splitpos === "number" ? layout.splitpos + "px" : "50%";
 			ret = DIV({
-				class: "split " + (layout.orientation === "vertical" ? "vertical" : "horizontal"),
+				class: "split " + (layout.subtype === "vertical" ? "vertical" : "horizontal"),
 			}, [
 				children[0],
 				//TODO: Have a splitbox option to keep the splitbar at runtime
