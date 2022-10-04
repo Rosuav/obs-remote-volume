@@ -276,7 +276,7 @@ function build(layout, parent, self) {
 		ret.draggable = true;
 		ret.dataset.draglayout = JSON.stringify(layout);
 	}
-	if (basis.update) {updateme.push([basis, ret]); if (laststate) basis.update(ret, laststate);}
+	if (!editmode && basis.update) {updateme.push([basis, ret]); if (laststate) basis.update(ret, laststate);}
 	return ret;
 }
 export function render(layout, editing) {
