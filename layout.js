@@ -11,6 +11,7 @@ DOM("#layoutmode").onclick = e => {
 	set_content("main", render(rendered_layout[0].children[0], editmode));
 	set_content("#layoutmode", editmode ? "Save layout" : "Edit");
 	document.body.classList.toggle("editmode", editmode);
+	remove_shadow(); //and save (if no longer editing)
 };
 DOM("#cancel").onclick = e => {
 	editmode = false;
