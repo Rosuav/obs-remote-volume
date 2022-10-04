@@ -289,7 +289,7 @@ DOM("#settingsdelete").onclick = e => {
 	remove_shadow();
 };
 
-on("click", ".addelem", e => {
+on("change", ".addelem", e => {
 	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
 	let layout = rendered_layout[parentidx].children[selfidx];
 	const parts = e.match.value.split("_");
