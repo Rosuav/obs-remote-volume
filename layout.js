@@ -258,7 +258,6 @@ on("pointerup", ".splitbar", e => {
 let settings_layout = null;
 on("click", ".settings", e => {
 	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
-	console.log("GEAR", parentidx, selfidx);
 	const layout = settings_layout = rendered_layout[parentidx].children[selfidx];
 	const basis = get_basis_object(layout) || { };
 	set_content("#settingsdlg h3", basis.title ? "Settings for " + basis.title : "Settings");
@@ -277,7 +276,6 @@ DOM("#settingssave").onclick = e => {
 	const basis = get_basis_object(layout) || { };
 	if (basis.config) Object.keys(basis.config).forEach(key => layout[key] = DOM("#settings_" + key).value);
 	if (basis.savesettings) basis.savesettings(layout);
-	console.log("New layout:", layout);
 	DOM("#settingsdlg").close();
 	remove_shadow();
 };
