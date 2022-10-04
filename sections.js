@@ -21,7 +21,8 @@ const definitions = {
 			P("Here's a third thing to play with."),
 		],
 	},
-	split: {title: "Split bar"},
+	split_horizontal: {title: "Horizontal split"},
+	split_vertical: {title: "Vertical split"},
 	iframe: {
 		title: "Embedded Web Page",
 		//Build a simple settings dialog by providing the layout config keys,
