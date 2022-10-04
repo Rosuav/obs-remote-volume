@@ -45,7 +45,7 @@ export function get_basis_object(layout) {return definitions[layout.id] || defin
 export const rendered_layout = [];
 console.log(rendered_layout)
 
-export const add_element_dropdown = () => SELECT({class: "addelem"}, [
+export const add_element_dropdown = () => SELECT({class: "addelem editonly"}, [
 	OPTION({disabled: true, value: "", selected: true}, "Add element"),
 	Object.entries(definitions).map(([type, info]) =>
 		OPTION({value: type}, info.title)),

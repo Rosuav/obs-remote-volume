@@ -1,6 +1,6 @@
 import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
 const {INPUT, LABEL, P, TABLE, TD, TR} = choc; //autoimport
-import {render, rendered_layout, startdrag, get_basis_object} from "./sections.js";
+import {render, rendered_layout, startdrag, get_basis_object, add_element_dropdown} from "./sections.js";
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
 let editmode = false, toolboxwin;
@@ -288,10 +288,23 @@ DOM("#settingsdelete").onclick = e => {
 
 on("click", ".addelem", e => {
 	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
-	const layout = rendered_layout[parentidx].children[selfidx];
+	let layout = rendered_layout[parentidx].children[selfidx];
 	const parts = e.match.value.split("_");
 	e.match.value = "";
-	//TODO: If layout.type is a thing, insert something around it.
+	if (!parts[0]) return; //Selection cancelled, empty type
+	if (layout.type === "box")
+		//Add ourselves to an existing box. Vertical boxes get the new thing inserted
+		//into the top (the start of the array), horizontal get it appended to the right.
+		layout.children[layout.subtype === "vertical" ? "unshift" : "push"](layout = { });
+	else if (layout.type) {
+		const orig = layout;
+		rendered_layout[parentidx].children[selfidx] = {
+			type: "box", subtype: "vertical",
+			children: [layout = { }, orig],
+		};
+	}
+	//Else there's no current element, so replace it.
 	Object.assign(layout, safe_parse_element({type: parts[0], subtype: parts[1]}));
 	remove_shadow();
 });
+DOM("body > header").appendChild(add_element_dropdown());
