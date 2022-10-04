@@ -557,3 +557,17 @@ function setup(uri)
 const hash = (window.location.hash || "#").slice(1);
 if (hash) {parse_uri(hash); setup(build_uri());}
 on("click", "#reconnect", e => setup(DOM("#uri").value));
+
+/* Next steps:
+1) Disconnect parse_uri and build_uri from the DOM
+2) Have a master renderer.
+   - If not logged in, render just the login
+   - If logged in, render the current layout
+3) Make the connection info properly work as a section.
+   - Have an internal format, probably an object, for connection info.
+   - Return this format from parse_uri, use it in build_uri
+   - Have DOM-management functions, bidirectional, to use this
+4) Make a default layout, or maybe several (see other TODOs re multilayout)
+5) Add a scene switcher section
+
+*/
