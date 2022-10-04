@@ -86,7 +86,7 @@ on("dragover", ".droptarget", e => {
 	//Checking the transfer data somehow doesn't work in Chrome, but does in
 	//Firefox. For now, just let whatever happen, and deal with it in the
 	//Drop event below.
-	//const layout = e.dataTransfer.getData("application/prs.obs-rc-element");
+	//const layout = e.dataTransfer.getData("text/plain");
 	//if (!layout) return;
 	e.preventDefault();
 	//console.log(e.dataTransfer.effectAllowed, e.dataTransfer.dropEffect, id);
@@ -171,15 +171,11 @@ function safe_parse_element(elem) {
 
 on("drop", ".droptarget", e => {
 	if (!editmode || e.defaultPrevented) return;
-	console.log("Drop!");
-	console.log("Shadow:", shadow);
 	e.preventDefault();
 	if (!shadow) return;
 	try {
-		let elem = JSON.parse(e.dataTransfer.getData("application/prs.obs-rc-element") || "{}");
-		console.log("Raw elem:", elem);
+		let elem = JSON.parse(e.dataTransfer.getData("text/plain") || "{}");
 		elem = safe_parse_element(elem);
-		console.log("Cooked elem:", elem);
 		//SPECIAL CASE: If you drop a brand new empty split bar into a box of the
 		//correct orientation, replace the box and put the children into the split.
 		if (elem.type === "split" && e.match.classList.contains("shadow")) { //If we're not dropping onto a shadow, something's wrong
@@ -215,9 +211,7 @@ on("drop", ".droptarget", e => {
 		console.warn(e);
 	}
 	shadow = null;
-	console.log("Removing shadow");
 	remove_shadow();
-	console.log("Drop complete.");
 });
 
 //Split bar dragging

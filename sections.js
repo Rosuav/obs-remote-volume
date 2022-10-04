@@ -148,7 +148,6 @@ export function render(layout, editing) {
 
 export function startdrag(e, layout) {
 	if (!layout) layout = e.match.dataset.draglayout;
-	e.dataTransfer.setData("application/prs.obs-rc-element", layout);
-	e.dataTransfer.setData("text/plain", "[OBS Remote Control element, drag/drop to manage layout]");
+	e.dataTransfer.setData("text/plain", layout);
 	e.dataTransfer.effectAllowed = "copyMove";
 }
