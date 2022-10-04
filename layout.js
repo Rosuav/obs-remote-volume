@@ -5,6 +5,21 @@ fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true
 
 let editmode = false, toolboxwin;
 
+/* TODO: Multi-layout.
+In order to allow one user to store more than one layout, it will be necessary to
+enable a layout switcher. Change its class=hidden to class=layoutonly (it should
+remain invisible and nonoperational in edit mode).
+
+The layout itself will need settings. Notably, change label, delete, and clone.
+
+Switching layout should be easy enough. Just keep track of the index.
+
+Framework has been secured by having localStorage retain an array of one layout.
+*/
+
+let all_layouts = [{label: "Layout 1", content: { }}];
+let curlayout = 0; //Index into all_layouts
+
 DOM("#layoutmode").onclick = e => {
 	editmode = !editmode;
 	if (!editmode && toolboxwin) toolboxwin.close();
@@ -23,8 +38,10 @@ DOM("#cancel").onclick = e => {
 DOM("#opentoolbox").onclick = e => toolboxwin = window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
 
 function rerender() {
-	const layout = localStorage.getItem("obs-remote-layout") || "{}";
-	set_content("main", render(JSON.parse(layout), editmode));
+	const layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "[]");
+	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({label: "Layout " + (i+1), content: { }, ...l}));
+	if (!all_layouts.length) all_layouts.push({label: "Layout 1", content: { }});
+	set_content("main", render(all_layouts[curlayout].content, editmode));
 }
 rerender();
 
@@ -68,7 +85,10 @@ function remove_shadow() {
 	//Assumes that rendered_layout[0] is the master object.
 	const layout = remove_shadow_from(rendered_layout[0].children[0]);
 	set_content("main", render(layout, editmode));
-	if (!editmode) localStorage.setItem("obs-remote-layout", JSON.stringify(layout));
+	if (!editmode) {
+		all_layouts[curlayout].content = layout;
+		localStorage.setItem("obs-remote-layouts", JSON.stringify(all_layouts));
+	}
 }
 
 on("dragstart", ".draggable", e => {
@@ -248,7 +268,10 @@ on("pointerup", ".splitbar", e => {
 	const layout = rendered_layout[parentidx].children[selfidx];
 	layout.splitpos = splitpos;
 	if (splitbox.draggable) splitbox.dataset.draglayout = JSON.stringify(layout);
-	if (!editmode) localStorage.setItem("obs-remote-layout", JSON.stringify(rendered_layout[0].children[0]));
+	if (!editmode) {
+		all_layouts[curlayout].content = rendered_layout[0].children[0];
+		localStorage.setItem("obs-remote-layouts", JSON.stringify(all_layouts));
+	}
 });
 
 //Settings dialog
