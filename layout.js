@@ -1,5 +1,5 @@
 import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
-const {P} = choc; //autoimport
+const {INPUT, LABEL, P, TABLE, TD, TR} = choc; //autoimport
 import {render, rendered_layout, startdrag, get_basis_object} from "./sections.js";
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
@@ -261,7 +261,12 @@ on("click", ".settings", e => {
 	const layout = rendered_layout[parentidx].children[selfidx];
 	const basis = get_basis_object(layout) || { };
 	set_content("#settingsdlg h3", basis.title ? "Settings for " + basis.title : "Settings");
-	if (basis.settingsdlg) set_content("#settingsinner", basis.settingsdlg(layout));
-	else set_content("#settingsinner", P("Component has no configuration settings.")); //Try to avoid this where possible
+	let config = basis.config && TABLE(Object.entries(basis.config).map(([key, [desc, dflt]]) => TR([
+		TD(LABEL({for: "settings_" + key}, desc)),
+		TD(INPUT({id: "settings_" + key, value: layout[key] || dflt})),
+	])));
+	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
+	if (!config) config = P("Component has no configuration settings."); //Try to avoid this where possible
+	set_content("#settingsinner", config);
 	DOM("#settingsdlg").showModal();
 });

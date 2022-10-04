@@ -1,32 +1,38 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {BUTTON, DIV, IFRAME, INPUT, LABEL, LI, P, SECTION, TABLE, TD, TR, UL} = choc; //autoimport
+const {BUTTON, DIV, IFRAME, LI, P, SECTION, UL} = choc; //autoimport
 
 const definitions = {
 	demo1: {
 		title: "Demo With List",
-		render: cfg => [
+		render: layout => [
 			P("Drag this thing!"),
 			UL("Test list with a number of elements".split(" ").map(w => LI(w))),
 		],
 	},
 	demo2: {
 		title: "Hey Look, A Thing",
-		render: cfg => [
+		render: layout => [
 			P("Or drag this thing instead!"),
 		],
 	},
 	demo3: {
 		title: "Another Thing",
-		render: cfg => [
+		render: layout => [
 			P("Here's a third thing to play with."),
 		],
 	},
 	split: {title: "Split bar"},
 	iframe: {
 		title: "Embedded Web Page",
-		settingsdlg: cfg => TABLE([
-			TR([TD(LABEL({for: "settings_url"}, "URL")), TD(INPUT({id: "settings_url", value: cfg.url || ""}))]),
-		]),
+		//Build a simple settings dialog by providing the layout config keys,
+		//their labels, and default values.
+		config: {
+			url: ["URL", ""],
+		},
+		//If more flexibility is needed, this function can return whatever it
+		//needs to - the second arg is whatever was generated from the config
+		//above. It will be absent if config itself is absent.
+		//settingsdlg: (layout, table) => table,
 	},
 };
 export function get_basis_object(layout) {return definitions[layout.id] || definitions[layout.type] || { };}
