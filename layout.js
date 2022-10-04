@@ -266,7 +266,7 @@ on("click", ".settings", e => {
 	])));
 	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
 	if (!config) config = P("Component has no configuration settings."); //Try to avoid this where possible
-	set_content("#settingsinner", config);
+	set_content("#settings_inner", config);
 	DOM("#settingsdlg").showModal();
 });
 
@@ -289,7 +289,6 @@ DOM("#settingsdelete").onclick = e => {
 on("click", ".addelem", e => {
 	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
 	const layout = rendered_layout[parentidx].children[selfidx];
-	console.log("ADD", parentidx, selfidx, layout);
 	const parts = e.match.value.split("_");
 	e.match.value = "";
 	//TODO: If layout.type is a thing, insert something around it.
