@@ -301,6 +301,11 @@ const events = {
 		state.scenes.currentProgramSceneName = data["scene-name"];
 		update(data.sources);
 	},
+	CurrentProgramSceneChanged: data => {
+		state.scenes.currentProgramSceneName = data.sceneName;
+		repaint();
+		full_update();
+	},
 	SceneItemTransformChanged: data => {
 		const el = source_elements[data["item-name"]];
 		//NOTE: If a scene item is moved in OBS while being dragged here, we will
@@ -465,6 +470,12 @@ function setup(uri)
 				else fail = 1; //Return the full raw data.d dump
 			}
 			else if (opcode === "RequestBatchResponse") [id, ret] = [data.d.requestId, data.d.results];
+			else if (opcode === "Event") {
+				const func = events[data.d.eventType];
+				if (func) return func(data.d.eventData);
+				console.log("Unknown event:", data.d.eventType, data.d.eventData);
+				events[data.d.eventType] = () => {};
+			}
 			if (pending[id]) {
 				pending[id][fail](ret);
 				delete pending[id];
