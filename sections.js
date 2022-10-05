@@ -81,6 +81,7 @@ const definitions = {
 		},
 	},
 	section_connect: {
+		active: false,
 		title: "Connect/login",
 		render: layout => [
 			TABLE([
@@ -195,9 +196,10 @@ const definitions = {
 		}),
 	},
 	box: {
+		active: false,
 		title: "Box (invisible)",
 		safe_parse: elem => {
-			if (!Array.isArray(elem.children) || elem.children.length < 2) return { }; //Block the box from showing up in toolbox
+			if (!Array.isArray(elem.children) || elem.children.length < 2) return { };
 			return {
 				type: "box",
 				subtype: elem.subtype === "vertical" ? "vertical" : "horizontal",
@@ -213,7 +215,9 @@ Object.keys(definitions).forEach(key => {
 		definitions[key] = Object.assign(Object.create(definitions[t]), definitions[key]);
 		definitions[t].active = false; //If there's a subtype definition, don't use the master
 	}
-	definitions[key].active = true;
+	//For some bizarre reason, hasOwnProperty - which has better browser support - always
+	//returns false for these, even if they've just been assigned to. I don't get it.
+	if (!Object.hasOwn(definitions[key], "active")) definitions[key].active = true;
 });
 export function get_basis_object(layout) {return definitions[layout.type + "_" + layout.subtype] || definitions[layout.type] || { };}
 
