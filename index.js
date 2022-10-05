@@ -40,7 +40,7 @@ const resizeObserver = new ResizeObserver(entries => {
 		if (!el.dataset.reset_width) continue; //Suppress resize events caused by display rerendering
 		//TODO: Snap to edges and/or middle of canvas or other items
 		const scale = cx / el.dataset.base_cx;
-		const update = {item: el.dataset.sourcename,
+		const update = {item: el.dataset.name,
 			scale: {x: scale, y: scale}};
 		const xofs = parseFloat(el.dataset.grav_x), yofs = parseFloat(el.dataset.grav_y);
 		const rescale = scale / parseFloat(el.dataset.last_scale);
@@ -52,7 +52,7 @@ const resizeObserver = new ResizeObserver(entries => {
 		//NOTE: If the scene changes while you're dragging, this may set the size
 		//on the wrong scene. Caveat resizor.
 		send_request("SetSceneItemProperties", update);
-		//console.log("RESIZE:", el.dataset.sourcename, scale);
+		//console.log("RESIZE:", el.dataset.name, scale);
 	}
 });
 
@@ -71,7 +71,7 @@ document.onkeydown = ev => {if (ev.key === "Escape" && dragging) {
 }};
 
 function drag_xfrm(el, x, y) {
-	return {item: el.dataset.sourcename, position: {
+	return {item: el.dataset.name, position: {
 		x: x / display_scale + parseInt(el.dataset.grav_x, 10),
 		y: y / display_scale + parseInt(el.dataset.grav_y, 10),
 	}};
@@ -201,6 +201,8 @@ async function itemdetails(item) {
 	};
 	modal.showModal();
 }
+on("click", ".sceneelembtn", e => itemdetails(e.match.dataset.name));
+on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.name));
 
 function update_element(el, xfrm) {
 	//Default to top-left if obs-websocket doesn't give the actual alignment
@@ -234,23 +236,6 @@ function update_element(el, xfrm) {
 	el.style.zIndex = xfrm.locked ? 1 : 1000;
 }
 
-//const rhs = document.getElementById("layout_info"), flexbox = rhs.parentElement; //Hacked out
-let need_width; //Locked in once; when in non-wide mode, the rhs DOM element actually changes width.
-function calc_scale() {
-	return display_scale; //HACK: Don't change scale for now. Ultimately, this will need to be done more dynamically (maybe with CSS Grid).
-	if (!need_width) {need_width = rhs.clientWidth; if (!need_width) return display_scale;}
-	let width = flexbox.clientWidth;
-	const wide = width > need_width * 2;
-	if (wide) width -= need_width;
-	flexbox.classList.toggle("vertical", !wide);
-	if (width <= 0) return display_scale; //Can't calculate. Don't change scale.
-	const maxscale = width / canvasx;
-	const scale = Math.floor(maxscale * 32) / 32; //Round down to a value that can be safely represented
-	//TODO maybe: Adjust scale only if it's "different enough",
-	//to avoid unnecessary churn.
-	return min(scale, 0.75);
-}
-
 async function set_bg_img(el, sourcename, width) {
 	try {
 		const resp = await send_request("TakeSourceScreenshot", {sourceName: sourcename, embedPictureFormat: "png", width});
@@ -266,8 +251,6 @@ function update(sources) {
 	state.source_elements = source_elements = {};
 	state.sources = sources;
 	repaint();
-	return; //HACK. All code below here needs to be moved into section-specific code.
-	display_scale = calc_scale();
 }
 
 async function full_update() {
@@ -313,13 +296,6 @@ on("click", ".mutebtn", e => send_request("ToggleMute", {"source": e.match.close
 on("click", "[data-sceneselect]", e =>
 	send_request(v4v5("SetCurrentScene", "SetCurrentProgramScene"),
 		{[v4v5("scene-name", "sceneName")]: e.match.dataset.sceneselect}));
-
-async function checksize(ev) {
-	if (!ev.target.open) return; //No point rechecking when the manager is closed	
-	const scale = calc_scale();
-	if (scale === display_scale) return;
-	full_update(); //Scale has changed. Fully update everything.
-}
 
 const events = {
 	SwitchScenes: data => update(data.sources), //If GetCurrentScene grows a verbose flag, this will need to do a call.
@@ -460,9 +436,6 @@ function setup(uri)
 		const ver = await send_request("GetVersion");
 		const obsver = ver[v4v5("obs-studio-version", "obsVersion")];
 		console.info("Running on OBS " + obsver + " and obs-websocket " + ver[v4v5("obs-websocket-version", "obsWebSocketVersion")]);
-		if (obsver >= "4.3.0") {
-			//DOM("#layout").closest("details").ontoggle = checksize; //TODO: Do this with on() once check_size actually works again
-		}
 		if (handshake === "v4") try {
 			(await send_request("GetSourceTypesList"))
 				.types.forEach(type => sourcetypes[type.typeId] = type);

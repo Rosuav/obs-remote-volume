@@ -24,41 +24,20 @@ const definitions = {
 			+ "laptop or tablet (or possibly even phone), without moving away from what you were doing."),
 		],
 	},
-	section_layoutmgr: {
-		title: "Scene details",
-		render: layout => [
-			DETAILS([SUMMARY("Layout management"),
-				DIV({style: "display: flex"}, [
-					DIV({class: "scenepreview"}),
-					DIV([ //was #layout_info
-						H4("Scene item management"),
-						UL([
-							LI("Move items by holding Ctrl"),
-							LI("Resize using the grab handle bottom right"),
-							LI("Double-click any item to get details"),
-							LI("Locked items cannot be moved - see the item details below."),
-						]),
-					]),
-				]),
-			]),
-			DETAILS([SUMMARY("Scene items (click for item details)"),
-				UL({class: "sceneitems"}),
-			]),
-		],
+	section_wireframe: {
+		title: "Scene wireframe",
+		render: layout => [DIV({class: "scenepreview"})],
 		update: (elem, state) => {
-			//FIXME: Must look things up from elem - they might not be in the document yet
-			const scenepreview = elem.querySelector(".scenepreview");
 			//scenepreview.style.width = (canvasx * display_scale) + "px";
 			//scenepreview.style.height = (canvasy * display_scale) + "px";
 			//while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
-			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
+			set_content(elem.querySelector(".scenepreview"), state.sources.map(source => {
 				const typeinfo = state.sourcetypes[source.type || source.inputKind];
 				if (!typeinfo || !typeinfo.caps.hasVideo) return;
 				//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
 				//TODO: Correctly handle item gravity (alignment)
-				const el = document.createElement("DIV");
-				el.appendChild(document.createTextNode(source.name));
-				el.dataset.sourcename = source.name;
+				const name = source.name || source.sourceName;
+				const el = DIV({class: "sceneelement", "data-name": name}, name);
 				/*update_element(el, { //FIXME: Bring this into here??
 					width: source.cx, height: source.cy,
 					locked: source.locked,
@@ -70,13 +49,20 @@ const definitions = {
 				});*/
 				//el.onpointerdown = startdragging; //TODO: Do these with on() instead
 				//el.onpointerup = stopdragging;
-				//el.ondblclick = ev => itemdetails(source.name);
 				//resizeObserver.observe(el); //Hacked out for now
-				scenepreview.appendChild(el);
-				state.source_elements[source.name] = el;
-				//Optionally put actual images on the elements. Not all that useful in its current state.
-				//if (show_preview_images && source.render) set_bg_img(el, source.name, source.c_x);
-				return LI(BUTTON({onclick: ev => itemdetails(source.name)}, source.name));
+				return state.source_elements[source.name] = el;
+			}));
+		},
+	},
+	section_sceneitems: {
+		title: "Scene items",
+		render: layout => [UL({class: "sceneitems"})],
+		update: (elem, state) => {
+			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
+				const typeinfo = state.sourcetypes[source.type || source.inputKind];
+				if (!typeinfo || !typeinfo.caps.hasVideo) return;
+				const name = source.name || source.sourceName;
+				return LI(BUTTON({class: "sceneelembtn", "data-name": name}, name));
 			}));
 		},
 	},
