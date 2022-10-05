@@ -13,17 +13,6 @@ const definitions = {
 		],
 		safe_parse: elem => ({type: "section", subtype: elem.subtype}),
 	},
-	section_desc: {
-		title: "Description",
-		render: layout => [
-			P("To use this with your OBS, go to http://vol.rosuav.com/#PASSWORD@COMPUTER where the password "
-			+ "is what you've set up in OBS-Remote (ignored if no authentication) and the computer is "
-			+ "specified by IP address or computer name."),
-			P("When connected to OBS, this will allow you to make fine adjustments to your stream configuration "
-			+ "without actually clicking on the OBS main window. This allows you to make adjustments from your "
-			+ "laptop or tablet (or possibly even phone), without moving away from what you were doing."),
-		],
-	},
 	section_wireframe: {
 		title: "Scene wireframe",
 		render: layout => [DIV({class: "scenepreview"})],
