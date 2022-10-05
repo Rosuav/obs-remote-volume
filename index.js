@@ -281,10 +281,21 @@ async function full_update() {
 	}
 }
 
+//TODO: Design a generic debounce circuit.
+//1. When a command is sent to OBS, record the timestamp 100ms later.
+//2. When a status message is received, if within the 100ms window, defer until
+//   after that window. Retrigger the status message (last one only) when that
+//   window closes.
+//3. Different signals for the same source, or the same signal for another, are
+//   completely independent. Gonna be a lot of setTimeout.
+//Note: Only necessary where fighting is a possibility. Don't bother doing this
+//for mute status.
+const sent_volume_signal = { };
 on("input", ".volslider", e => {
 	const val = e.match.value ** 2;
 	const tr = e.match.closest("tr");
 	tr.querySelector("span").innerText = (val*100).toFixed(2);
+	sent_volume_signal[tr.dataset.name] = +new Date;
 	send_request(v4v5("SetVolume", "SetInputVolume"), {
 		[v4v5("source", "inputName")]: tr.dataset.name,
 		[v4v5("volume", "inputVolumeMul")]: val,
@@ -297,16 +308,16 @@ on("click", "[data-sceneselect]", e =>
 		{[v4v5("scene-name", "sceneName")]: e.match.dataset.sceneselect}));
 
 const events = {
-	SwitchScenes: data => {
+	SwitchScenes: data => { //v4
 		state.scenes.currentProgramSceneName = data["scene-name"];
 		update(data.sources);
 	},
-	CurrentProgramSceneChanged: data => {
+	CurrentProgramSceneChanged: data => { //v5
 		state.scenes.currentProgramSceneName = data.sceneName;
 		repaint();
 		full_update();
 	},
-	SceneItemTransformChanged: data => {
+	SceneItemTransformChanged: data => { //v4
 		const el = source_elements[data["item-name"]];
 		//NOTE: If a scene item is moved in OBS while being dragged here, we will
 		//ignore the OBS movement and carry on regardless. This includes if you
@@ -315,16 +326,23 @@ const events = {
 		if (!el || el === dragging) return;
 		update_element(el, data.transform);
 	},
-	SceneItemLockChanged: data => {
+	SceneItemLockChanged: data => { //v4
 		const el = source_elements[data["item-name"]];
 		if (el) {
 			el.classList.toggle("locked", data["item-locked"]);
 			el.style.zIndex = data["item-locked"] ? 1 : 1000;
 		}
 	},
-	SourceMuteStateChanged: data => {
+	SourceMuteStateChanged: data => { //v4
 		const el = source_elements["!mute-" + data["sourceName"]];
 		if (el) el.innerText = data.muted ? "Unmute" : "Mute";
+	},
+	InputVolumeChanged: data => { //v5
+		if (sent_volume_signal[data.inputName] + 100 > +new Date) return; //For 100ms after sending a volume signal, don't accept them back.
+		//TODO: Have a quick way to look up a scene element by name
+		state.sources.forEach(source => source.sourceName === data.inputName && (source.volume = data.inputVolumeMul));
+		//TODO: Have an easy way to say "minor changes only, update existing DOM elements"
+		repaint();
 	},
 };
 
