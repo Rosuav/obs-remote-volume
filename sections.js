@@ -213,7 +213,7 @@ Object.keys(definitions).forEach(key => {
 	}
 	//For some bizarre reason, hasOwnProperty - which has better browser support - always
 	//returns false for these, even if they've just been assigned to. I don't get it.
-	if (!Object.hasOwn(definitions[key], "active")) definitions[key].active = true;
+	if (!definitions[key].hasOwnProperty("active")) definitions[key].active = true;
 });
 export function get_basis_object(layout) {return definitions[layout.type + "_" + layout.subtype] || definitions[layout.type] || { };}
 
