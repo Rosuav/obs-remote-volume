@@ -297,7 +297,10 @@ on("click", "[data-sceneselect]", e =>
 		{[v4v5("scene-name", "sceneName")]: e.match.dataset.sceneselect}));
 
 const events = {
-	SwitchScenes: data => update(data.sources), //If GetCurrentScene grows a verbose flag, this will need to do a call.
+	SwitchScenes: data => {
+		state.scenes.currentProgramSceneName = data["scene-name"];
+		update(data.sources);
+	},
 	SceneItemTransformChanged: data => {
 		const el = source_elements[data["item-name"]];
 		//NOTE: If a scene item is moved in OBS while being dragged here, we will
