@@ -42,7 +42,12 @@ DOM("#opentoolbox").onclick = e => toolboxwin = window.open("toolbox.html", "too
 function rerender() {
 	const layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "[]");
 	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({label: "Layout " + (i+1), content: { }, ...l}));
-	if (!all_layouts.length) all_layouts.push({label: "Layout 1", content: { }});
+	if (!all_layouts.length) all_layouts.push({label: "Layout 1", content: {
+		type: "box", subtype: "vertical", children: [
+			{type: "section", subtype: "mixer", flexsize: "fitcontent"},
+			{type: "section", subtype: "sceneswitch"},
+		]
+	}});
 	if (layout_override) editmode = false;
 	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
 }

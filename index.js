@@ -498,9 +498,7 @@ const hash = (window.location.hash || "#").slice(1);
 if (hash) {parse_uri(hash); setup();}
 on("click", "#reconnect", e => setup(DOM("#uri").value));
 
-/* Next steps:
-4) Make a default layout, or maybe several (see other TODOs re multilayout)
-6) Hide the user's password.
-   - Don't have the URI in the hash after connecting - just retain it internally
-   - If possible, hide the password in the URI input while connecting, too
+/* TODO: Hide the user's password.
+- Don't have the URI in the hash after connecting - just retain it internally
+- If possible, hide the password in the URI input while connecting, too
 */
