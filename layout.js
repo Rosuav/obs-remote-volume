@@ -1,5 +1,5 @@
 import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
-const {INPUT, LABEL, P, TABLE, TD, TR} = choc; //autoimport
+const {INPUT, LABEL, OPTION, P, SELECT, TABLE, TD, TR} = choc; //autoimport
 import {render, rendered_layout, startdrag, get_basis_object, add_element_dropdown, safe_parse_element} from "./sections.js";
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
@@ -251,14 +251,23 @@ on("click", ".settings", e => {
 	const layout = settings_layout = rendered_layout[parentidx].children[selfidx];
 	const basis = get_basis_object(layout) || { };
 	set_content("#settingsdlg h3", basis.title ? "Settings for " + basis.title : "Settings");
-	let config = basis.config && TABLE(Object.entries(basis.config).map(([key, [desc, dflt]]) => TR([
-		TD(LABEL({for: "settings_" + key}, desc)),
-		TD(
-			typeof dflt === "boolean" ? INPUT({type: "checkbox", id: "settings_" + key, checked: typeof layout[key] === "boolean" ? layout[key] : dflt})
-			: typeof dflt === "number" ? INPUT({type: "number", id: "settings_" + key, value: typeof layout[key] === "number" ? layout[key] : dflt})
-			: INPUT({id: "settings_" + key, value: typeof layout[key] === "string" ? layout[key] : dflt})
-		),
-	])));
+	let config = TABLE([
+		TR([
+			TD(LABEL({for: "settings_flexsize"}, "Section size")),
+			TD(SELECT({id: "settings_flexsize", value: layout.flexsize}, [
+				OPTION({value: ""}, "Expand as needed"),
+				OPTION({value: "fitcontent"}, "Fit to content"),
+			])),
+		]),
+		Object.entries(basis.config || { }).map(([key, [desc, dflt]]) => TR([
+			TD(LABEL({for: "settings_" + key}, desc)),
+			TD(
+				typeof dflt === "boolean" ? INPUT({type: "checkbox", id: "settings_" + key, checked: typeof layout[key] === "boolean" ? layout[key] : dflt})
+				: typeof dflt === "number" ? INPUT({type: "number", id: "settings_" + key, value: typeof layout[key] === "number" ? layout[key] : dflt})
+				: INPUT({id: "settings_" + key, value: typeof layout[key] === "string" ? layout[key] : dflt})
+			),
+		])),
+	]);
 	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
 	if (!config) config = P("Component has no configuration settings."); //Try to avoid this where possible
 	set_content("#settings_inner", config);
@@ -274,6 +283,7 @@ DOM("#settingssave").onclick = e => {
 			: typeof dflt === "number" ? +DOM("#settings_" + key).value
 			: DOM("#settings_" + key).value
 	);
+	layout.flexsize = DOM("#settings_flexsize").value;
 	if (basis.savesettings) basis.savesettings(layout);
 	DOM("#settingsdlg").close();
 	remove_shadow();

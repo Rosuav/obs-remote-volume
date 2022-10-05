@@ -178,8 +178,7 @@ const definitions = {
 			id: ["Unique ID", "demo"],
 		},
 		//If more flexibility is needed, this function can return whatever it
-		//needs to - the second arg is whatever was generated from the config
-		//above. It will be absent if config itself is absent.
+		//needs to - the second arg is elements generated from the config.
 		//settingsdlg: (layout, table) => table,
 		//Similarly, extra flexibility on saving of settings can be done with
 		//this function, called after the other settings are applied:
@@ -274,6 +273,7 @@ function build(layout, parent, self) {
 		}
 		case "section":
 			ret = SECTION({"data-subtype": layout.subtype, class: "droptarget"}, basis.render(layout));
+			if (layout.flexsize === "fitcontent") ret.style.flex = "0";
 			break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); tb = drag = false; break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); tb = drag = false; break;
