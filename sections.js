@@ -1,7 +1,7 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {BUTTON, CODE, DETAILS, DIV, H4, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SPAN, SUMMARY, TABLE, TBODY, TD, TH, TR, UL} = choc; //autoimport
 
-//TODO: Avoid using any CSS IDs anywhere in these definitions.
+//NOTE: Avoid using any CSS IDs anywhere in these definitions.
 //It should be perfectly reasonable to have the same section in two places
 //(which could happen with layout switching); look up based on the element.
 const definitions = {
@@ -27,10 +27,10 @@ const definitions = {
 	section_layoutmgr: {
 		title: "Scene details",
 		render: layout => [
-			DETAILS({class: "hidden"}, [SUMMARY("Layout management"),
+			DETAILS([SUMMARY("Layout management"),
 				DIV({style: "display: flex"}, [
-					DIV({id: "scenepreview"}),
-					DIV({id: "layout_info"}, [
+					DIV({class: "scenepreview"}),
+					DIV([ //was #layout_info
 						H4("Scene item management"),
 						UL([
 							LI("Move items by holding Ctrl"),
@@ -41,16 +41,17 @@ const definitions = {
 					]),
 				]),
 			]),
-			DETAILS({class: "hidden"}, [SUMMARY("Scene items (click for item details)"),
-				UL({id: "sceneitems"}),
+			DETAILS([SUMMARY("Scene items (click for item details)"),
+				UL({class: "sceneitems"}),
 			]),
 		],
 		update: (elem, state) => {
-			const scenepreview = DOM("#scenepreview");
+			//FIXME: Must look things up from elem - they might not be in the document yet
+			const scenepreview = elem.querySelector(".scenepreview");
 			//scenepreview.style.width = (canvasx * display_scale) + "px";
 			//scenepreview.style.height = (canvasy * display_scale) + "px";
 			//while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));
-			set_content("#sceneitems", state.sources.map(source => {
+			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
 				const typeinfo = state.sourcetypes[source.type || source.inputKind];
 				if (!typeinfo || !typeinfo.caps.hasVideo) return;
 				//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
