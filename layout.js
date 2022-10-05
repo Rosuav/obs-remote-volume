@@ -44,8 +44,8 @@ function rerender() {
 	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({label: "Layout " + (i+1), content: { }, ...l}));
 	if (!all_layouts.length) all_layouts.push({label: "Layout 1", content: {
 		type: "box", subtype: "vertical", children: [
-			{type: "section", subtype: "mixer", flexsize: "fitcontent"},
 			{type: "section", subtype: "sceneswitch"},
+			{type: "section", subtype: "mixer", flexsize: "fitcontent"},
 		]
 	}});
 	if (layout_override) editmode = false;
