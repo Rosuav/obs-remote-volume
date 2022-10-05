@@ -247,7 +247,6 @@ async function set_bg_img(el, sourcename, width) {
 }
 
 function update(sources) {
-	console.log("Sources:", sources);
 	state.source_elements = source_elements = {};
 	state.sources = sources;
 	repaint();
@@ -324,7 +323,6 @@ const events = {
 function parse_uri(string) {
 	//Parse the URI and put the components into the other fields
 	const uri = /^([a-z]+:\/\/)?(?:([^@]*)@)?([^:/]+)(?::([0-9]+))?\/?(.*)$/.exec(string);
-	console.log(uri);
 	if (!uri) return "Unparseable";
 	const [_, proto, pwd1, ip, port, pwd2] = uri;
 	const ssl = ["obswss://", "wss://", "ssl://", "https://"].includes(proto);
@@ -372,7 +370,6 @@ function rerender() {
 }
 function setup(uri)
 {
-	console.log("Initializing");
 	//handshake = "guess"; //TODO: Have a good default that lets people not specify protocol
 	handshake = connect_info.v5 ? "v5" : "v4";
 	const proto = connect_info.ssl ? "wss://" : "ws://";
