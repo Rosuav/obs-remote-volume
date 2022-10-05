@@ -233,7 +233,6 @@ on("pointermove", ".splitbar", e => {
 on("pointerup", ".splitbar", e => {
 	//Record splitpos as this split bar's new official position
 	e.match.releasePointerCapture(e.pointerId);
-	splitvert = null;
 	const splitbox = e.match.parentElement;
 	const {parentidx, selfidx} = splitbox.dataset;
 	const box = splitbox.getBoundingClientRect();
@@ -246,6 +245,7 @@ on("pointerup", ".splitbar", e => {
 		all_layouts[curlayout].content = rendered_layout[0].children[0];
 		localStorage.setItem("obs-remote-layouts", JSON.stringify(all_layouts));
 	}
+	splitvert = null;
 });
 
 //Settings dialog
