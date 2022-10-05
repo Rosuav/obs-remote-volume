@@ -66,6 +66,17 @@ const definitions = {
 			}));
 		},
 	},
+	section_streamstatus: {
+		title: "Stream status",
+		render: layout => [
+			BUTTON({class: "status_streaming"}, "Streaming"),
+			BUTTON({class: "status_recording"}, "Recording"),
+		],
+		update: (elem, state) => {
+			//TODO: Show whether you're streaming and/or recording in the button text
+			//Also, it'd really help to add button click events, uhh, eventually.
+		},
+	},
 	section_connect: {
 		active: false,
 		title: "Connect/login",

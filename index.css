@@ -195,3 +195,13 @@ details {
 [data-subtype=sceneswitch] > div > div:hover {background: aliceblue;}
 [data-subtype=sceneswitch] > div > div.current {background: #44ddcc;}
 [data-subtype=sceneswitch] > div > div.current:hover {background: #33ccbb;}
+
+[data-subtype=streamstatus] {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 5px;
+}
+[data-subtype=streamstatus] > button {
+	flex-grow: 1;
+}
