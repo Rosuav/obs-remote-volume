@@ -112,7 +112,7 @@ const definitions = {
 		],
 		update: (elem, state) => Object.entries(state.connect_info).forEach(([id, val]) => {
 			const el = document.getElementById(id);
-			el[el.type === "checkbox" ? "checked" : "value"] = val;
+			if (el) el[el.type === "checkbox" ? "checked" : "value"] = val;
 		}),
 	},
 	section_mixer: {
