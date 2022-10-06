@@ -333,18 +333,28 @@ const events = {
 			el.style.zIndex = data["item-locked"] ? 1 : 1000;
 		}
 	},
-	SourceMuteStateChanged: data => { //v4
-		const el = source_elements["!mute-" + data["sourceName"]];
-		if (el) el.innerText = data.muted ? "Unmute" : "Mute";
-	},
+	SourceVolumeChanged: data => fire_event("InputVolumeChanged", {inputName: data.sourceName, inputVolumeMul: data.volume}),
+	SourceMuteStateChanged: data => fire_event("InputMuteStateChanged", {inputName: data.sourceName, inputMuted: data.muted}),
 	InputVolumeChanged: data => { //v5
 		if (sent_volume_signal[data.inputName] + 100 > +new Date) return; //For 100ms after sending a volume signal, don't accept them back.
 		//TODO: Have a quick way to look up a scene element by name
-		state.sources.forEach(source => source.sourceName === data.inputName && (source.volume = data.inputVolumeMul));
+		state.sources.forEach(source => (source.name || source.sourceName) === data.inputName && (source.volume = data.inputVolumeMul));
 		//TODO: Have an easy way to say "minor changes only, update existing DOM elements"
 		repaint();
 	},
+	InputMuteStateChanged: data => { //v5
+		const el = source_elements["!mute-" + data.inputName];
+		if (el) el.innerText = data.inputMuted ? "Unmute" : "Mute";
+	},
 };
+
+function fire_event(type, data) {
+	const func = events[type];
+	if (func) return func(data);
+	//Unknown events get logged once and then no more.
+	console.log("Unknown event:", type, data);
+	events[type] = () => {};
+}
 
 function parse_uri(string) {
 	//Parse the URI and put the components into the other fields
@@ -488,27 +498,14 @@ function setup(uri)
 				else fail = 1; //Return the full raw data.d dump
 			}
 			else if (opcode === "RequestBatchResponse") [id, ret] = [data.d.requestId, data.d.results];
-			else if (opcode === "Event") {
-				const func = events[data.d.eventType];
-				if (func) return func(data.d.eventData);
-				console.log("Unknown event:", data.d.eventType, data.d.eventData);
-				events[data.d.eventType] = () => {};
-			}
+			else if (opcode === "Event") fire_event(data.d.eventType, data.d.eventData);
 			if (pending[id]) {
 				pending[id][fail](ret);
 				delete pending[id];
 			}
 			return;
 		}
-		if (data["update-type"])
-		{
-			const func = events[data["update-type"]];
-			if (func) return func(data);
-			//Unknown events get logged once and then no more.
-			console.log("Unknown event:", data["update-type"], data);
-			events[data["update-type"]] = () => {};
-			return;
-		}
+		if (data["update-type"]) return fire_event(data["update-type"], data);
 		if (data["message-id"]) {
 			const resrej = pending[data["message-id"]];
 			if (!resrej) return; //Response to an unknown message
