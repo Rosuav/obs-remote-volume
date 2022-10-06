@@ -506,6 +506,7 @@ function setup(uri)
 			const reco = await send_request("GetRecordStatus");
 			state.status.record = reco.outputActive ? "OBS_WEBSOCKET_OUTPUT_STARTED" : "OBS_WEBSOCKET_OUTPUT_STOPPED";
 		}
+		repaint();
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
