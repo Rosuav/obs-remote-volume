@@ -2,7 +2,10 @@ import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {IMG, INPUT, LABEL, LI, OPTION, SELECT, UL} = choc; //autoimport
 import {override_layout} from "./layout.js";
 import {send_updates} from "./sections.js";
-import {simpleconfirm} from "https://raw.githubusercontent.com/Rosuav/StilleBot/master/httpstatic/utils.js";
+//For some reason, importing from sikorsky.rosuav.com fails with a CORS error. I don't
+//understand what's going on, as I've sent all the same headers GitHub does and it's still
+//failed.
+import {simpleconfirm} from "https://sikorsky.rosuav.com/static/utils.js";
 
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
