@@ -20,6 +20,7 @@ const state = { //Updated and passed along to modules
 	sourcetypes, source_elements,
 	sources: [],
 	scenes: {scenes: [], currentProgramSceneName: ""},
+	status: {stream: "OBS_WEBSOCKET_OUTPUT_STOPPED", record: "OBS_WEBSOCKET_OUTPUT_STOPPED"},
 };
 function repaint() {send_updates(state);}
 
@@ -346,6 +347,16 @@ const events = {
 		const el = source_elements["!mute-" + data.inputName];
 		if (el) el.innerText = data.inputMuted ? "Unmute" : "Mute";
 	},
+	StreamStarting: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTING"}),
+	StreamStarted: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTED"}),
+	StreamStopping: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STOPPING"}),
+	StreamStopped: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STOPPED"}),
+	RecordingStarting: data => fire_event("RecordStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTING"}),
+	RecordingStarted: data => fire_event("RecordStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTED"}),
+	RecordingStopping: data => fire_event("RecordStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STOPPING"}),
+	RecordingStopped: data => fire_event("RecordStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STOPPED"}),
+	StreamStateChanged: data => {state.status.stream = data.outputState; repaint();},
+	RecordStateChanged: data => {state.status.record = data.outputState; repaint();},
 };
 
 function fire_event(type, data) {
@@ -382,6 +393,9 @@ on("input", "[data-subtype=connect] input", e => {
 	}
 	repaint();
 });
+
+on("click", ".status_streaming", e => send_request(v4v5("StartStopStreaming", "ToggleStream"))); //TODO: Confirm dialog
+on("click", ".status_recording", e => send_request(v4v5("StartStopRecording", "ToggleRecord"))); //TODO: Confirm dialog
 
 async function protofetch() {
 	//Is this the best URL to use? Should we lock to a specific version tag rather than master?

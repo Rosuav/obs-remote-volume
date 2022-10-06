@@ -62,8 +62,12 @@ const definitions = {
 			BUTTON({class: "status_recording"}, "Recording"),
 		],
 		update: (elem, state) => {
-			//TODO: Show whether you're streaming and/or recording in the button text
-			//Also, it'd really help to add button click events, uhh, eventually.
+			const xlat = {
+				"OBS_WEBSOCKET_OUTPUT_STOPPED": "Start", "OBS_WEBSOCKET_OUTPUT_STARTING": "Starting",
+				"OBS_WEBSOCKET_OUTPUT_STARTED": "CURRENTLY", "OBS_WEBSOCKET_OUTPUT_STOPPING": "Stopping",
+			};
+			set_content(elem.querySelector(".status_streaming"), xlat[state.status.stream] + " Streaming");
+			set_content(elem.querySelector(".status_recording"), xlat[state.status.record] + " Recording");
 		},
 	},
 	section_connect: {
