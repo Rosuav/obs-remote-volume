@@ -2,6 +2,7 @@ import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc; //autoimport
 import {override_layout} from "./layout.js";
 import {send_updates} from "./sections.js";
+import {simpleconfirm} from "https://sikorsky.rosuav.com/static/utils.js"; //I could copy in the code... or just call on StilleBot.
 
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
@@ -394,8 +395,12 @@ on("input", "[data-subtype=connect] input", e => {
 	repaint();
 });
 
-on("click", ".status_streaming", e => send_request(v4v5("StartStopStreaming", "ToggleStream"))); //TODO: Confirm dialog
-on("click", ".status_recording", e => send_request(v4v5("StartStopRecording", "ToggleRecord"))); //TODO: Confirm dialog
+for (let sr of ["Stream", "Record"]) {
+	const srl = sr.toLowerCase();
+	on("click", `.status_${srl}ing`, simpleconfirm(
+		`Are you sure you want to start/stop ${srl}ing?`, 
+		e => send_request(v4v5(`StartStop${sr}ing`, "Toggle" + sr))));
+}
 
 async function protofetch() {
 	//Is this the best URL to use? Should we lock to a specific version tag rather than master?

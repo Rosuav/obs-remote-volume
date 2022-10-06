@@ -1,7 +1,6 @@
 import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
 const {INPUT, LABEL, OPTION, P, SELECT, TABLE, TD, TR} = choc; //autoimport
 import {render, rendered_layout, startdrag, get_basis_object, add_element_dropdown, safe_parse_element} from "./sections.js";
-fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
 let editmode = false, toolboxwin;
 
