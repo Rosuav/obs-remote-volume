@@ -13,7 +13,7 @@ let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
 let handshake = "guess"; //Or "v4" or "v5"
-let connect_info = { }, connected = false;
+let connect_info = {ssl: false, v5: true, ip: "localhost", port: 4455, password: ""}, connected = false;
 const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 
 const state = { //Updated and passed along to modules

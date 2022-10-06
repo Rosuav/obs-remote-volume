@@ -81,7 +81,7 @@ const definitions = {
 					TD([
 						LABEL([INPUT({type: "checkbox", id: "ssl"}), " SSL"]),
 						" ",
-						LABEL([INPUT({type: "checkbox", id: "v5"}), " V5 (OBS 28+)"]),
+						LABEL([INPUT({type: "checkbox", id: "v5", checked: true}), " V5 (OBS 28+)"]),
 					]),
 				]),
 				TR([
