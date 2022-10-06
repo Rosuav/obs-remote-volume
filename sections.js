@@ -103,6 +103,12 @@ const definitions = {
 				]),
 			]),
 			BUTTON({id: "reconnect"}, "Connect to OBS"),
+			P(
+				"To use this tool, go to OBS, and configure WebSocket Settings in the Tools menu." +
+				" Enter the connection info above (notably, the password), and then click Connect." +
+				" This tool is capable of scene selection, audio mixer adjustment, starting/stopping" +
+				" the stream or recording, and more."
+			),
 		],
 		update: (elem, state) => Object.entries(state.connect_info).forEach(([id, val]) => {
 			const el = document.getElementById(id);
