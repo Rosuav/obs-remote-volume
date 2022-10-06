@@ -70,7 +70,7 @@ const definitions = {
 			set_content(elem.querySelector(".status_recording"), xlat[state.status.record] + " Recording");
 		},
 	},
-	section_connect: {
+	section_connect: { //Special case: IDs are permitted here, as you can't put this section into a layout.
 		active: false,
 		title: "Connect/login",
 		render: layout => [
