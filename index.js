@@ -495,6 +495,17 @@ function setup(uri)
 		connected = true;
 		rerender();
 		full_update();
+		//Would be nice to know which messages we need and which are unnecessary, but whatever.
+		if (handshake === "v4") {
+			const status = await send_request("GetStreamingStatus");
+			state.status.stream = status.streaming ? "OBS_WEBSOCKET_OUTPUT_STARTED" : "OBS_WEBSOCKET_OUTPUT_STOPPED";
+			state.status.record = status.recording ? "OBS_WEBSOCKET_OUTPUT_STARTED" : "OBS_WEBSOCKET_OUTPUT_STOPPED";
+		} else {
+			const strm = await send_request("GetStreamStatus");
+			state.status.stream = strm.outputActive ? "OBS_WEBSOCKET_OUTPUT_STARTED" : "OBS_WEBSOCKET_OUTPUT_STOPPED";
+			const reco = await send_request("GetRecordStatus");
+			state.status.record = reco.outputActive ? "OBS_WEBSOCKET_OUTPUT_STARTED" : "OBS_WEBSOCKET_OUTPUT_STOPPED";
+		}
 	}
 	socket.onmessage = (ev) => {
 		const data = JSON.parse(ev.data);
