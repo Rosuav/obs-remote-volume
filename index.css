@@ -205,3 +205,8 @@ details {
 [data-subtype=streamstatus] > button {
 	flex-grow: 1;
 }
+
+[data-status=CURRENTLY] {
+	/* Highlight buttons when streaming/recording is active */
+	background: #44ddcc;
+}

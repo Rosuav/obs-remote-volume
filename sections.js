@@ -66,8 +66,10 @@ const definitions = {
 				"OBS_WEBSOCKET_OUTPUT_STOPPED": "Start", "OBS_WEBSOCKET_OUTPUT_STARTING": "Starting",
 				"OBS_WEBSOCKET_OUTPUT_STARTED": "CURRENTLY", "OBS_WEBSOCKET_OUTPUT_STOPPING": "Stopping",
 			};
-			set_content(elem.querySelector(".status_streaming"), xlat[state.status.stream] + " Streaming");
-			set_content(elem.querySelector(".status_recording"), xlat[state.status.record] + " Recording");
+			for (let srl of ["stream", "record"]) {
+				const st = xlat[state.status[srl]];
+				set_content(elem.querySelector(`.status_${srl}ing`), `${st} ${srl}ing`).dataset.status = st;
+			}
 		},
 	},
 	section_connect: { //Special case: IDs are permitted here, as you can't put this section into a layout.
