@@ -174,7 +174,7 @@ async function itemdetails(item) {
 	const props = await send_request("GetSceneItemProperties", {item});
 	delete props["message-id"]; delete props["status"]; delete props["name"];
 	console.log("Got props:", props);
-	set_content("#itemprops ul", build_details(props, ""));
+	set_content("#itemprops_list", build_details(props, ""));
 	set_content("#itemprops h3", "Details for '" + item + "'");
 	const modal = document.getElementById("itemprops");
 	document.getElementById("itemprops_apply").onclick = async ev => {

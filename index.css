@@ -175,11 +175,6 @@ details {
 	flex: none;
 }
 
-#itemprops_cancel {
-	position: absolute;
-	right: 1em; top: 1em;
-}
-
 [data-subtype=sceneswitch] > div {
 	display: grid;
 	/* grid-template-columns: repeat(????, 1fr); */ /* actual column count added at runtime */
