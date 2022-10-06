@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {OPTION, SELECT, INPUT, LABEL, UL, LI, BUTTON, TR, TH, TD, SPAN} = choc; //autoimport
+const {IMG, INPUT, LABEL, LI, OPTION, SELECT, UL} = choc; //autoimport
 import {override_layout} from "./layout.js";
 import {send_updates} from "./sections.js";
 import {simpleconfirm} from "https://sikorsky.rosuav.com/static/utils.js"; //I could copy in the code... or just call on StilleBot.
@@ -171,11 +171,23 @@ function build_details(props, pfx) {
 }
 
 async function itemdetails(item) {
-	const props = await send_request("GetSceneItemProperties", {item});
-	delete props["message-id"]; delete props["status"]; delete props["name"];
+	let props;
+	if (handshake === "v4") {
+		props = await send_request("GetSceneItemProperties", {item});
+		delete props["message-id"]; delete props["status"]; delete props["name"];
+	}
+	else {
+		const settings = await send_request("GetInputSettings", {inputName: item});
+		//TODO: Cache the defaults (they won't change in one run, unless you switch OBS versions or something)
+		const defaults = await send_request("GetInputDefaultSettings", {inputKind: settings.inputKind});
+		console.log("Defaults", defaults);
+		console.log("Settings", settings);
+		props = {...defaults.defaultInputSettings, ...settings.inputSettings};
+	}
 	console.log("Got props:", props);
 	set_content("#itemprops_list", build_details(props, ""));
 	set_content("#itemprops h3", "Details for '" + item + "'");
+	//if (handshake === "v5") DOM("#itemprops_list").appendChild(IMG({src: (await send_request("GetSourceScreenshot", {sourceName: item, imageFormat: "png"})).imageData}));
 	const modal = document.getElementById("itemprops");
 	document.getElementById("itemprops_apply").onclick = async ev => {
 		console.log("Applying changes to item", item);

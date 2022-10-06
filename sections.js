@@ -49,7 +49,6 @@ const definitions = {
 		update: (elem, state) => {
 			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
 				const typeinfo = state.sourcetypes[source.type || source.inputKind];
-				if (!typeinfo || !typeinfo.caps.hasVideo) return;
 				const name = source.name || source.sourceName;
 				return LI(BUTTON({class: "sceneelembtn", "data-name": name}, name));
 			}));
