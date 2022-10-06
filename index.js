@@ -4,8 +4,14 @@ import {override_layout} from "./layout.js";
 import {send_updates} from "./sections.js";
 //For some reason, importing from sikorsky.rosuav.com fails with a CORS error. I don't
 //understand what's going on, as I've sent all the same headers GitHub does and it's still
-//failed.
-import {simpleconfirm} from "https://sikorsky.rosuav.com/static/utils.js";
+//failed. This is STUPID. I don't understand why I'm not allowed to host a library file on
+//my own server, but I am allowed to copy the file and incorporate it in the repository;
+//but oh, if it's on GitHub Pages, that's absolutely fine!
+//All this is only an issue because of a different problem, too: that https://vol.rosuav.com/
+//is not allowed to connect to a non-encrypted websocket. Which means that, in the name of
+//security, we have to fetch the application code over an unencrypted connection. It's, uhh,
+//more secure that way. Obviously.
+import {simpleconfirm} from "./stillebot_utils.js";
 
 let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
