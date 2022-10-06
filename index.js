@@ -179,27 +179,33 @@ function build_details(props, pfx) {
 	return items;
 }
 
-async function itemdetails(item) {
-	let props;
+async function itemdetails(itemid, itemname) {
+	let props = { };
 	if (handshake === "v4") {
-		props = await send_request("GetSceneItemProperties", {item});
+		props = await send_request("GetSceneItemProperties", {item: {id: +itemid}});
 		delete props["message-id"]; delete props["status"]; delete props["name"];
 	}
 	else {
-		const settings = await send_request("GetInputSettings", {inputName: item});
-		//TODO: Cache the defaults (they won't change in one run, unless you switch OBS versions or something)
-		const defaults = await send_request("GetInputDefaultSettings", {inputKind: settings.inputKind});
-		console.log("Defaults", defaults);
-		console.log("Settings", settings);
-		props = {...defaults.defaultInputSettings, ...settings.inputSettings};
+		//TODO: Batch these requests
+		try {
+			const settings = await send_request("GetInputSettings", {inputName: itemname});
+			//TODO: Cache the defaults (they won't change in one run, unless you switch OBS versions or something)
+			const defaults = await send_request("GetInputDefaultSettings", {inputKind: settings.inputKind});
+			props.settings = {...defaults.defaultInputSettings, ...settings.inputSettings};
+		} catch (e) { } //TODO: Figure out which item types fail and why (some item types don't have settings)
+		const ident = {sceneName: state.scenes.currentProgramSceneName, sceneItemId: +itemid};
+		props.transform = (await send_request("GetSceneItemTransform", ident)).sceneItemTransform;
+		props.enabled = (await send_request("GetSceneItemEnabled", ident)).sceneItemEnabled;
+		props.locked = (await send_request("GetSceneItemLocked", ident)).sceneItemLocked;
+		props.blend_mode = (await send_request("GetSceneItemBlendMode", ident)).sceneItemBlendMode;
 	}
 	console.log("Got props:", props);
 	set_content("#itemprops_list", build_details(props, ""));
-	set_content("#itemprops h3", "Details for '" + item + "'");
+	set_content("#itemprops h3", "Details for '" + itemname + "'");
 	//if (handshake === "v5") DOM("#itemprops_list").appendChild(IMG({src: (await send_request("GetSourceScreenshot", {sourceName: item, imageFormat: "png"})).imageData}));
 	const modal = document.getElementById("itemprops");
 	document.getElementById("itemprops_apply").onclick = async ev => {
-		console.log("Applying changes to item", item);
+		console.log("Applying changes to item", itemname);
 		const updates = {}; let changes = 0;
 		modal.querySelectorAll("[data-prop]").forEach(el => {
 			let val = el.type === "checkbox" ? el.checked : el.value;
@@ -217,15 +223,15 @@ async function itemdetails(item) {
 		});
 		modal.close();
 		if (!changes) {console.log("No changes"); return;}
-		console.log("Updating", item, updates);
-		updates.item = item;
+		console.log("Updating", itemname, updates);
+		updates.item = itemname;
 		await send_request("SetSceneItemProperties", updates);
 		full_update(); //After making any changes, do a full update. Simpler that way.
 	};
 	modal.showModal();
 }
-on("click", ".sceneelembtn", e => itemdetails(e.match.dataset.name));
-on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.name));
+on("click", ".sceneelembtn", e => itemdetails(e.match.dataset.itemid, e.match.dataset.name));
+on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.itemid, e.match.dataset.name));
 
 function update_element(el, xfrm) {
 	//Default to top-left if obs-websocket doesn't give the actual alignment

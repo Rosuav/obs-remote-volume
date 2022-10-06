@@ -26,7 +26,10 @@ const definitions = {
 				//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
 				//TODO: Correctly handle item gravity (alignment)
 				const name = source.name || source.sourceName;
-				const el = DIV({class: "sceneelement", "data-name": name}, name);
+				const el = DIV({class: "sceneelement",
+					"data-itemid": source.id || source.sceneItemId,
+					"data-name": name},
+					name);
 				/*update_element(el, { //FIXME: Bring this into here??
 					width: source.cx, height: source.cy,
 					locked: source.locked,
@@ -48,9 +51,11 @@ const definitions = {
 		render: layout => [UL({class: "sceneitems"})],
 		update: (elem, state) => {
 			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
-				const typeinfo = state.sourcetypes[source.type || source.inputKind];
 				const name = source.name || source.sourceName;
-				return LI(BUTTON({class: "sceneelembtn", "data-name": name}, name));
+				return LI(BUTTON({class: "sceneelembtn",
+					"data-itemid": source.id || source.sceneItemId,
+					"data-name": name},
+					name));
 			}));
 		},
 	},
