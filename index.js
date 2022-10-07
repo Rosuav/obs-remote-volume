@@ -22,7 +22,7 @@ let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
 let handshake = "guess"; //Or "v4" or "v5"
-let connect_info = {ssl: false, v5: true, ip: "localhost", port: 4455, password: ""}, connected = false;
+let connect_info = {ssl: false, v5: true, ip: "localhost", port: 4455, password: "", revealpwd: false}, connected = false;
 const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 
 const state = { //Updated and passed along to modules
@@ -319,6 +319,7 @@ async function full_update() {
 //   completely independent. Gonna be a lot of setTimeout.
 //Note: Only necessary where fighting is a possibility. Don't bother doing this
 //for mute status.
+//Note: Must be done on a per-element basis, NOT a per-source-input basis.
 const sent_volume_signal = { };
 on("input", ".volslider", e => {
 	const val = e.match.value ** 2;
@@ -402,7 +403,10 @@ function parse_uri(string) {
 	const [_, proto, pwd1, ip, port, pwd2] = uri;
 	const ssl = ["obswss://", "wss://", "ssl://", "https://"].includes(proto);
 	const v5 = ["obswss://", "obsws://"].includes(proto);
-	state.connect_info = connect_info = {ssl, v5, ip, port: port || (v5 ? 4455 : 4444), password: pwd1 || pwd2 || ""};
+	Object.assign(connect_info, {ssl, v5, ip, port: port || (v5 ? 4455 : 4444)});
+	const password = pwd1 || pwd2 || "";
+	//When the password is hidden, don't clear out an existing password.
+	if (password || connect_info.revealpwd) connect_info.password = password;
 	build_uri();
 }
 function build_uri() {
@@ -410,7 +414,8 @@ function build_uri() {
 		(connect_info.v5 ? "obsws" : "ws") +
 		(connect_info.ssl ? "s" : "")
 	);
-	connect_info.uri = `${proto}://${connect_info.ip}:${connect_info.port}/${connect_info.password}`;
+	connect_info.uri = `${proto}://${connect_info.ip}:${connect_info.port}/`;
+	if (connect_info.revealpwd) connect_info.uri += connect_info.password;
 }
 
 on("input", "[data-subtype=connect] input", e => {
@@ -456,7 +461,6 @@ function setup(uri)
 	handshake = connect_info.v5 ? "v5" : "v4";
 	const proto = connect_info.ssl ? "wss://" : "ws://";
 	const server = connect_info.ip, pwd = connect_info.password, port = connect_info.port;
-	history.replaceState(null, "", "#" + connect_info.uri);
 	console.log("Connect to", proto + server, port, "handshake", handshake)
 	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
@@ -582,7 +586,7 @@ function setup(uri)
 }
 rerender();
 const hash = (window.location.hash || "#").slice(1);
-if (hash) {parse_uri(hash); setup();}
+if (hash) {history.replaceState(null, "", location.pathname + location.search); parse_uri(hash); setup();}
 on("click", "#reconnect", e => setup(DOM("#uri").value));
 
 /* TODO: Hide the user's password.
