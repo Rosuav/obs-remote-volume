@@ -587,6 +587,7 @@ function setup(uri)
 rerender();
 const hash = (window.location.hash || "#").slice(1);
 if (hash) {history.replaceState(null, "", location.pathname + location.search); parse_uri(hash); setup();}
+else {build_uri(); repaint();}
 on("click", "#reconnect", e => setup(DOM("#uri").value));
 
 /* TODO: Hide the user's password.

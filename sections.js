@@ -113,6 +113,13 @@ const definitions = {
 					TD(LABEL({for: "uri"}, "Connect URI:")),
 					TD(INPUT({id: "uri", size: 40, value: "obsws://localhost:4455/"})),
 				]),
+				TR([
+					TD(),
+					TD([
+						BUTTON({class: "clipbtn", type: "button"}, "Copy bookmarkable link"),
+						" Note: The copied link will include your password!",
+					]),
+				]),
 			]),
 			BUTTON({id: "reconnect"}, "Connect to OBS"),
 			P(
@@ -128,6 +135,10 @@ const definitions = {
 				if (el) el[el.type === "checkbox" ? "checked" : "value"] = val;
 			});
 			elem.querySelector("#password").type = state.connect_info.revealpwd ? "text" : "password";
+			const url = new URL(location);
+			url.hash = state.connect_info.uri +
+				(state.connect_info.revealpwd ? "" : state.connect_info.password);
+			elem.querySelector(".clipbtn").dataset.copyme = url.href;
 		},
 	},
 	section_mixer: {
