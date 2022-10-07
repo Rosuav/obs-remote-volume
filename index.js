@@ -288,6 +288,11 @@ async function full_update() {
 		const scene = await send_request("GetCurrentScene");
 		scenes.currentProgramSceneName = scenes["current-scene"];
 		scenes.scenes = scenes.scenes.map(s => ({sceneName: s.name}));
+		scene.sources.forEach(src => {
+			//Fold some attributes to their v5 names for convenience
+			src.sourceName = src.name;
+			src.sceneItemId = src.id;
+		});
 		update(scene.sources);
 	} else {
 		scenes.scenes.reverse(); //HACK: Currently, OBS WS v5 seems to return them in the wrong order.

@@ -25,11 +25,10 @@ const definitions = {
 				if (!typeinfo || !typeinfo.caps.hasVideo) return;
 				//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
 				//TODO: Correctly handle item gravity (alignment)
-				const name = source.name || source.sourceName;
 				const el = DIV({class: "sceneelement",
-					"data-itemid": source.id || source.sceneItemId,
-					"data-name": name},
-					name);
+					"data-itemid": source.sceneItemId,
+					"data-name": source.sourceName},
+					source.sourceName);
 				/*update_element(el, { //FIXME: Bring this into here??
 					width: source.cx, height: source.cy,
 					locked: source.locked,
@@ -51,11 +50,10 @@ const definitions = {
 		render: layout => [UL({class: "sceneitems"})],
 		update: (elem, state) => {
 			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
-				const name = source.name || source.sourceName;
 				return LI(BUTTON({class: "sceneelembtn",
-					"data-itemid": source.id || source.sceneItemId,
-					"data-name": name},
-					name));
+					"data-itemid": source.sceneItemId,
+					"data-name": source.sourceName},
+					source.sourceName));
 			}));
 		},
 	},
@@ -148,16 +146,15 @@ const definitions = {
 			const typeinfo = state.sourcetypes[source.type || source.inputKind];
 			if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 			//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
-			const name = source.name || source.sourceName;
-			return TR({"data-name": name}, [
-				TH(name),
-				TD(state.source_elements["!volume-" + name] = INPUT({
+			return TR({"data-name": source.sourceName}, [
+				TH(source.sourceName),
+				TD(state.source_elements["!volume-" + source.sourceName] = INPUT({
 					class: "volslider", type: "range",
 					min: 0, max: 1, step: "any", "value": Math.sqrt(source.volume),
 				})),
 				TD([
 					SPAN({class: "percent"}, (Math.sqrt(source.volume)*100).toFixed(2)),
-					state.source_elements["!mute-" + name] = BUTTON(
+					state.source_elements["!mute-" + source.sourceName] = BUTTON(
 						{type: "button", class: "mutebtn"},
 						//NOTE: source.muted is actually never sent as of 20190719.
 						source.muted ? "Unmute" : "Mute")
