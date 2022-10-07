@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {BUTTON, CODE, DETAILS, DIV, H4, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SPAN, SUMMARY, TABLE, TBODY, TD, TH, TR, UL} = choc; //autoimport
+const {BUTTON, CODE, DIV, FORM, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SPAN, TABLE, TBODY, TD, TH, TR, UL} = choc; //autoimport
 
 //NOTE: Avoid using any CSS IDs anywhere in these definitions.
 //It should be perfectly reasonable to have the same section in two places
@@ -82,7 +82,7 @@ const definitions = {
 		//as it's possible that this won't be in the document when an update comes through.
 		active: false,
 		title: "Connect/login",
-		render: layout => [
+		render: layout => FORM({id: "connectform"}, [
 			TABLE([
 				TR([
 					TD("Protocol:"),
@@ -128,7 +128,7 @@ const definitions = {
 				" This tool is capable of scene selection, audio mixer adjustment, starting/stopping" +
 				" the stream or recording, and more."
 			),
-		],
+		]),
 		update: (elem, state) => {
 			Object.entries(state.connect_info).forEach(([id, val]) => {
 				const el = elem.querySelector("#" + id);

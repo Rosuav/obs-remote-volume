@@ -455,7 +455,7 @@ function rerender() {
 	else override_layout({type: "section", subtype: "connect"});
 	repaint();
 }
-function setup(uri)
+function setup()
 {
 	//handshake = "guess"; //TODO: Have a good default that lets people not specify protocol
 	handshake = connect_info.v5 ? "v5" : "v4";
@@ -588,15 +588,4 @@ rerender();
 const hash = (window.location.hash || "#").slice(1);
 if (hash) {history.replaceState(null, "", location.pathname + location.search); parse_uri(hash); setup();}
 else {build_uri(); repaint();}
-on("click", "#reconnect", e => setup(DOM("#uri").value));
-
-/* TODO: Hide the user's password.
-- Don't have the URI in the hash after connecting - just retain it internally
-- If possible, hide the password in the URI input while connecting, too
-- Have a "Reveal Password" checkbox which also uncensors it in the URI
-- But otherwise, leave out the password field; if password is absent/blank
-  on parse of a URI, leave it unchanged.
-- Immediately after parsing the URI from the hash, remove the hash.
-- Confirm that, if everything is right but the password is wrong, it looks
-  like a password screen.
-*/
+on("submit", "#connectform", e => {e.preventDefault(); setup();});
