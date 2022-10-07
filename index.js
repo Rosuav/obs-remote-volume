@@ -588,4 +588,10 @@ on("click", "#reconnect", e => setup(DOM("#uri").value));
 /* TODO: Hide the user's password.
 - Don't have the URI in the hash after connecting - just retain it internally
 - If possible, hide the password in the URI input while connecting, too
+- Have a "Reveal Password" checkbox which also uncensors it in the URI
+- But otherwise, leave out the password field; if password is absent/blank
+  on parse of a URI, leave it unchanged.
+- Immediately after parsing the URI from the hash, remove the hash.
+- Confirm that, if everything is right but the password is wrong, it looks
+  like a password screen.
 */
