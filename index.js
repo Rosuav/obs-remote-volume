@@ -299,18 +299,6 @@ async function full_update() {
 		const scenename = scenes.currentProgramSceneName;
 		//TODO: Create scene selection buttons for scenes.scenes[].sceneName
 		const sceneitems = (await send_request("GetSceneItemList", {sceneName: scenename})).sceneItems;
-		const volumes = await send_request("GetInputVolume",
-			sceneitems.map(i => ({inputName: i.sourceName})),
-			"RequestBatch");
-		volumes.forEach((v, i) => {
-			const item = sceneitems[i];
-			const t = sourcetypes[item.inputKind] = {caps: { }};
-			//Requests that succeed definitely indicate input kinds that have audio.
-			//We assume for now that failure is caused by the input not having
-			//audio, although it's possible there are other errors.
-			t.caps.hasAudio = v.requestStatus.result;
-			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
-		});
 		sceneitems.forEach(s => s.sceneName = scenename);
 		state.sources = sceneitems;
 	}
@@ -321,16 +309,30 @@ async function full_update() {
 	//I don't THINK it's possible to infinitely recurse here, but just in case,
 	//only fetch what we haven't yet fetched.
 	if (handshake === "v4") ; //Not sure what to do on v4, there may be a children element already.
-	else for (let i = 0; i < state.sources.length; ++i) { //ensure that newly added elements will be iterated over
-		const source = state.sources[i];
-		if (source.inputKind) continue; //Groups and subscenes have inputKind === null
-		if (state.sources_by_name[source.inputName]) continue; //Already sighted this one!
-		(await send_request(
-			source.isGroup ? "GetGroupSceneItemList" : "GetSceneItemList",
-			{sceneName: source.sourceName},
-		)).sceneItems.forEach(src => {
-			src.sceneName = source.sourceName;
-			state.sources.push(src);
+	else {
+		for (let i = 0; i < state.sources.length; ++i) { //ensure that newly added elements will be iterated over
+			const source = state.sources[i];
+			if (source.inputKind) continue; //Groups and subscenes have inputKind === null
+			if (state.sources_by_name[source.inputName]) continue; //Already sighted this one!
+			(await send_request(
+				source.isGroup ? "GetGroupSceneItemList" : "GetSceneItemList",
+				{sceneName: source.sourceName},
+			)).sceneItems.forEach(src => {
+				src.sceneName = source.sourceName;
+				state.sources.push(src);
+			});
+		}
+		const volumes = await send_request("GetInputVolume",
+			state.sources.map(i => ({inputName: i.sourceName})),
+			"RequestBatch");
+		volumes.forEach((v, i) => {
+			const item = state.sources[i];
+			const t = sourcetypes[item.inputKind] = {caps: { }};
+			//Requests that succeed definitely indicate input kinds that have audio.
+			//We assume for now that failure is caused by the input not having
+			//audio, although it's possible there are other errors.
+			t.caps.hasAudio = v.requestStatus.result;
+			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
 		});
 	}
 	state.source_elements = source_elements = {};
