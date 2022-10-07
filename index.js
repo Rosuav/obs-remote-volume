@@ -28,7 +28,7 @@ const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 const state = { //Updated and passed along to modules
 	connect_info,
 	sourcetypes, source_elements,
-	sources: [],
+	sources: [], sources_by_name: { },
 	scenes: {scenes: [], currentProgramSceneName: ""},
 	status: {stream: "OBS_WEBSOCKET_OUTPUT_STOPPED", record: "OBS_WEBSOCKET_OUTPUT_STOPPED"},
 };
@@ -179,10 +179,10 @@ function build_details(props, pfx) {
 	return items;
 }
 
-async function itemdetails(itemid, itemname) {
+async function itemdetails(scenename, itemid, itemname) {
 	let props = { };
 	if (handshake === "v4") {
-		props = await send_request("GetSceneItemProperties", {item: {id: +itemid}});
+		props = await send_request("GetSceneItemProperties", {"scene-name": scenename, item: {id: +itemid}});
 		delete props["message-id"]; delete props["status"]; delete props["name"];
 	}
 	else {
@@ -193,7 +193,7 @@ async function itemdetails(itemid, itemname) {
 			const defaults = await send_request("GetInputDefaultSettings", {inputKind: settings.inputKind});
 			props.settings = {...defaults.defaultInputSettings, ...settings.inputSettings};
 		} catch (e) { } //TODO: Figure out which item types fail and why (some item types don't have settings)
-		const ident = {sceneName: state.scenes.currentProgramSceneName, sceneItemId: +itemid};
+		const ident = {sceneName: scenename, sceneItemId: +itemid};
 		props.transform = (await send_request("GetSceneItemTransform", ident)).sceneItemTransform;
 		props.enabled = (await send_request("GetSceneItemEnabled", ident)).sceneItemEnabled;
 		props.locked = (await send_request("GetSceneItemLocked", ident)).sceneItemLocked;
@@ -224,14 +224,19 @@ async function itemdetails(itemid, itemname) {
 		modal.close();
 		if (!changes) {console.log("No changes"); return;}
 		console.log("Updating", itemname, updates);
-		updates.item = itemname;
-		await send_request("SetSceneItemProperties", updates);
+		if (handshake === "v4") {
+			updates.item = itemname;
+			updates["scene-name"] = scenename;
+			await send_request("SetSceneItemProperties", updates);
+		} else {
+			//TODO
+		}
 		full_update(); //After making any changes, do a full update. Simpler that way.
 	};
 	modal.showModal();
 }
-on("click", ".sceneelembtn", e => itemdetails(e.match.dataset.itemid, e.match.dataset.name));
-on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.itemid, e.match.dataset.name));
+on("click", ".sceneelembtn", e => itemdetails(e.match.dataset.scene, e.match.dataset.itemid, e.match.dataset.name));
+on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.scene, e.match.dataset.itemid, e.match.dataset.name));
 
 function update_element(el, xfrm) {
 	//Default to top-left if obs-websocket doesn't give the actual alignment
@@ -286,6 +291,7 @@ async function full_update() {
 			//Fold some attributes to their v5 names for convenience
 			src.sourceName = src.name;
 			src.sceneItemId = src.id;
+			src.sceneName = scenes["current-scene"];
 		});
 		state.sources = scene.sources;
 	} else {
@@ -305,7 +311,27 @@ async function full_update() {
 			t.caps.hasAudio = v.requestStatus.result;
 			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
 		});
+		sceneitems.forEach(s => s.sceneName = scenename);
 		state.sources = sceneitems;
+	}
+	//Build a mapping from name to info object
+	state.sources_by_name = { };
+	state.sources.forEach(s => state.sources_by_name[s.sourceName] = s);
+	//If there's a group or scene in the scene, recursively fetch its children.
+	//I don't THINK it's possible to infinitely recurse here, but just in case,
+	//only fetch what we haven't yet fetched.
+	if (handshake === "v4") ; //Not sure what to do on v4, there may be a children element already.
+	else for (let i = 0; i < state.sources.length; ++i) { //ensure that newly added elements will be iterated over
+		const source = state.sources[i];
+		if (source.inputKind) continue; //Groups and subscenes have inputKind === null
+		if (state.sources_by_name[source.inputName]) continue; //Already sighted this one!
+		(await send_request(
+			source.isGroup ? "GetGroupSceneItemList" : "GetSceneItemList",
+			{sceneName: source.sourceName},
+		)).sceneItems.forEach(src => {
+			src.sceneName = source.sourceName;
+			state.sources.push(src);
+		});
 	}
 	state.source_elements = source_elements = {};
 	repaint();
@@ -368,8 +394,8 @@ const events = {
 	SourceMuteStateChanged: data => fire_event("InputMuteStateChanged", {inputName: data.sourceName, inputMuted: data.muted}),
 	InputVolumeChanged: data => { //v5
 		if (sent_volume_signal[data.inputName] + 100 > +new Date) return; //For 100ms after sending a volume signal, don't accept them back.
-		//TODO: Have a quick way to look up a scene element by name
-		state.sources.forEach(source => source.sourceName === data.inputName && (source.volume = data.inputVolumeMul));
+		const source = state.sources_by_name[data.inputName];
+		if (source) source.volume = data.inputVolumeMul;
 		//TODO: Have an easy way to say "minor changes only, update existing DOM elements"
 		repaint();
 	},

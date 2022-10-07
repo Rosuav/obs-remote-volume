@@ -27,6 +27,7 @@ const definitions = {
 				//TODO: Correctly handle item gravity (alignment)
 				const el = DIV({class: "sceneelement",
 					"data-itemid": source.sceneItemId,
+					"data-scene": source.sceneName,
 					"data-name": source.sourceName},
 					source.sourceName);
 				/*update_element(el, { //FIXME: Bring this into here??
@@ -52,6 +53,7 @@ const definitions = {
 			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
 				return LI(BUTTON({class: "sceneelembtn",
 					"data-itemid": source.sceneItemId,
+					"data-scene": source.sceneName,
 					"data-name": source.sourceName},
 					source.sourceName));
 			}));
