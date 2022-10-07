@@ -275,12 +275,6 @@ async function set_bg_img(el, sourcename, width) {
 	catch (err) {console.error("Couldn't get image for", source.name, err);}
 }
 
-function update(sources) {
-	state.source_elements = source_elements = {};
-	state.sources = sources;
-	repaint();
-}
-
 async function full_update() {
 	const scenes = await send_request("GetSceneList");
 	state.scenes = scenes;
@@ -293,7 +287,7 @@ async function full_update() {
 			src.sourceName = src.name;
 			src.sceneItemId = src.id;
 		});
-		update(scene.sources);
+		state.sources = scene.sources;
 	} else {
 		scenes.scenes.reverse(); //HACK: Currently, OBS WS v5 seems to return them in the wrong order.
 		const scenename = scenes.currentProgramSceneName;
@@ -311,8 +305,10 @@ async function full_update() {
 			t.caps.hasAudio = v.requestStatus.result;
 			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
 		});
-		update(sceneitems);
+		state.sources = sceneitems;
 	}
+	state.source_elements = source_elements = {};
+	repaint();
 }
 
 //TODO: Design a generic debounce circuit.
@@ -345,7 +341,7 @@ on("click", "[data-sceneselect]", e =>
 const events = {
 	SwitchScenes: data => { //v4
 		state.scenes.currentProgramSceneName = data["scene-name"];
-		update(data.sources);
+		full_update();
 	},
 	CurrentProgramSceneChanged: data => { //v5
 		state.scenes.currentProgramSceneName = data.sceneName;
