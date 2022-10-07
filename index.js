@@ -585,7 +585,10 @@ function setup()
 	};
 }
 rerender();
-const hash = (window.location.hash || "#").slice(1);
+//Hack and future feature: A saved connection URI to automatically connect to.
+//It may be worth having a "remember password" feature that uses this. Alternatively,
+//an explicit "Connect to this OBS every time" after connection may be useful too.
+const hash = (window.location.hash || "#").slice(1) || localStorage.getItem("obs-remote-autoconnect");
 if (hash) {history.replaceState(null, "", location.pathname + location.search); parse_uri(hash); setup();}
 else {build_uri(); repaint();}
 on("submit", "#connectform", e => {e.preventDefault(); setup();});
