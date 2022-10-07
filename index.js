@@ -369,7 +369,7 @@ const events = {
 	InputVolumeChanged: data => { //v5
 		if (sent_volume_signal[data.inputName] + 100 > +new Date) return; //For 100ms after sending a volume signal, don't accept them back.
 		//TODO: Have a quick way to look up a scene element by name
-		state.sources.forEach(source => (source.name || source.sourceName) === data.inputName && (source.volume = data.inputVolumeMul));
+		state.sources.forEach(source => source.sourceName === data.inputName && (source.volume = data.inputVolumeMul));
 		//TODO: Have an easy way to say "minor changes only, update existing DOM elements"
 		repaint();
 	},
