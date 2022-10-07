@@ -100,7 +100,11 @@ const definitions = {
 				]),
 				TR([
 					TD(LABEL({for: "password"}, "Password:")),
-					TD(INPUT({id: "password", size: 20})),
+					TD([
+						INPUT({id: "password", size: 20}),
+						" ",
+						LABEL([INPUT({type: "checkbox", id: "revealpwd"}), " Reveal password"]),
+					]),
 				]),
 				TR([
 					TD(LABEL({for: "uri"}, "Connect URI:")),
@@ -115,10 +119,13 @@ const definitions = {
 				" the stream or recording, and more."
 			),
 		],
-		update: (elem, state) => Object.entries(state.connect_info).forEach(([id, val]) => {
-			const el = document.getElementById(id);
-			if (el) el[el.type === "checkbox" ? "checked" : "value"] = val;
-		}),
+		update: (elem, state) => {
+			Object.entries(state.connect_info).forEach(([id, val]) => {
+				const el = document.getElementById(id);
+				if (el) el[el.type === "checkbox" ? "checked" : "value"] = val;
+			});
+			document.getElementById("password").type = state.connect_info.revealpwd ? "text" : "password";
+		},
 	},
 	section_mixer: {
 		title: "Volume mixer",
