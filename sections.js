@@ -76,7 +76,10 @@ const definitions = {
 			}
 		},
 	},
-	section_connect: { //Special case: IDs are permitted here, as you can't put this section into a layout.
+	section_connect: {
+		//Special case: IDs are permitted here, as you can't put this section into a layout.
+		//It is still necessary to reference elements from the given top-level elem, though,
+		//as it's possible that this won't be in the document when an update comes through.
 		active: false,
 		title: "Connect/login",
 		render: layout => [
@@ -121,10 +124,10 @@ const definitions = {
 		],
 		update: (elem, state) => {
 			Object.entries(state.connect_info).forEach(([id, val]) => {
-				const el = document.getElementById(id);
+				const el = elem.querySelector("#" + id);
 				if (el) el[el.type === "checkbox" ? "checked" : "value"] = val;
 			});
-			document.getElementById("password").type = state.connect_info.revealpwd ? "text" : "password";
+			elem.querySelector("#password").type = state.connect_info.revealpwd ? "text" : "password";
 		},
 	},
 	section_mixer: {
