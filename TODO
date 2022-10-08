@@ -9,6 +9,10 @@
   - Is the locked status transmitted? Should we (a) respect it, and (b) be able
     to toggle it?
 * Hide the layout Edit button when on the connect screen (it's nonfunctional)
+* NOTE: It is absolutely possible to have the same scene element twice on one
+  scene. (It is not, however, possible to have two elements with the same name.)
+  When making fine adjustments to an element, it will be necessary to search for
+  ALL with the same sourceName.
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
