@@ -217,6 +217,7 @@ details {
 	padding: 2px;
 	cursor: default;
 	transition: opacity 2s 0.5s;
+	left: -100px; top: -100px; /* Keep it off screen until it's moved to the mouse cursor */
 }
 #copied.shown {
 	opacity: 1;
