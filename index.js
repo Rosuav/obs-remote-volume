@@ -312,7 +312,7 @@ async function full_update() {
 		for (let i = 0; i < state.sources.length; ++i) { //ensure that newly added elements will be iterated over
 			const source = state.sources[i];
 			if (source.inputKind) continue; //Groups and subscenes have inputKind === null
-			if (state.sources_by_name[source.inputName]) continue; //Already sighted this one!
+			if (state.sources_by_name[source.sourceName]) continue; //Already sighted this one!
 			(await send_request(
 				source.isGroup ? "GetGroupSceneItemList" : "GetSceneItemList",
 				{sceneName: source.sourceName},
