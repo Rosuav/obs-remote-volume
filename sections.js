@@ -163,6 +163,11 @@ const definitions = {
 				]),
 			]);
 		})),
+		adjust: (source, el) => {
+			el.querySelector(".volslider").value = source.volume ** 0.5;
+			set_content(el.querySelector(".percent"), ""+(Math.sqrt(source.volume)*100).toFixed(2));
+			el.querySelector(".mutebtn").value = source.muted ? "Unmute" : "Mute";
+		},
 	},
 	section_sceneswitch: {
 		title: "Scene switcher",
@@ -248,6 +253,15 @@ const updateme = []; let laststate = null;
 export function send_updates(state) {
 	laststate = state;
 	updateme.forEach(([basis, elem]) => basis.update(elem, state));
+}
+export function adjust_state(source) {
+	//Abbreviated update of a single source. I *really* hope that JSONifying
+	//is equivalent to CSS's quoting rules, because I honestly don't know
+	//exactly what CSS's rules are. But for the most part, this will be fine
+	//(since the most important thing to take care of is spaces in names).
+	const sel = "[data-name=" + JSON.stringify(source.sourceName) + "]";
+	updateme.forEach(([basis, elem]) => basis.adjust &&
+		elem.querySelectorAll(sel).forEach(el => basis.adjust(source, el)));
 }
 
 export const add_element_dropdown = () => SELECT({class: "addelem editonly"}, [

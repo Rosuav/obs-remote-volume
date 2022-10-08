@@ -1,7 +1,7 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
 const {IMG, INPUT, LABEL, LI, OPTION, SELECT, UL} = choc; //autoimport
 import {override_layout} from "./layout.js";
-import {send_updates} from "./sections.js";
+import {send_updates, adjust_state} from "./sections.js";
 //For some reason, importing from sikorsky.rosuav.com fails with a CORS error. I don't
 //understand what's going on, as I've sent all the same headers GitHub does and it's still
 //failed. This is STUPID. I don't understand why I'm not allowed to host a library file on
@@ -338,25 +338,12 @@ async function full_update() {
 	repaint();
 }
 
-//TODO: Design a generic debounce circuit.
-//1. When a command is sent to OBS, record the timestamp 100ms later.
-//2. When a status message is received, if within the 100ms window, defer until
-//   after that window. Retrigger the status message (last one only) when that
-//   window closes.
-//3. Different signals for the same source, or the same signal for another, are
-//   completely independent. Gonna be a lot of setTimeout.
-//Note: Only necessary where fighting is a possibility. Don't bother doing this
-//for mute status.
-//Note: Must be done on a per-element basis, NOT a per-source-input basis.
-const sent_volume_signal = { };
 on("input", ".volslider", e => {
-	const val = e.match.value ** 2;
 	const tr = e.match.closest("tr");
-	tr.querySelector("span").innerText = (val*100).toFixed(2);
-	sent_volume_signal[tr.dataset.name] = +new Date;
+	tr.dataset.debounce = +new Date + 100; //Block incoming updates for 100ms
 	send_request(v4v5("SetVolume", "SetInputVolume"), {
 		[v4v5("source", "inputName")]: tr.dataset.name,
-		[v4v5("volume", "inputVolumeMul")]: val,
+		[v4v5("volume", "inputVolumeMul")]: e.match.value ** 2,
 	});
 });
 on("click", ".mutebtn", e => send_request("ToggleMute", {"source": e.match.closest("tr").dataset.name}));
@@ -396,14 +383,12 @@ const events = {
 	SourceVolumeChanged: data => fire_event("InputVolumeChanged", {inputName: data.sourceName, inputVolumeMul: data.volume}),
 	SourceMuteStateChanged: data => fire_event("InputMuteStateChanged", {inputName: data.sourceName, inputMuted: data.muted}),
 	InputVolumeChanged: data => { //v5
-		if (sent_volume_signal[data.inputName] + 100 > +new Date) return; //For 100ms after sending a volume signal, don't accept them back.
 		const source = state.sources_by_name[data.inputName];
-		//TODO: Have an easy way to say "minor changes only, update existing DOM elements"
-		if (source) {source.volume = data.inputVolumeMul; repaint();}
+		if (source) {source.volume = data.inputVolumeMul; adjust_state(source, data.inputName);}
 	},
 	InputMuteStateChanged: data => { //v5
 		const source = state.sources_by_name[data.inputName];
-		if (source) {source.muted = data.inputMuted; repaint();}
+		if (source) {source.muted = data.inputMuted; adjust_state(source, data.inputName);}
 	},
 	StreamStarting: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTING"}),
 	StreamStarted: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTED"}),
