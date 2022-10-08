@@ -18,7 +18,6 @@ let display_scale = 0.625; //Updated whenever we get a full set of new sources
 const obsenum = {WebSocketOpCode: {0: "Hello"}}; //Seed with the only message we absolutely have to be able to comprehend initially
 
 const sourcetypes = {}; //Info from GetSourceTypesList, if available (ignored if not)
-let source_elements = {}; //Map a source name to its DOM element
 
 let send_request = null; //When the socket is connected, this is a function.
 let handshake = "guess"; //Or "v4" or "v5"
@@ -27,7 +26,7 @@ const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 
 const state = { //Updated and passed along to modules
 	connect_info,
-	sourcetypes, source_elements,
+	sourcetypes,
 	sources: [], sources_by_name: { },
 	scenes: {scenes: [], currentProgramSceneName: ""},
 	status: {stream: "OBS_WEBSOCKET_OUTPUT_STOPPED", record: "OBS_WEBSOCKET_OUTPUT_STOPPED"},
@@ -320,6 +319,7 @@ async function full_update() {
 			)).sceneItems.forEach(src => {
 				src.sceneName = source.sourceName;
 				state.sources.push(src);
+				state.sources_by_name[src.sourceName] = src;
 			});
 		}
 		const volumes = await send_request("GetInputVolume",
@@ -335,7 +335,6 @@ async function full_update() {
 			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
 		});
 	}
-	state.source_elements = source_elements = {};
 	repaint();
 }
 
@@ -377,19 +376,21 @@ const events = {
 		full_update();
 	},
 	SceneItemTransformChanged: data => { //v4
-		const el = source_elements[data["item-name"]];
+		const source = state.sources_by_name[data["item-name"]];
 		//NOTE: If a scene item is moved in OBS while being dragged here, we will
 		//ignore the OBS movement and carry on regardless. This includes if you
 		//hit Escape; we'll reset to where WE last saw it. This event happens in
 		//response to our own dragging, so this prevents lag-induced glitchiness.
-		if (!el || el === dragging) return;
-		update_element(el, data.transform);
+		if (!source) return;
+		//update_element(el, data.transform); //TODO: Update elements for this source, except if being dragged
 	},
 	SceneItemLockChanged: data => { //v4
-		const el = source_elements[data["item-name"]];
-		if (el) {
-			el.classList.toggle("locked", data["item-locked"]);
-			el.style.zIndex = data["item-locked"] ? 1 : 1000;
+		const source = state.sources_by_name[data["item-name"]];
+		if (source) {
+			//FIXME: Hot-update. Both of these two callbacks relate to the wireframe
+			//and may need to be handled in the wireframe's section.
+			//el.classList.toggle("locked", data["item-locked"]);
+			//el.style.zIndex = data["item-locked"] ? 1 : 1000;
 		}
 	},
 	SourceVolumeChanged: data => fire_event("InputVolumeChanged", {inputName: data.sourceName, inputVolumeMul: data.volume}),
@@ -397,13 +398,12 @@ const events = {
 	InputVolumeChanged: data => { //v5
 		if (sent_volume_signal[data.inputName] + 100 > +new Date) return; //For 100ms after sending a volume signal, don't accept them back.
 		const source = state.sources_by_name[data.inputName];
-		if (source) source.volume = data.inputVolumeMul;
 		//TODO: Have an easy way to say "minor changes only, update existing DOM elements"
-		repaint();
+		if (source) {source.volume = data.inputVolumeMul; repaint();}
 	},
 	InputMuteStateChanged: data => { //v5
-		const el = source_elements["!mute-" + data.inputName];
-		if (el) el.innerText = data.inputMuted ? "Unmute" : "Mute";
+		const source = state.sources_by_name[data.inputName];
+		if (source) {source.muted = data.inputMuted; repaint();}
 	},
 	StreamStarting: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTING"}),
 	StreamStarted: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTED"}),

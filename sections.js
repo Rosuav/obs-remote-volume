@@ -42,7 +42,7 @@ const definitions = {
 				//el.onpointerdown = startdragging; //TODO: Do these with on() instead
 				//el.onpointerup = stopdragging;
 				//resizeObserver.observe(el); //Hacked out for now
-				return state.source_elements[source.name] = el;
+				return el;
 			}));
 		},
 	},
@@ -150,16 +150,16 @@ const definitions = {
 			//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
 			return TR({"data-name": source.sourceName}, [
 				TH(source.sourceName),
-				TD(state.source_elements["!volume-" + source.sourceName] = INPUT({
+				TD(INPUT({
 					class: "volslider", type: "range",
 					min: 0, max: 1, step: "any", "value": Math.sqrt(source.volume),
 				})),
 				TD([
 					SPAN({class: "percent"}, (Math.sqrt(source.volume)*100).toFixed(2)),
-					state.source_elements["!mute-" + source.sourceName] = BUTTON(
+					BUTTON(
 						{type: "button", class: "mutebtn"},
-						//NOTE: source.muted is actually never sent as of 20190719.
-						source.muted ? "Unmute" : "Mute")
+						source.muted ? "Unmute" : "Mute",
+					)
 				]),
 			]);
 		})),
