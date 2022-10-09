@@ -306,7 +306,7 @@ function build(layout, parent, self) {
 		}
 		case "section":
 			ret = SECTION({"data-subtype": layout.subtype, class: "droptarget"}, basis.render(layout));
-			if (layout.flexsize === "fitcontent") ret.style.flex = "0";
+			if (layout.flexsize === "fitcontent") ret.style.flex = "1 0 fit-content";
 			break;
 		case "master": ret = DIV(build(layout.children[0], layoutidx, 0)); tb = drag = false; break;
 		case "shadow": ret = DIV({class: "shadow droptarget"}); tb = drag = false; break;
