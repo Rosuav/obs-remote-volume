@@ -365,10 +365,11 @@ on("click", "[data-sceneselect]", e =>
 		{[v4v5("scene-name", "sceneName")]: e.match.dataset.sceneselect}));
 
 const events = {
-	SwitchScenes: data => { //v4
-		state.scenes.currentProgramSceneName = data["scene-name"];
-		full_update();
-	},
+	//For some of these, we probably could be more efficient, but it's simpler to just full-update.
+	SceneItemAdded: data => full_update(), //v4
+	SceneItemCreated: data => full_update(), //v5
+	SceneItemRemoved: data => full_update(), //v4 and v5
+	SwitchScenes: data => fire_event("CurrentProgramSceneChanged", {currentProgramSceneName: data["scene-name"]}), //v4
 	CurrentProgramSceneChanged: data => { //v5
 		state.scenes.currentProgramSceneName = data.sceneName;
 		repaint();
