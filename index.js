@@ -27,7 +27,7 @@ const v4v5 = (v4, v5) => handshake === "v5" ? v5 : v4;
 const state = { //Updated and passed along to modules
 	connect_info,
 	sourcetypes,
-	sources: [], sources_by_name: { },
+	sources: [], sources_by_origin: { },
 	scenes: {scenes: [], currentProgramSceneName: ""},
 	status: {stream: "OBS_WEBSOCKET_OUTPUT_STOPPED", record: "OBS_WEBSOCKET_OUTPUT_STOPPED"},
 };
@@ -50,7 +50,7 @@ const resizeObserver = new ResizeObserver(entries => {
 		if (!el.dataset.reset_width) continue; //Suppress resize events caused by display rerendering
 		//TODO: Snap to edges and/or middle of canvas or other items
 		const scale = cx / el.dataset.base_cx;
-		const update = {item: el.dataset.name,
+		const update = {item: el.dataset.name, //FIXME: Use ID instead
 			scale: {x: scale, y: scale}};
 		const xofs = parseFloat(el.dataset.grav_x), yofs = parseFloat(el.dataset.grav_y);
 		const rescale = scale / parseFloat(el.dataset.last_scale);
@@ -81,7 +81,7 @@ document.onkeydown = ev => {if (ev.key === "Escape" && dragging) {
 }};
 
 function drag_xfrm(el, x, y) {
-	return {item: el.dataset.name, position: {
+	return {item: el.dataset.name, position: { //FIXME: Use ID instead
 		x: x / display_scale + parseInt(el.dataset.grav_x, 10),
 		y: y / display_scale + parseInt(el.dataset.grav_y, 10),
 	}};
@@ -178,21 +178,22 @@ function build_details(props, pfx) {
 	return items;
 }
 
-async function itemdetails(scenename, itemid, itemname) {
+async function itemdetails(origin) {
 	let props = { };
+	const source = state.sources_by_origin[origin];
 	if (handshake === "v4") {
-		props = await send_request("GetSceneItemProperties", {"scene-name": scenename, item: {id: +itemid}});
+		props = await send_request("GetSceneItemProperties", {"scene-name": source.sceneName, item: {id: source.sceneItemId}});
 		delete props["message-id"]; delete props["status"]; delete props["name"];
 	}
 	else {
 		//TODO: Batch these requests
 		try {
-			const settings = await send_request("GetInputSettings", {inputName: itemname});
+			const settings = await send_request("GetInputSettings", {inputName: source.sourceName});
 			//TODO: Cache the defaults (they won't change in one run, unless you switch OBS versions or something)
 			const defaults = await send_request("GetInputDefaultSettings", {inputKind: settings.inputKind});
 			props.settings = {...defaults.defaultInputSettings, ...settings.inputSettings};
 		} catch (e) { } //TODO: Figure out which item types fail and why (some item types don't have settings)
-		const ident = {sceneName: scenename, sceneItemId: +itemid};
+		const ident = {sceneName: source.sceneName, sceneItemId: source.sceneItemId};
 		props.transform = (await send_request("GetSceneItemTransform", ident)).sceneItemTransform;
 		props.enabled = (await send_request("GetSceneItemEnabled", ident)).sceneItemEnabled;
 		props.locked = (await send_request("GetSceneItemLocked", ident)).sceneItemLocked;
@@ -200,11 +201,11 @@ async function itemdetails(scenename, itemid, itemname) {
 	}
 	console.log("Got props:", props);
 	set_content("#itemprops_list", build_details(props, ""));
-	set_content("#itemprops h3", "Details for '" + itemname + "'");
+	set_content("#itemprops h3", "Details for '" + source.sourceName + "'");
 	//if (handshake === "v5") DOM("#itemprops_list").appendChild(IMG({src: (await send_request("GetSourceScreenshot", {sourceName: item, imageFormat: "png"})).imageData}));
 	const modal = document.getElementById("itemprops");
 	document.getElementById("itemprops_apply").onclick = async ev => {
-		console.log("Applying changes to item", itemname);
+		console.log("Applying changes to item", source.sourceName);
 		const updates = {}; let changes = 0;
 		modal.querySelectorAll("[data-prop]").forEach(el => {
 			let val = el.type === "checkbox" ? el.checked : el.value;
@@ -222,10 +223,10 @@ async function itemdetails(scenename, itemid, itemname) {
 		});
 		modal.close();
 		if (!changes) {console.log("No changes"); return;}
-		console.log("Updating", itemname, updates);
+		console.log("Updating", source.sourceName, updates);
 		if (handshake === "v4") {
-			updates.item = itemname;
-			updates["scene-name"] = scenename;
+			updates.item = source.sourceName; //FIXME: Use ID
+			updates["scene-name"] = source.sceneName;
 			await send_request("SetSceneItemProperties", updates);
 		} else {
 			//TODO
@@ -234,8 +235,8 @@ async function itemdetails(scenename, itemid, itemname) {
 	};
 	modal.showModal();
 }
-on("click", ".sceneelembtn", e => itemdetails(e.match.dataset.scene, e.match.dataset.itemid, e.match.dataset.name));
-on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.scene, e.match.dataset.itemid, e.match.dataset.name));
+on("click", ".sceneelembtn", e => itemdetails(e.match.dataset.origin));
+on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.origin));
 
 function update_element(el, xfrm) {
 	//Default to top-left if obs-websocket doesn't give the actual alignment
@@ -302,8 +303,8 @@ async function full_update() {
 		state.sources = sceneitems;
 	}
 	//Build a mapping from name to info object
-	state.sources_by_name = { };
-	state.sources.forEach(s => state.sources_by_name[s.sourceName] = s);
+	state.sources_by_origin = { };
+	state.sources.forEach(s => state.sources_by_origin[s.origin = s.sceneName + ":" + s.sceneItemId] = s);
 	//If there's a group or scene in the scene, recursively fetch its children.
 	//I don't THINK it's possible to infinitely recurse here, but just in case,
 	//only fetch what we haven't yet fetched.
@@ -312,14 +313,15 @@ async function full_update() {
 		for (let i = 0; i < state.sources.length; ++i) { //ensure that newly added elements will be iterated over
 			const source = state.sources[i];
 			if (source.inputKind) continue; //Groups and subscenes have inputKind === null
-			if (state.sources_by_name[source.sourceName]) continue; //Already sighted this one!
 			(await send_request(
 				source.isGroup ? "GetGroupSceneItemList" : "GetSceneItemList",
 				{sceneName: source.sourceName},
 			)).sceneItems.forEach(src => {
 				src.sceneName = source.sourceName;
+				src.origin = src.sceneName + ":" + src.sceneItemId;
+				if (state.sources_by_origin[src.origin]) return; //Already sighted. Prevent infinite recursion.
 				state.sources.push(src);
-				state.sources_by_name[src.sourceName] = src;
+				state.sources_by_origin[src.origin] = src;
 			});
 		}
 		const volumes = await send_request("GetInputVolume",
@@ -335,6 +337,7 @@ async function full_update() {
 			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
 		});
 	}
+	console.log("SOURCES", state.sources);
 	repaint();
 }
 
@@ -342,11 +345,11 @@ on("input", ".volslider", e => {
 	const tr = e.match.closest("tr");
 	tr.dataset.debounce = +new Date + 100; //Block incoming updates for 100ms
 	send_request(v4v5("SetVolume", "SetInputVolume"), {
-		[v4v5("source", "inputName")]: tr.dataset.name,
+		[v4v5("source", "inputName")]: state.sources_by_origin[e.match.closest("tr").dataset.origin].sourceName,
 		[v4v5("volume", "inputVolumeMul")]: e.match.value ** 2,
 	});
 });
-on("click", ".mutebtn", e => send_request("ToggleMute", {"source": e.match.closest("tr").dataset.name}));
+on("click", ".mutebtn", e => send_request("ToggleMute", {"source": state.sources_by_origin[e.match.closest("tr").dataset.origin].sourceName}));
 
 on("click", "[data-sceneselect]", e =>
 	send_request(v4v5("SetCurrentScene", "SetCurrentProgramScene"),
@@ -363,32 +366,32 @@ const events = {
 		full_update();
 	},
 	SceneItemTransformChanged: data => { //v4
-		const source = state.sources_by_name[data["item-name"]];
+		//const source = state.sources_by_name[data["item-name"]]; //FIXME: Do this by ID not name
 		//NOTE: If a scene item is moved in OBS while being dragged here, we will
 		//ignore the OBS movement and carry on regardless. This includes if you
 		//hit Escape; we'll reset to where WE last saw it. This event happens in
 		//response to our own dragging, so this prevents lag-induced glitchiness.
-		if (!source) return;
+		//if (!source) return;
 		//update_element(el, data.transform); //TODO: Update elements for this source, except if being dragged
 	},
 	SceneItemLockChanged: data => { //v4
-		const source = state.sources_by_name[data["item-name"]];
-		if (source) {
+		//const source = state.sources_by_name[data["item-name"]]; //FIXME: Do this by ID not name
+		//if (source) {
 			//FIXME: Hot-update. Both of these two callbacks relate to the wireframe
 			//and may need to be handled in the wireframe's section.
 			//el.classList.toggle("locked", data["item-locked"]);
 			//el.style.zIndex = data["item-locked"] ? 1 : 1000;
-		}
+		//}
 	},
 	SourceVolumeChanged: data => fire_event("InputVolumeChanged", {inputName: data.sourceName, inputVolumeMul: data.volume}),
 	SourceMuteStateChanged: data => fire_event("InputMuteStateChanged", {inputName: data.sourceName, inputMuted: data.muted}),
 	InputVolumeChanged: data => { //v5
-		const source = state.sources_by_name[data.inputName];
-		if (source) {source.volume = data.inputVolumeMul; adjust_state(source, data.inputName);}
+		state.sources.forEach(source => source.sourceName === data.inputName &&
+			[source.volume = data.inputVolumeMul, adjust_state(source)]);
 	},
 	InputMuteStateChanged: data => { //v5
-		const source = state.sources_by_name[data.inputName];
-		if (source) {source.muted = data.inputMuted; adjust_state(source, data.inputName);}
+		state.sources.forEach(source => source.sourceName === data.inputName &&
+			[source.muted = data.inputMuted, adjust_state(source)]);
 	},
 	StreamStarting: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTING"}),
 	StreamStarted: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTED"}),

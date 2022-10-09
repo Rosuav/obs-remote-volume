@@ -25,10 +25,7 @@ const definitions = {
 				if (!typeinfo || !typeinfo.caps.hasVideo) return;
 				//TODO: If the scene item is locked, don't make it resizable (but allow lock to be toggled)
 				//TODO: Correctly handle item gravity (alignment)
-				const el = DIV({class: "sceneelement",
-					"data-itemid": source.sceneItemId,
-					"data-scene": source.sceneName,
-					"data-name": source.sourceName},
+				const el = DIV({class: "sceneelement", "data-origin": source.origin},
 					source.sourceName);
 				/*update_element(el, { //FIXME: Bring this into here??
 					width: source.cx, height: source.cy,
@@ -51,10 +48,7 @@ const definitions = {
 		render: layout => [UL({class: "sceneitems"})],
 		update: (elem, state) => {
 			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
-				return LI(BUTTON({class: "sceneelembtn",
-					"data-itemid": source.sceneItemId,
-					"data-scene": source.sceneName,
-					"data-name": source.sourceName},
+				return LI(BUTTON({class: "sceneelembtn", "data-origin": source.origin},
 					source.sourceName));
 			}));
 		},
@@ -148,7 +142,7 @@ const definitions = {
 			const typeinfo = state.sourcetypes[source.type || source.inputKind];
 			if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)
 			//Note that if !typeinfo, we assume no video, but DO put it on the mixer.
-			return TR({"data-name": source.sourceName}, [
+			return TR({"data-origin": source.origin}, [
 				TH(source.sourceName),
 				TD(INPUT({
 					class: "volslider", type: "range",
@@ -259,7 +253,7 @@ export function adjust_state(source) {
 	//is equivalent to CSS's quoting rules, because I honestly don't know
 	//exactly what CSS's rules are. But for the most part, this will be fine
 	//(since the most important thing to take care of is spaces in names).
-	const sel = "[data-name=" + JSON.stringify(source.sourceName) + "]";
+	const sel = "[data-origin=" + JSON.stringify(source.origin) + "]";
 	updateme.forEach(([basis, elem]) => basis.adjust &&
 		elem.querySelectorAll(sel).forEach(el => basis.adjust(source, el)));
 }
