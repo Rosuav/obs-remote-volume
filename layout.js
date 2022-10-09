@@ -47,6 +47,10 @@ function rerender() {
 			{type: "section", subtype: "mixer", flexsize: "fitcontent"},
 		]
 	}});
+	set_content("#layoutselect", [
+		all_layouts.map(l => OPTION(l.label)),
+		OPTION({value: ""}, "Add Layout"),
+	]).value = all_layouts[curlayout].label;
 	if (layout_override) editmode = false;
 	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
 }
