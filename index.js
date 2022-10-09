@@ -187,25 +187,27 @@ async function itemdetails(origin) {
 	}
 	else {
 		//TODO: Batch these requests
-		try {
-			const settings = await send_request("GetInputSettings", {inputName: source.sourceName});
-			//TODO: Cache the defaults (they won't change in one run, unless you switch OBS versions or something)
-			const defaults = await send_request("GetInputDefaultSettings", {inputKind: settings.inputKind});
-			props.settings = {...defaults.defaultInputSettings, ...settings.inputSettings};
-		} catch (e) { } //TODO: Figure out which item types fail and why (some item types don't have settings)
 		const ident = {sceneName: source.sceneName, sceneItemId: source.sceneItemId};
-		props.transform = (await send_request("GetSceneItemTransform", ident)).sceneItemTransform;
-		props.enabled = (await send_request("GetSceneItemEnabled", ident)).sceneItemEnabled;
-		props.locked = (await send_request("GetSceneItemLocked", ident)).sceneItemLocked;
-		props.blend_mode = (await send_request("GetSceneItemBlendMode", ident)).sceneItemBlendMode;
+		const info = await send_request("Batch", [
+			["GetInputSettings", {inputName: source.sourceName}],
+			["GetInputDefaultSettings", {inputKind: source.inputKind}],
+			["GetSceneItemTransform", ident],
+			["GetSceneItemEnabled", ident],
+			["GetSceneItemLocked", ident],
+			["GetSceneItemBlendMode", ident],
+		]);
+		if (info[0].requestStatus.result && info[1].requestStatus.result)
+			props.settings = {...info[1].responseData.defaultInputSettings, ...info[0].responseData.inputSettings};
+		for (let i = 2; i < info.length; ++i) if (info[i].requestStatus.result) {
+			const kw = info[i].requestType.slice("GetSceneItem".length);
+			props[kw.toLowerCase()] = info[i].responseData["sceneItem" + kw];
+		}
 	}
-	console.log("Got props:", props);
 	set_content("#itemprops_list", build_details(props, ""));
 	set_content("#itemprops h3", "Details for '" + source.sourceName + "'");
 	//if (handshake === "v5") DOM("#itemprops_list").appendChild(IMG({src: (await send_request("GetSourceScreenshot", {sourceName: item, imageFormat: "png"})).imageData}));
 	const modal = document.getElementById("itemprops");
-	document.getElementById("itemprops_apply").onclick = async ev => {
-		console.log("Applying changes to item", source.sourceName);
+	document.getElementById("itemprops_apply").onclick = async ev => { //TODO: Do this with on() instead of messy closures
 		const updates = {}; let changes = 0;
 		modal.querySelectorAll("[data-prop]").forEach(el => {
 			let val = el.type === "checkbox" ? el.checked : el.value;
@@ -222,14 +224,22 @@ async function itemdetails(origin) {
 			++changes;
 		});
 		modal.close();
-		if (!changes) {console.log("No changes"); return;}
-		console.log("Updating", source.sourceName, updates);
+		if (!changes) return;
 		if (handshake === "v4") {
-			updates.item = source.sourceName; //FIXME: Use ID
+			updates.item = {id: source.sceneItemId};
 			updates["scene-name"] = source.sceneName;
 			await send_request("SetSceneItemProperties", updates);
 		} else {
-			//TODO
+			const req = [];
+			if (updates.settings) req.push(["SetInputSettings", {
+				inputName: source.sourceName,
+				inputSettings: updates.settings,
+			}]);
+			["Transform", "Enabled", "Locked", "BlendMode"].forEach(kw =>
+				(kw.toLowerCase() in updates) && req.push(["SetSceneItem" + kw,
+					{sceneName: source.sceneName, sceneItemId: source.sceneItemId,
+						["sceneItem" + kw]: updates[kw.toLowerCase()]}]));
+			if (req.length) await send_request("Batch", req);
 		}
 		full_update(); //After making any changes, do a full update. Simpler that way.
 	};
@@ -337,7 +347,6 @@ async function full_update() {
 			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
 		});
 	}
-	console.log("SOURCES", state.sources);
 	repaint();
 }
 
@@ -462,7 +471,6 @@ async function protofetch() {
 			en[id.enumValue] = id.enumIdentifier; //Reverse mapping for console output
 		});
 	});
-	console.log(obsenum);
 	window.obsenum = obsenum;
 }
 const protocol_fetched = protofetch();
@@ -486,7 +494,16 @@ function setup()
 	send_request = (type, data={}, op=6) => new Promise((res, rej) => {
 		if (socket.readyState !== 1) return rej("Socket not open");
 		const id = "msg" + counter++;
-		if (op === 6) {
+		if (type === "Batch") {
+			//Special form: a mixed batch of requests. Provide an array of arrays
+			//where each inner array is [type, data], and the results will be returned
+			//in the same order.
+			if (handshake === "v4") return rej("Batches are a v5 feature.");
+			data = {op: obsenum.WebSocketOpCode.RequestBatch, d: {
+				requestId: id,
+				requests: data.map(([t, d]) => ({requestType: t, requestData: d})),
+			}};
+		} else if (op === 6) {
 			//Standard request.
 			if (handshake === "v4") data = {"request-type": type, "message-id": id, ...data};
 			else data = {op, d: {requestType: type, requestId: id, requestData: data}};
@@ -567,7 +584,6 @@ function setup()
 		if (handshake === "v5") {
 			const opcode = obsenum.WebSocketOpCode[data.op]; //Textual version
 			let ret = data.d, fail = 0;
-			//console.log("v5 message", opcode, data.d);
 			if (opcode === "Hello") hello_msg = data.d;
 			let id = responseids[opcode];
 			if (id) delete responseids[opcode];
