@@ -45,16 +45,29 @@ function rerender() {
 		type: "box", subtype: "vertical", children: [
 			{type: "section", subtype: "sceneswitch"},
 			{type: "section", subtype: "mixer", flexsize: "fitcontent"},
-		]
+		],
+	}}, {label: "Layout 2", content: {
+		type: "box", subtype: "vertical", children: [
+			{type: "box", subtype: "horizontal", children: [
+				{type: "section", subtype: "mixer", flexsize: "fitcontent"},
+				{type: "section", subtype: "streamstatus"},
+			]},
+			{type: "section", subtype: "sceneswitch"},
+		],
 	}});
 	set_content("#layoutselect", [
-		all_layouts.map(l => OPTION(l.label)),
-		OPTION({value: ""}, "Add Layout"),
-	]).value = all_layouts[curlayout].label;
+		all_layouts.map((l, i) => OPTION({value: i}, l.label)),
+		OPTION({value: "-1"}, "Add Layout"),
+	]).value = curlayout;
 	if (layout_override) editmode = false;
 	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
 }
-export function select_layout(idx) {curlayout = idx; rerender();}
+on("change", "#layoutselect", e => {
+	const idx = +e.match.value;
+	if (idx === -1) return; //TODO: New layout
+	curlayout = idx;
+	rerender();
+});
 export function override_layout(layout) { //Set to null to unoverride
 	document.body.classList.toggle("layoutoverride", !!layout);
 	layout_override = layout;
