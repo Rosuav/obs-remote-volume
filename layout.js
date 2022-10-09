@@ -51,7 +51,11 @@ function rerender() {
 	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
 }
 export function select_layout(idx) {curlayout = idx; rerender();}
-export function override_layout(layout) {layout_override = layout; rerender();} //Set to null to unoverride
+export function override_layout(layout) { //Set to null to unoverride
+	DOM("#layoutmode").classList.toggle("hidden", !!layout);
+	layout_override = layout;
+	rerender();
+}
 
 let shadow = null;
 
