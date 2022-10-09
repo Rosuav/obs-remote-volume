@@ -52,7 +52,7 @@ function rerender() {
 }
 export function select_layout(idx) {curlayout = idx; rerender();}
 export function override_layout(layout) { //Set to null to unoverride
-	DOM("#layoutmode").classList.toggle("hidden", !!layout);
+	document.body.classList.toggle("layoutoverride", !!layout);
 	layout_override = layout;
 	rerender();
 }
