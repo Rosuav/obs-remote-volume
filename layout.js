@@ -29,7 +29,7 @@ function rebuild_layout_dropdown() {
 }
 
 function rerender() {
-	const layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "null");
+	let layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "null");
 	if (!layouts) layouts = [{content: {
 		type: "box", subtype: "vertical", children: [
 			{type: "section", subtype: "sceneswitch"},
