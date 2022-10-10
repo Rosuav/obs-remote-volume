@@ -200,6 +200,7 @@ const definitions = {
 		config: {
 			src: ["URL", ""],
 			id: ["Unique ID", "demo"],
+			titlebar: ["Show title bar", false],
 		},
 		//If more flexibility is needed, this function can return whatever it
 		//needs to - the second arg is elements generated from the config.
@@ -326,7 +327,7 @@ function build(layout, parent, self) {
 			if (!ret || ret.dataset.defn !== defn)
 				//New or changed. Construct a brand-new iframe.
 				ret = IFRAME({id, src: layout.src || "iframedemo.html", "data-defn": defn});
-			if (layout.titlebar) {tb = true; deftitle = ret.contentDocument.title || deftitle;}
+			if (layout.titlebar) {tb = true; if (ret.contentDocument) deftitle = ret.contentDocument.title || deftitle;}
 			break;
 		}
 		default: break;
