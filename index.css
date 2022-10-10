@@ -192,15 +192,16 @@ details {
 	gap: 10px;
 	width: 100%; height: 100%;
 }
-[data-subtype=sceneswitch] > div > div {
+[data-subtype=sceneswitch] button {
+	border: 0;
 	font-size: larger;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
-[data-subtype=sceneswitch] > div > div:hover {background: aliceblue;}
-[data-subtype=sceneswitch] > div > div.current {background: #44ddcc;}
-[data-subtype=sceneswitch] > div > div.current:hover {background: #33ccbb;}
+[data-subtype=sceneswitch] button:hover {background: aliceblue;}
+[data-subtype=sceneswitch] button.current {background: #44ddcc;}
+[data-subtype=sceneswitch] button.current:hover {background: #33ccbb;}
 
 [data-subtype=streamstatus] {
 	display: flex;

@@ -184,7 +184,7 @@ const definitions = {
 			columns: ["Columns", 4],
 		},
 		render: layout => DIV({style: "grid-template-columns: repeat(" + (layout.columns || 4) + ", 1fr)"}),
-		update: (elem, state) => set_content(elem.firstElementChild, state.scenes.scenes.map(scene => DIV(
+		update: (elem, state) => set_content(elem.firstElementChild, state.scenes.scenes.map(scene => BUTTON(
 			{class: scene.sceneName === state.scenes.currentProgramSceneName ? "current" : "",
 				"data-sceneselect": scene.sceneName},
 			P(scene.sceneName),
