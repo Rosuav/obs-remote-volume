@@ -8,6 +8,13 @@
 * OBS-Studio b360168 added the ability to "lock volume". Check what that does.
   - Locked status is not transmitted by event. Should we (a) respect it, and
     (b) be able to toggle it?
+* Make text not selectable in the scene switcher (it looks ugly and interferes
+  with mobile defaults)
+* Full screen option
+* More default layouts. Have one that's just the scene switcher, one that's just
+  the mixer, one that's scenes+(mixer+start/stop), maybe others
+* Implement autoconnect. It's kinda done but not very much.
+* Allow a layout to be marked as default
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
