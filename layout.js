@@ -29,14 +29,13 @@ function rebuild_layout_dropdown() {
 }
 
 function rerender() {
-	const layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "[]");
-	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({type: "layout", label: "Layout " + (i+1), content: { }, ...l}));
-	if (!all_layouts.length) all_layouts.push({type: "layout", label: "Layout 1", content: {
+	const layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "null");
+	if (!layouts) layouts = [{content: {
 		type: "box", subtype: "vertical", children: [
 			{type: "section", subtype: "sceneswitch"},
 			{type: "section", subtype: "mixer", flexsize: "fitcontent"},
 		],
-	}}, {type: "layout", label: "Layout 2", content: {
+	}}, {content: {
 		type: "box", subtype: "vertical", children: [
 			{type: "box", subtype: "horizontal", children: [
 				{type: "section", subtype: "mixer", flexsize: "fitcontent"},
@@ -44,7 +43,10 @@ function rerender() {
 			]},
 			{type: "section", subtype: "sceneswitch"},
 		],
-	}});
+	}}];
+	//If you delete all layouts, leave one empty layout behind (don't return to the defaults above)
+	if (!layouts.length) layouts.push({content: { }});
+	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({type: "layout", label: "Layout " + (i+1), content: { }, ...l}));
 	rebuild_layout_dropdown();
 	if (layout_override) editmode = false;
 	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
@@ -299,7 +301,7 @@ on("click", ".settings,.layoutsettings", e => {
 	]);
 	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
 	if (!config) config = P("Component has no configuration settings."); //Try to avoid this where possible
-	set_content("#settingsform", config);
+	set_content("#settings_inner", config);
 	DOM("#settingsdlg").showModal();
 });
 
