@@ -115,6 +115,7 @@ const definitions = {
 					]),
 				]),
 			]),
+			DIV({id: "connect_error", class: "hidden"}),
 			BUTTON({id: "reconnect"}, "Connect to OBS"),
 			P(
 				"To use this tool, go to OBS, and configure WebSocket Settings in the Tools menu." +
@@ -133,6 +134,8 @@ const definitions = {
 			url.hash = state.connect_info.uri +
 				(state.connect_info.revealpwd ? "" : state.connect_info.password);
 			elem.querySelector(".clipbtn").dataset.copyme = url.href;
+			set_content(elem.querySelector("#connect_error"), state.last_connect_error)
+				.classList.toggle("hidden", !state.last_connect_error);
 		},
 	},
 	section_mixer: {

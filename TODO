@@ -10,8 +10,6 @@
     (b) be able to toggle it?
 * Give every section some kind of edit mode placeholder (usually by rendering
   it immediately, rather than waiting for a data update)
-* On connection error, report it in a red div just above the connect button
-  (pushing it down slightly, so you don't just double-click)
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2

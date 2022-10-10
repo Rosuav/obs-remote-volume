@@ -494,6 +494,7 @@ function setup()
 	const proto = connect_info.ssl ? "wss://" : "ws://";
 	const server = connect_info.ip, pwd = connect_info.password, port = connect_info.port;
 	console.log("Connect to", proto + server, port, "handshake", handshake)
+	state.last_connect_error = ""; repaint();
 	const socket = new WebSocket(proto + server + ":" + port);
 	let counter = 0;
 	const pending = {}, responseids = {};
@@ -554,8 +555,14 @@ function setup()
 			const authinfo = auth.authentication || auth;
 			const hash = forge_sha256(pwd + authinfo.salt);
 			const resp = forge_sha256(hash + authinfo.challenge);
-			if (handshake === "v5") await send_request("Identified", {rpcVersion: 1, authentication: resp}, "Identify");
-			else await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
+			try {
+				if (handshake === "v5") await send_request("Identified", {rpcVersion: 1, authentication: resp}, "Identify");
+				else await send_request("Authenticate", {auth: resp}); //Will throw on auth failure
+			} catch (e) {
+				state.last_connect_error = ""+e;
+				repaint();
+				return;
+			}
 		}
 		const ver = await send_request("GetVersion");
 		const obsver = ver[v4v5("obs-studio-version", "obsVersion")];
@@ -618,8 +625,10 @@ function setup()
 		}
 		console.log("Unknown packet:", data);
 	};
-	socket.onclose = () => {
-		console.log("Socket closed");
+	socket.onclose = e => {
+		state.last_connect_error = connected ? "Connection closed by OBS" : "Couldn't connect";
+		if (e.reason) state.last_connect_error += ": " + e.reason;
+		else if (!connected) state.last_connect_error += " (check IP and port)";
 		connected = false;
 		rerender();
 	};
