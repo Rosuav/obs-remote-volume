@@ -5,7 +5,7 @@ import {simpleconfirm} from "./stillebot_utils.js";
 
 let editmode = false, toolboxwin;
 let all_layouts = [{label: "Layout 1", content: { }}];
-let curlayout = 0; //Index into all_layouts
+let curlayout = -1; //Index into all_layouts
 let layout_override = null; //If present, will be rendered instead of regular layout
 
 function set_edit_mode(m) {
@@ -58,6 +58,7 @@ function rerender() {
 	//If you delete all layouts, leave one empty layout behind (don't return to the defaults above)
 	if (!layouts.length) layouts.push({content: { }});
 	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({type: "layout", label: "Layout " + (i+1), content: { }, ...l}));
+	if (curlayout === -1) curlayout = all_layouts.findIndex(l => l.is_default); //If not found, the dropdown rebuilder will bounds check us
 	rebuild_layout_dropdown();
 	if (layout_override) editmode = false;
 	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
@@ -325,8 +326,15 @@ DOM("#settingsform").onsubmit = e => {
 			: typeof dflt === "number" ? +DOM("#settings_" + key).value
 			: DOM("#settings_" + key).value
 	);
-	if (layout.type !== "layout") layout.flexsize = DOM("#settings_flexsize").value;
-	else rebuild_layout_dropdown(); //Note that the dropdown is invisible until you save or cancel editing
+	if (layout.type === "layout") {
+		//If you make this layout the default, all others stop being the default.
+		if (layout.is_default) {
+			all_layouts.forEach(l => l.is_default = false);
+			layout.is_default = true;
+		}
+		rebuild_layout_dropdown(); //Note that the dropdown is invisible until you save or cancel editing
+	}
+	else layout.flexsize = DOM("#settings_flexsize").value;
 	if (basis.savesettings) basis.savesettings(layout);
 	DOM("#settingsdlg").close();
 	remove_shadow();

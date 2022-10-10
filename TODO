@@ -9,7 +9,6 @@
   - Locked status is not transmitted by event. Should we (a) respect it, and
     (b) be able to toggle it?
 * Implement autoconnect. It's kinda done but not very much.
-* Allow a layout to be marked as default
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2

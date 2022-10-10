@@ -244,9 +244,10 @@ const definitions = {
 		},
 	},
 	layout: { //Hack - simplify settings dialog for the layout itself
-		active: false, title: "Layout (invisible)",
+		active: false, title: "Layout",
 		config: {
 			label: ["Label", ""],
+			is_default: ["Make default", false],
 		},
 	},
 };
