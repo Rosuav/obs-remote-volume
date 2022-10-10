@@ -45,7 +45,12 @@ const definitions = {
 	},
 	section_sceneitems: {
 		title: "Scene items",
-		render: layout => [UL({class: "sceneitems"})],
+		render: layout => [UL({class: "sceneitems"}, [
+			LI(BUTTON("Scene")),
+			LI(BUTTON("elements")),
+			LI(BUTTON("go")),
+			LI(BUTTON("here")),
+		])],
 		update: (elem, state) => {
 			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
 				return LI(BUTTON({class: "sceneelembtn", "data-origin": source.origin},
@@ -140,7 +145,14 @@ const definitions = {
 	},
 	section_mixer: {
 		title: "Volume mixer",
-		render: layout => TABLE(TBODY()),
+		render: layout => TABLE(TBODY(TR([
+			TH("Volume mixer"),
+			TD(INPUT({class: "volslider", disabled: "true", type: "range", min: 0, max: 1, step: "any", value: 1})),
+			TD([
+				SPAN({class: "percent"}, "100.00"),
+				BUTTON({type: "button"}, "Mute"),
+			]),
+		]))),
 		update: (elem, state) => set_content(elem.querySelector("tbody"), state.sources.map(source => {
 			const typeinfo = state.sourcetypes[source.type || source.inputKind];
 			if (typeinfo && !typeinfo.caps.hasAudio) return null; //It's a non-audio source. (Note that browser sources count as non-audio, despite being able to make noises.)

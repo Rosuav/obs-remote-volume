@@ -8,8 +8,6 @@
 * OBS-Studio b360168 added the ability to "lock volume". Check what that does.
   - Locked status is not transmitted by event. Should we (a) respect it, and
     (b) be able to toggle it?
-* Give every section some kind of edit mode placeholder (usually by rendering
-  it immediately, rather than waiting for a data update)
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
