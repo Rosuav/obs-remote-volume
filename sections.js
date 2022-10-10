@@ -285,8 +285,13 @@ function build(layout, parent, self) {
 		//A box has 2+ children and lays them out with a horizontal or vertical flexbox.
 		case "box": ret = DIV({
 			class: "box " + (layout.subtype === "vertical" ? "vertical" : "horizontal"),
-			"style": "flex: 1 0 fit-content",
 		}, layout.children.map((l,i) => build(l, layoutidx, i)));
+		//If any of the box's children is set to shrink, also shrink the box.
+		//This is a bit odd, but it effectively lets the child's shrink work
+		//in both dimensions. TODO: Make this work recursively, so a box that
+		//contains a box that contains a shrunk child will shrink.
+		if (layout.children.find(c => c.flexsize === "fitcontent"))
+			ret.style.flex = "1 0 fit-content";
 		tb = drag = false;
 		break;
 		//A splitbar has precisely two children (either or both of which can be null),
