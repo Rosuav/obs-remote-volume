@@ -10,8 +10,6 @@
     (b) be able to toggle it?
 * Make text not selectable in the scene switcher (it looks ugly and interferes
   with mobile defaults)
-* More default layouts. Have one that's just the scene switcher, one that's just
-  the mixer, one that's scenes+(mixer+start/stop), maybe others
 * Implement autoconnect. It's kinda done but not very much.
 * Allow a layout to be marked as default
 

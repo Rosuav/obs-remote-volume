@@ -24,24 +24,35 @@ function rebuild_layout_dropdown() {
 	if (curlayout < 0 || curlayout >= all_layouts.length) curlayout = 0;
 	set_content("#layoutselect", [
 		all_layouts.map((l, i) => OPTION({value: i}, l.label)),
-		OPTION({value: "-1"}, "Add Layout"),
+		OPTION({value: "-1"}, "- add layout -"),
 	]).value = curlayout;
 }
 
 function rerender() {
 	let layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "null");
-	if (!layouts) layouts = [{content: {
+	if (!layouts) layouts = [{label: "Default", content: {
 		type: "box", subtype: "vertical", children: [
 			{type: "section", subtype: "sceneswitch"},
-			{type: "section", subtype: "mixer", flexsize: "fitcontent"},
-		],
-	}}, {content: {
-		type: "box", subtype: "vertical", children: [
 			{type: "box", subtype: "horizontal", children: [
 				{type: "section", subtype: "mixer", flexsize: "fitcontent"},
 				{type: "section", subtype: "streamstatus"},
 			]},
+		],
+	}}, {label: "Scenes", content: {
+		type: "box", subtype: "vertical", children: [
 			{type: "section", subtype: "sceneswitch"},
+		],
+	}}, {label: "Audio", content: {
+		type: "box", subtype: "vertical", children: [
+			{type: "section", subtype: "mixer"},
+		],
+	}}, {label: "Split", content: {
+		type: "split", subtype: "vertical", active: true, children: [
+			{type: "section", subtype: "sceneswitch"},
+			{type: "box", subtype: "horizontal", children: [
+				{type: "section", subtype: "mixer", flexsize: "fitcontent"},
+				{type: "section", subtype: "streamstatus"},
+			]},
 		],
 	}}];
 	//If you delete all layouts, leave one empty layout behind (don't return to the defaults above)
