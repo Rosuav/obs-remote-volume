@@ -1,21 +1,9 @@
 import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
 const {INPUT, LABEL, OPTION, P, SELECT, TABLE, TD, TR} = choc; //autoimport
 import {render, rendered_layout, startdrag, get_basis_object, add_element_dropdown, safe_parse_element} from "./sections.js";
+import {simpleconfirm} from "./stillebot_utils.js";
 
 let editmode = false, toolboxwin;
-
-/* TODO: Multi-layout.
-In order to allow one user to store more than one layout, it will be necessary to
-enable a layout switcher. Change its class=hidden to class=layoutonly (it should
-remain invisible and nonoperational in edit mode).
-
-The layout itself will need settings. Notably, change label, delete, and clone.
-
-Switching layout should be easy enough. Just keep track of the index.
-
-Framework has been secured by having localStorage retain an array of one layout.
-*/
-
 let all_layouts = [{label: "Layout 1", content: { }}];
 let curlayout = 0; //Index into all_layouts
 let layout_override = null; //If present, will be rendered instead of regular layout
@@ -32,15 +20,23 @@ DOM("#layoutmode").onclick = e => {set_edit_mode(!editmode); remove_shadow();}
 DOM("#cancel").onclick = e => {set_edit_mode(false); rerender();} //Don't remove_shadow which would save
 DOM("#opentoolbox").onclick = e => toolboxwin = window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
 
+function rebuild_layout_dropdown() {
+	if (curlayout < 0 || curlayout >= all_layouts.length) curlayout = 0;
+	set_content("#layoutselect", [
+		all_layouts.map((l, i) => OPTION({value: i}, l.label)),
+		OPTION({value: "-1"}, "Add Layout"),
+	]).value = curlayout;
+}
+
 function rerender() {
 	const layouts = JSON.parse(localStorage.getItem("obs-remote-layouts") || "[]");
-	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({label: "Layout " + (i+1), content: { }, ...l}));
-	if (!all_layouts.length) all_layouts.push({label: "Layout 1", content: {
+	if (Array.isArray(layouts)) all_layouts = layouts.map((l,i) => ({type: "layout", label: "Layout " + (i+1), content: { }, ...l}));
+	if (!all_layouts.length) all_layouts.push({type: "layout", label: "Layout 1", content: {
 		type: "box", subtype: "vertical", children: [
 			{type: "section", subtype: "sceneswitch"},
 			{type: "section", subtype: "mixer", flexsize: "fitcontent"},
 		],
-	}}, {label: "Layout 2", content: {
+	}}, {type: "layout", label: "Layout 2", content: {
 		type: "box", subtype: "vertical", children: [
 			{type: "box", subtype: "horizontal", children: [
 				{type: "section", subtype: "mixer", flexsize: "fitcontent"},
@@ -49,11 +45,7 @@ function rerender() {
 			{type: "section", subtype: "sceneswitch"},
 		],
 	}});
-	if (curlayout < 0 || curlayout >= all_layouts.length) curlayout = 0;
-	set_content("#layoutselect", [
-		all_layouts.map((l, i) => OPTION({value: i}, l.label)),
-		OPTION({value: "-1"}, "Add Layout"),
-	]).value = curlayout;
+	rebuild_layout_dropdown();
 	if (layout_override) editmode = false;
 	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
 }
@@ -71,9 +63,8 @@ on("change", "#layoutselect", e => {
 			const m = /^Layout ([0-9]+)$/.exec(l.label);
 			if (m && +m[1] >= next) next = +m[1] + 1;
 		});
-		curlayout = all_layouts.push({label: "Layout " + next, content: { }}) - 1;
-		DOM("#layoutselect").insertBefore(OPTION({value: curlayout}, "Layout " + next), DOM("#layoutselect [value=\"-1\"]"));
-		DOM("#layoutselect").value = curlayout;
+		curlayout = all_layouts.push({type: "layout", label: "Layout " + next, content: { }}) - 1;
+		rebuild_layout_dropdown();
 		//Note that we don't save here. If you immediately cancel editing, it will go
 		//back to how it was, without the new (empty) layout.
 		set_edit_mode(true); remove_shadow();
@@ -284,13 +275,13 @@ on("pointerup", ".splitbar", e => {
 //Settings dialog
 //Note that the buttons technically exist, but are invisible, on the toolbox. There's no code on them.
 let settings_layout = null;
-on("click", ".settings", e => {
+on("click", ".settings,.layoutsettings", e => {
 	const {parentidx, selfidx} = e.match.closest("[data-parentidx]").dataset;
-	const layout = settings_layout = rendered_layout[parentidx].children[selfidx];
+	const layout = settings_layout = parentidx < 0 ? all_layouts[curlayout] : rendered_layout[parentidx].children[selfidx];
 	const basis = get_basis_object(layout) || { };
 	set_content("#settingsdlg h3", basis.title ? "Settings for " + basis.title : "Settings");
 	let config = TABLE([
-		TR([
+		layout.type !== "layout" && TR([
 			TD(LABEL({for: "settings_flexsize"}, "Section size")),
 			TD(SELECT({id: "settings_flexsize", value: layout.flexsize}, [
 				OPTION({value: ""}, "Expand as needed"),
@@ -308,11 +299,11 @@ on("click", ".settings", e => {
 	]);
 	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
 	if (!config) config = P("Component has no configuration settings."); //Try to avoid this where possible
-	set_content("#settings_inner", config);
+	set_content("#settingsform", config);
 	DOM("#settingsdlg").showModal();
 });
 
-DOM("#settingssave").onclick = e => {
+DOM("#settingsform").onsubmit = e => {
 	const layout = settings_layout; settings_layout = null;
 	const basis = get_basis_object(layout) || { };
 	if (basis.config) Object.entries(basis.config).forEach(([key, [desc, dflt]]) =>
@@ -321,16 +312,24 @@ DOM("#settingssave").onclick = e => {
 			: typeof dflt === "number" ? +DOM("#settings_" + key).value
 			: DOM("#settings_" + key).value
 	);
-	layout.flexsize = DOM("#settings_flexsize").value;
+	if (layout.type !== "layout") layout.flexsize = DOM("#settings_flexsize").value;
+	else rebuild_layout_dropdown(); //Note that the dropdown is invisible until you save or cancel editing
 	if (basis.savesettings) basis.savesettings(layout);
 	DOM("#settingsdlg").close();
 	remove_shadow();
 };
 
 DOM("#settingsdelete").onclick = e => {
-	const layout = settings_layout; settings_layout = null;
-	layout.type = "shadow"; //Deletion is easy. Just fade it out, then fade shadows to nothing!
 	DOM("#settingsdlg").close();
+	const layout = settings_layout; settings_layout = null;
+	if (layout.type === "layout") return simpleconfirm("Really delete this layout? Cannot be undone!", e => {
+		//Delete the entire layout. This removes us from edit mode.
+		all_layouts.splice(curlayout, 1);
+		localStorage.setItem("obs-remote-layouts", JSON.stringify(all_layouts));
+		set_edit_mode(false);
+		rerender();
+	})();
+	layout.type = "shadow"; //Deletion is easy. Just fade it out, then fade shadows to nothing!
 	remove_shadow();
 };
 

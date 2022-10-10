@@ -14,7 +14,8 @@ OBS Remote Control
 <button type=button id=layoutmode>Edit</button>
 <button type=button id=cancel class=editonly>Cancel</button>
 <button type=button id=opentoolbox class=editonly>Toolbox</button>
-<span class=layoutonly>Select layout: <select id=layoutselect><option value="">Add Layout</option></select> (unimpl)</span>
+<button type=button class="editonly layoutsettings" data-parentidx=-1>Layout Settings</button>
+<span class=layoutonly>Select layout: <select id=layoutselect><option value="">Add Layout</option></select></span>
 </header>
 <main>
 </main>
@@ -28,9 +29,9 @@ OBS Remote Control
 <dialog id=settingsdlg><section>
 <header><h3>Settings for ???</h3><div><button type=button class=dialog_cancel>x</button></div></header>
 <div>
-<p id=settings_inner>Settings go here</p>
+<form method=dialog id=settingsform>Settings go here</form>
 <ul class=buttonbox>
-	<li><button type=button id=settingssave>Save</button></li>
+	<li><button type=submit id=settingssave>Save</button></li>
 	<li><button type=button class=dialog_close>Cancel</button></li>
 	<li><button type=button id=settingsdelete>Delete</button></li>
 </ul>

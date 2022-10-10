@@ -228,6 +228,12 @@ const definitions = {
 			};
 		},
 	},
+	layout: { //Hack - simplify settings dialog for the layout itself
+		active: false, title: "Layout (invisible)",
+		config: {
+			label: ["Label", ""],
+		},
+	},
 };
 //Is this a good use for prototype inheritance? Effectively, split_horizontal inherits from split implicitly.
 Object.keys(definitions).forEach(key => {
