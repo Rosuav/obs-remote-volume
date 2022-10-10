@@ -467,6 +467,8 @@ for (let sr of ["Stream", "Record"]) {
 		e => send_request(v4v5(`StartStop${sr}ing`, "Toggle" + sr))));
 }
 
+on("click", "#fullscreen", e => document.fullscreenElement ? document.exitFullscreen() : document.body.requestFullscreen());
+
 async function protofetch() {
 	//Is this the best URL to use? Should we lock to a specific version tag rather than master?
 	const url = "https://raw.githubusercontent.com/obsproject/obs-websocket/master/docs/generated/protocol.json";
