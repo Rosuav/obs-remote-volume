@@ -285,6 +285,7 @@ function build(layout, parent, self) {
 		//A box has 2+ children and lays them out with a horizontal or vertical flexbox.
 		case "box": ret = DIV({
 			class: "box " + (layout.subtype === "vertical" ? "vertical" : "horizontal"),
+			"style": "flex: 1 0 fit-content",
 		}, layout.children.map((l,i) => build(l, layoutidx, i)));
 		tb = drag = false;
 		break;
