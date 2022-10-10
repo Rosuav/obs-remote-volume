@@ -20,22 +20,16 @@ let all_layouts = [{label: "Layout 1", content: { }}];
 let curlayout = 0; //Index into all_layouts
 let layout_override = null; //If present, will be rendered instead of regular layout
 
-DOM("#layoutmode").onclick = e => {
+function set_edit_mode(m) {
 	if (layout_override) return;
-	editmode = !editmode;
+	editmode = m;
 	if (!editmode && toolboxwin) toolboxwin.close();
 	set_content("main", render(rendered_layout[0].children[0], editmode));
 	set_content("#layoutmode", editmode ? "Save layout" : "Edit");
 	document.body.classList.toggle("editmode", editmode);
-	remove_shadow(); //and save (if no longer editing)
-};
-DOM("#cancel").onclick = e => {
-	editmode = false;
-	if (toolboxwin) toolboxwin.close();
-	rerender();
-	set_content("#layoutmode", "Edit");
-	document.body.classList.remove("editmode");
-};
+}
+DOM("#layoutmode").onclick = e => {set_edit_mode(!editmode); remove_shadow();}
+DOM("#cancel").onclick = e => {set_edit_mode(false); rerender();} //Don't remove_shadow which would save
 DOM("#opentoolbox").onclick = e => toolboxwin = window.open("toolbox.html", "toolbox", "popup=1,width=300,height=650");
 
 function rerender() {
@@ -55,6 +49,7 @@ function rerender() {
 			{type: "section", subtype: "sceneswitch"},
 		],
 	}});
+	if (curlayout < 0 || curlayout >= all_layouts.length) curlayout = 0;
 	set_content("#layoutselect", [
 		all_layouts.map((l, i) => OPTION({value: i}, l.label)),
 		OPTION({value: "-1"}, "Add Layout"),
@@ -63,10 +58,28 @@ function rerender() {
 	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
 }
 on("change", "#layoutselect", e => {
+	if (layout_override) return;
 	const idx = +e.match.value;
-	if (idx === -1) return; //TODO: New layout
-	curlayout = idx;
-	rerender();
+	if (idx === -1) {
+		//Scan layouts for the highest number in "Layout N" format and use
+		//the next. That avoids weirdness if you have L1, L2, L3, and then
+		//you delete L2 and create another; if we used the array length,
+		//we'd make L1, L3, L3, but this way, we make L1, L3, L4. (But why
+		//would you ever delete L2? That's where JWST is hanging out!)
+		let next = 1;
+		all_layouts.forEach(l => {
+			const m = /^Layout ([0-9]+)$/.exec(l.label);
+			if (m && +m[1] >= next) next = +m[1] + 1;
+		});
+		curlayout = all_layouts.push({label: "Layout " + next, content: { }}) - 1;
+		DOM("#layoutselect").insertBefore(OPTION({value: curlayout}, "Layout " + next), DOM("#layoutselect [value=\"-1\"]"));
+		DOM("#layoutselect").value = curlayout;
+		//Note that we don't save here. If you immediately cancel editing, it will go
+		//back to how it was, without the new (empty) layout.
+		set_edit_mode(true); remove_shadow();
+	}
+	else curlayout = idx;
+	set_content("main", render(layout_override || all_layouts[curlayout].content, editmode));
 });
 export function override_layout(layout) { //Set to null to unoverride
 	document.body.classList.toggle("layoutoverride", !!layout);
