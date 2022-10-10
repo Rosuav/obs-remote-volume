@@ -449,6 +449,12 @@ on("input", "[data-subtype=connect] input", e => {
 	if (e.match.id === "uri") parse_uri(e.match.value);
 	else {
 		connect_info[e.match.id] = e.match[e.match.type === "checkbox" ? "checked" : "value"];
+		//If you just toggled the V5 checkbox and the port was the default, make it the default still.
+		if (e.match.id === "v5") {
+			const defaults = {false: 4444, true: 4455};
+			if (defaults[!connect_info.v5] === +connect_info.port)
+				connect_info.port = defaults[connect_info.v5];
+		}
 		build_uri();
 	}
 	repaint();

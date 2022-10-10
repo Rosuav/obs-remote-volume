@@ -12,8 +12,6 @@
   it immediately, rather than waiting for a data update)
 * On connection error, report it in a red div just above the connect button
   (pushing it down slightly, so you don't just double-click)
-* If you toggle V5 and the port was on the old one's default, set it to the
-  new one's default.
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
