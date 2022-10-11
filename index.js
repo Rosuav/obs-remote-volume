@@ -13,7 +13,6 @@ import {send_updates, adjust_state} from "./sections.js";
 //more secure that way. Obviously.
 import {simpleconfirm} from "./stillebot_utils.js";
 
-let canvasx = 1920, canvasy = 1080; //OBS canvas size is available only with fairly new obs-websocket builds. Otherwise, we take a guess.
 let display_scale = 0.625; //Updated whenever we get a full set of new sources
 const obsenum = {WebSocketOpCode: {0: "Hello"}}; //Seed with the only message we absolutely have to be able to comprehend initially
 
@@ -266,8 +265,8 @@ function update_element(el, xfrm) {
 	let left = xfrm.position.x - xofs, top = xfrm.position.y - yofs;
 	let right = left + xfrm.width, bottom = top + xfrm.height;
 	if (left < 0) left = 0; if (top < 0) top = 0;
-	if (right >= canvasx) right = canvasx - 1;
-	if (bottom >= canvasy) bottom = canvasy - 1;
+	if (right >= state.video.baseWidth) right = state.video.baseWidth - 1;
+	if (bottom >= state.video.baseHeight) bottom = state.video.baseHeight - 1;
 	el.style.width = max((right - left) * display_scale, 15) + "px";
 	el.style.height = max((bottom - top) * display_scale, 15) + "px";
 	el.style.left = (left * display_scale) + "px";
@@ -578,10 +577,7 @@ function setup()
 				.types.forEach(type => sourcetypes[type.typeId] = type);
 		} catch (err) {} //If we can't get the source types, don't bother. It's a nice-to-have only.
 		//else (await send_request("GetInputKindList")).inputKinds.forEach( //Currently there's no capabilities on the input kinds
-		if (obsver >= "4.6.0") {
-			const vidinfo = await send_request(v4v5("GetVideoInfo", "GetVideoSettings"));
-			canvasx = vidinfo.baseWidth; canvasy = vidinfo.baseHeight;
-		}
+		state.video = await send_request(v4v5("GetVideoInfo", "GetVideoSettings"));
 		connected = true;
 		rerender();
 		full_update();

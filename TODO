@@ -25,7 +25,6 @@
     These should be relatively uncommon in the scheme of things - only happening
     when you change scenes, add or remove elements, etc. It's probably not worth
     trying to remember which info categories are needed.
-* May need to know size of OBS canvas.
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
