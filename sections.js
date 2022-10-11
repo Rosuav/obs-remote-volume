@@ -121,7 +121,10 @@ const definitions = {
 				]),
 			]),
 			DIV({id: "connect_error", class: "hidden"}),
-			BUTTON({id: "reconnect"}, "Connect to OBS"),
+			UL({class: "buttonbox"}, [
+				LI(BUTTON({id: "reconnect"}, "Connect to OBS")),
+				LI(BUTTON({id: "autoconnect", type: "button"}, "Remember this server")),
+			]),
 			P(
 				"To use this tool, go to OBS, and configure WebSocket Settings in the Tools menu." +
 				" Enter the connection info above (notably, the password), and then click Connect." +

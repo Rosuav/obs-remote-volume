@@ -469,6 +469,10 @@ for (let sr of ["Stream", "Record"]) {
 
 on("click", "#fullscreen", e => document.fullscreenElement ? document.exitFullscreen() : document.body.requestFullscreen());
 
+on("click", "#autoconnect", simpleconfirm(() => "Save this server and automatically connect?" +
+	(connect_info.revealpwd && connect_info.password ? " Your password will be saved too." : ""),
+	e => localStorage.setItem("obs-remote-autoconnect", connect_info.uri)));
+
 async function protofetch() {
 	//Is this the best URL to use? Should we lock to a specific version tag rather than master?
 	const url = "https://raw.githubusercontent.com/obsproject/obs-websocket/master/docs/generated/protocol.json";
