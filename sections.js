@@ -1,5 +1,5 @@
 import {choc, DOM, set_content} from "https://rosuav.github.io/choc/factory.js";
-const {BUTTON, CODE, DIV, FORM, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SPAN, TABLE, TBODY, TD, TH, TR, UL} = choc; //autoimport
+const {BUTTON, CANVAS, CODE, DIV, FORM, IFRAME, INPUT, LABEL, LI, OPTION, P, PRE, SECTION, SELECT, SPAN, TABLE, TBODY, TD, TH, TR, UL} = choc; //autoimport
 
 //NOTE: Avoid using any CSS IDs anywhere in these definitions.
 //It should be perfectly reasonable to have the same section in two places
@@ -15,8 +15,16 @@ const definitions = {
 	},
 	section_wireframe: {
 		title: "Scene wireframe",
-		render: layout => [DIV({class: "scenepreview"})],
+		render: layout => CANVAS({class: "wireframe"}),
 		update: (elem, state) => {
+			//Should the canvas get a resize observer so it always operates at intrinsic size??
+			console.log("Wireframe!", state.video);
+			const canvas = elem.querySelector("canvas");
+			console.log(canvas.width, canvas.height);
+			const r = canvas.getBoundingClientRect(); console.log(r);
+			if (r.width) canvas.width = r.width;
+			if (r.height) canvas.height = r.height;
+			return;
 			//scenepreview.style.width = (canvasx * display_scale) + "px";
 			//scenepreview.style.height = (canvasy * display_scale) + "px";
 			//while (layout.lastChild) resizeObserver.unobserve(layout.removeChild(layout.lastChild));

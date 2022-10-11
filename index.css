@@ -218,6 +218,10 @@ details {
 	background: #44ddcc;
 }
 
+[data-subtype=wireframe] {
+	display: flex;
+}
+
 .clipbtn {cursor: copy;}
 #copied {
 	opacity: 0;
