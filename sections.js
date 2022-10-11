@@ -334,6 +334,7 @@ function build(layout, parent, self) {
 				DIV({class: editmode || layout.active ? "splitbar" : "divider"}),
 				children[1],
 			]);
+			if (layout.flexsize === "fitcontent") ret.style.flex = "1 0 fit-content";
 			break;
 		}
 		case "section":
