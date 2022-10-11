@@ -8,6 +8,24 @@
 * OBS-Studio b360168 added the ability to "lock volume". Check what that does.
   - Locked status is not transmitted by event. Should we (a) respect it, and
     (b) be able to toggle it?
+* Sections asking for extra info
+  - If a section's update() attempts to look at state.sources[*].transform.x, it
+    will throw an exception.
+    - Check that exception on multiple browsers - can we recognize consistently
+      that it was looking for transform on a source?
+  - This exception gets caught by sections::send_updates() or sections::build()
+    and state.need_extra.transform is set. The section is still built (if we are
+    in build()) and other sections are still processed exactly as normal.
+  - In index::repaint() (don't worry about render - it's always followed by
+    repaint), after sending updates, if anything is set in state.need_extra,
+    fetch extra info and then re-send_updates.
+  - Any incoming event message that provides suitable information should add it.
+    Any message which does not conflict with such information should not remove.
+  - A full_update will, most likely, cause a brief dance of "oops, need, fetch".
+    These should be relatively uncommon in the scheme of things - only happening
+    when you change scenes, add or remove elements, etc. It's probably not worth
+    trying to remember which info categories are needed.
+* May need to know size of OBS canvas.
 
 Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
