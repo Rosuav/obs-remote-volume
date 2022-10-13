@@ -18,6 +18,11 @@ const definitions = {
 		render: layout => CANVAS({class: "wireframe"}),
 		update: (elem, state) => {
 			//Should the canvas get a resize observer so it always operates at intrinsic size??
+			//Alternatively - what if we have an off-screen canvas for the main drawing, which
+			//would have an intrinsic size exactly equal to the canvas size, and then blit to
+			//the main canvas at its own size? The hard part would be mapping mouse events back
+			//to the original coordinate system, but that mightn't be too hard if it's a simple
+			//scaling ratio (probably the same in each dimension) and maybe a translation.
 			console.log("Wireframe!", state.video);
 			const canvas = elem.querySelector("canvas");
 			console.log(canvas.width, canvas.height);
