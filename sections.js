@@ -27,8 +27,8 @@ const definitions = {
 			const canvas = elem.querySelector("canvas");
 			console.log(canvas.width, canvas.height);
 			const r = canvas.getBoundingClientRect(); console.log(r);
-			if (r.width) canvas.width = r.width;
-			if (r.height) canvas.height = r.height;
+			const ctx = canvas.getContext("2d");
+			console.log(ctx);
 			return;
 			//scenepreview.style.width = (canvasx * display_scale) + "px";
 			//scenepreview.style.height = (canvasy * display_scale) + "px";
