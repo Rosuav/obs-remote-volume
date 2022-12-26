@@ -26,16 +26,18 @@
     when you change scenes, add or remove elements, etc. It's probably not worth
     trying to remember which info categories are needed.
 
-Grab CEF by using the same commands as in obs-studio/CI/install-dependencies-linux.sh
+Grab CEF by using the same commands as in obs-studio/CI/linux/01_install_dependencies.sh
 $ tar xjf cef_binary_4280_linux64.tar.bz2
-$ mkdir cef_binary_4280_linux64/build; cd cef_binary_4280_linux64/build
+Building CEF shouldn't be necessary since it comes with binaries, but if tweaks are
+done, build with:
+$ mkdir -p cef_binary_4280_linux64/build; cd cef_binary_4280_linux64/build
 $ cmake ..; make -j6
 
 Not currently using PipeWire. Remove ENABLE_PIPEWIRE=OFF if that becomes an option.
 
 To test a new build of OBS while live:
 $ cd obs-studio/build
-$ rm -rf *; cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_4280_linux64" -DENABLE_PIPEWIRE=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
+$ rm -rf *; cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=OFF -DENABLE_SCRIPTING=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
 $ make -j6 && make install
 $ cd obs-websocket/build
 $ rm -rf *; cmake -DLIBOBS_INCLUDE_DIR=/home/rosuav/obs-studio/libobs -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
