@@ -569,6 +569,7 @@ function setup()
 				return;
 			}
 		}
+		else if (handshake === "v5") await send_request("Identified", {rpcVersion: 1}, "Identify");
 		const ver = await send_request("GetVersion");
 		const obsver = ver[v4v5("obs-studio-version", "obsVersion")];
 		console.info("Running on OBS " + obsver + " and obs-websocket " + ver[v4v5("obs-websocket-version", "obsWebSocketVersion")]);
