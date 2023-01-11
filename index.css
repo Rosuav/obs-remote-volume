@@ -248,3 +248,8 @@ details {
 	max-width: -moz-fit-content;
 	max-width: fit-content;
 }
+
+.sceneelemvisibility {
+	padding: 0 2px;
+	height: 1.5em;
+}

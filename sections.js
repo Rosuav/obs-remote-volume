@@ -66,9 +66,16 @@ const definitions = {
 		])],
 		update: (elem, state) => {
 			set_content(elem.querySelector(".sceneitems"), state.sources.map(source => {
-				return LI(BUTTON({class: "sceneelembtn", "data-origin": source.origin},
-					source.sourceName));
+				return LI([
+					BUTTON({class: "sceneelembtn", "data-origin": source.origin}, source.sourceName),
+					" ",
+					BUTTON({class: "sceneelemvisibility", "data-origin": source.origin, title: "Hide/show"},
+						source.sceneItemEnabled ? "👁️" : "🚫"),
+				]);
 			}));
+		},
+		adjust: (source, el) => {
+			if (el.classList.contains("sceneelemvisibility")) set_content(el, source.sceneItemEnabled ? "👁️" : "🚫");
 		},
 	},
 	section_streamstatus: {

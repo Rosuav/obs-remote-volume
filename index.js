@@ -247,6 +247,13 @@ async function itemdetails(origin) {
 on("click", ".sceneelembtn", e => itemdetails(e.match.dataset.origin));
 on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.origin));
 
+on("click", ".sceneelemvisibility", e => {
+	const source = state.sources_by_origin[e.match.dataset.origin];
+	send_request("SetSceneItemEnabled",
+		{sceneName: source.sceneName, sceneItemId: source.sceneItemId,
+			sceneItemEnabled: !source.sceneItemEnabled});
+});
+
 function update_element(el, xfrm) {
 	//Default to top-left if obs-websocket doesn't give the actual alignment
 	if (xfrm.position.alignment === undefined) xfrm.position.alignment = 5;
@@ -401,6 +408,13 @@ const events = {
 	InputMuteStateChanged: data => { //v5
 		state.sources.forEach(source => source.sourceName === data.inputName &&
 			[source.muted = data.inputMuted, adjust_state(source)]);
+	},
+	SceneItemEnableStateChanged: data => { //v5
+		console.log("SceneItemEnableStateChanged", data);
+		const source = state.sources_by_origin[data.sceneName + ":" + data.sceneItemId];
+		if (!source) return;
+		source.sceneItemEnabled = data.sceneItemEnabled;
+		adjust_state(source);
 	},
 	StreamStarting: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTING"}),
 	StreamStarted: data => fire_event("StreamStateChanged", {outputState: "OBS_WEBSOCKET_OUTPUT_STARTED"}),
