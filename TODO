@@ -36,14 +36,16 @@ $ cmake ..; make -j6
 Not currently using PipeWire. Remove ENABLE_PIPEWIRE=OFF if that becomes an option.
 
 To test a new build of OBS while live:
+$ cd ffmpeg
+$ ./configure --prefix=/home/rosuav/.ffmpeg --enable-nvenc --enable-shared
 $ cd obs-studio/build
-$ rm -rf *; cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=OFF -DENABLE_SCRIPTING=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
+$ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=OFF -DENABLE_SCRIPTING=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
 $ make -j6 && make install
 $ # If WS 4 is needed:
 $ # cd obs-websocket/build
 $ # rm -rf *; cmake -DLIBOBS_INCLUDE_DIR=/home/rosuav/obs-studio/libobs -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
 $ # make -j6 && make install
 $ cd /home/rosuav/tmp/obs
-$ LD_LIBRARY_PATH=/home/rosuav/tmp/obs/lib bin/obs
+$ LD_LIBRARY_PATH=/home/rosuav/tmp/obs/lib:/home/rosuav/.ffmpeg/lib bin/obs
 $ cd /home/rosuav/obs-remote-volume; python3 -m http.server
 http://localhost:8000/#@localhost:4445
