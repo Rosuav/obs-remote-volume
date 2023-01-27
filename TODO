@@ -33,11 +33,16 @@ done, build with:
 $ mkdir -p cef_binary_4280_linux64/build; cd cef_binary_4280_linux64/build
 $ cmake ..; make -j6
 
+Building FFMPEG from source is necessary for NVENC support. Start by fetching headers:
+$ git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
+Check through its releases (git tag) and find the newest that supports the driver in use.
+Then grab FFMPEG:
+$ git clone https://git.ffmpeg.org/ffmpeg.git
+$ ./configure --prefix=/home/rosuav/.ffmpeg --enable-nvenc --enable-shared
+
 Not currently using PipeWire. Remove ENABLE_PIPEWIRE=OFF if that becomes an option.
 
 To test a new build of OBS while live:
-$ cd ffmpeg
-$ ./configure --prefix=/home/rosuav/.ffmpeg --enable-nvenc --enable-shared
 $ cd obs-studio/build
 $ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=OFF -DENABLE_SCRIPTING=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
 $ make -j6 && make install
