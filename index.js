@@ -343,6 +343,9 @@ async function full_update() {
 		const volumes = await send_request("GetInputVolume",
 			state.sources.map(i => ({inputName: i.sourceName})),
 			"RequestBatch");
+		const mutes = await send_request("GetInputMute",
+			state.sources.map(i => ({inputName: i.sourceName})),
+			"RequestBatch");
 		volumes.forEach((v, i) => {
 			const item = state.sources[i];
 			const t = sourcetypes[item.inputKind] = {caps: { }};
@@ -350,7 +353,10 @@ async function full_update() {
 			//We assume for now that failure is caused by the input not having
 			//audio, although it's possible there are other errors.
 			t.caps.hasAudio = v.requestStatus.result;
-			if (t.caps.hasAudio) item.volume = v.responseData.inputVolumeMul;
+			if (t.caps.hasAudio) {
+				item.volume = v.responseData.inputVolumeMul;
+				item.muted = mutes[i].responseData.inputMuted;
+			}
 		});
 	}
 	repaint();
@@ -364,7 +370,9 @@ on("input", ".volslider", e => {
 		[v4v5("volume", "inputVolumeMul")]: e.match.value ** 2,
 	});
 });
-on("click", ".mutebtn", e => send_request("ToggleMute", {"source": state.sources_by_origin[e.match.closest("tr").dataset.origin].sourceName}));
+on("click", ".mutebtn", e => send_request(v4v5("ToggleMute", "ToggleInputMute"), {
+	[v4v5("source", "inputName")]: state.sources_by_origin[e.match.closest("tr").dataset.origin].sourceName,
+}));
 
 on("click", "[data-sceneselect]", e =>
 	send_request(v4v5("SetCurrentScene", "SetCurrentProgramScene"),

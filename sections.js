@@ -198,7 +198,7 @@ const definitions = {
 		adjust: (source, el) => {
 			el.querySelector(".volslider").value = source.volume ** 0.5;
 			set_content(el.querySelector(".percent"), ""+(Math.sqrt(source.volume)*100).toFixed(2));
-			el.querySelector(".mutebtn").value = source.muted ? "Unmute" : "Mute";
+			set_content(el.querySelector(".mutebtn"), source.muted ? "Unmute" : "Mute");
 		},
 	},
 	section_sceneswitch: {
