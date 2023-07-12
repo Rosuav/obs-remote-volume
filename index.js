@@ -313,8 +313,18 @@ async function full_update() {
 	} else {
 		scenes.scenes.reverse(); //HACK: Currently, OBS WS v5 seems to return them in the wrong order.
 		const scenename = scenes.currentProgramSceneName;
-		//TODO: Create scene selection buttons for scenes.scenes[].sceneName
 		const sceneitems = (await send_request("GetSceneItemList", {sceneName: scenename})).sceneItems;
+		const specials = await send_request("GetSpecialInputs");
+		//This gives us a mapping with six identifiers and their names. If the name is null,
+		//the corresponding input doesn't exist. I'm not entirely sure that this is right,
+		//but we're going to cheat and pretend that they're added to the end of every scene.
+		//This may possibly create duplicates; what happens if someone has added the default
+		//audio device to a scene? Does it duplicate the audio?
+		Object.entries(specials).forEach(([k, n]) => n && sceneitems.push({
+			inputKind: "special_input", //hack
+			sceneItemId: k,
+			sourceName: n,
+		}));
 		sceneitems.forEach(s => s.sceneName = scenename);
 		state.sources = sceneitems;
 	}
