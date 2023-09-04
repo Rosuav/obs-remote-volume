@@ -249,6 +249,7 @@ on("dblclick", ".sceneelement", e => itemdetails(e.match.dataset.origin));
 
 on("click", ".sceneelemvisibility", e => {
 	const source = state.sources_by_origin[e.match.dataset.origin];
+	//FIXME: Doesn't work on the v4 protocol.
 	send_request("SetSceneItemEnabled",
 		{sceneName: source.sceneName, sceneItemId: source.sceneItemId,
 			sceneItemEnabled: !source.sceneItemEnabled});
