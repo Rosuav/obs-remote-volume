@@ -312,7 +312,7 @@ on("click", ".settings,.layoutsettings", e => {
 		])),
 		layout.type === "layout" && TR([
 			TD(LABEL({for: "settings_json"}, "Save/Load")),
-			TD(TEXTAREA({id: "settings_json", rows: 5, columns: 50}, JSON.stringify(layout.content))),
+			TD(TEXTAREA({id: "settings_json", rows: 5}, JSON.stringify(layout.content))),
 		]),
 	]);
 	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
@@ -321,8 +321,31 @@ on("click", ".settings,.layoutsettings", e => {
 	DOM("#settingsdlg").showModal();
 });
 
+//Bring up a settings-like dialog for the entire collection of layouts
+on("click", "#all_layouts", e => {
+	settings_layout = {special: "all_layouts"};
+	set_content("#settingsdlg h3", "Layout collection");
+	set_content("#settings_inner", [
+		P("Copy and paste this block to share settings across computers."),
+		TEXTAREA({id: "layouts_json", rows: 10, cols: 60}, JSON.stringify(all_layouts)),
+	]);
+	DOM("#settingsdlg").showModal();
+});
+
 DOM("#settingsform").onsubmit = e => {
 	const layout = settings_layout; settings_layout = null;
+	if (layout.special === "all_layouts") {
+		//Special case: Save back to the all_layouts array.
+		let layouts;
+		try {layouts = JSON.parse(DOM("#layouts_json").value);} catch (e) { }
+		if (typeof layouts === "object" && Array.isArray(layouts)) {
+			all_layouts = layouts;
+			rebuild_layout_dropdown();
+			remove_shadow();
+		}
+		DOM("#settingsdlg").close();
+		return;
+	}
 	const basis = get_basis_object(layout) || { };
 	if (basis.config) Object.entries(basis.config).forEach(([key, [desc, dflt]]) =>
 		layout[key] =
