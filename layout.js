@@ -1,5 +1,5 @@
 import {choc, DOM, set_content, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
-const {INPUT, LABEL, OPTION, P, SELECT, TABLE, TD, TR} = choc; //autoimport
+const {INPUT, LABEL, OPTION, P, SELECT, TABLE, TD, TEXTAREA, TR} = choc; //autoimport
 import {render, rendered_layout, startdrag, get_basis_object, add_element_dropdown, safe_parse_element} from "./sections.js";
 import {simpleconfirm} from "./stillebot_utils.js";
 
@@ -310,6 +310,10 @@ on("click", ".settings,.layoutsettings", e => {
 				: INPUT({id: "settings_" + key, value: typeof layout[key] === "string" ? layout[key] : dflt})
 			),
 		])),
+		layout.type === "layout" && TR([
+			TD(LABEL({for: "settings_json"}, "Save/Load")),
+			TD(TEXTAREA({id: "settings_json", rows: 5, columns: 50}, JSON.stringify(layout.content))),
+		]),
 	]);
 	if (basis.settingsdlg) config = basis.settingsdlg(layout, config);
 	if (!config) config = P("Component has no configuration settings."); //Try to avoid this where possible
@@ -332,6 +336,12 @@ DOM("#settingsform").onsubmit = e => {
 			all_layouts.forEach(l => l.is_default = false);
 			layout.is_default = true;
 		}
+		//Edit the raw JSON of the content to make wholesale changes.
+		//Most likely, all you'll want to do is copy/paste to share settings though.
+		let content;
+		try {content = JSON.parse(DOM("#settings_json").value);} catch (e) { }
+		if (typeof content === "object" && !Array.isArray(content))
+			layout.content = rendered_layout[0].children[0] = content;
 		rebuild_layout_dropdown(); //Note that the dropdown is invisible until you save or cancel editing
 	}
 	else layout.flexsize = DOM("#settings_flexsize").value;
