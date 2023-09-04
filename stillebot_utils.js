@@ -1,8 +1,8 @@
 //Usage:
 //import {...} from "$$static||utils.js$$";
 
-import {on, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
-const {BR, BUTTON, DIALOG, DIV, H3, HEADER, INPUT, LABEL, LINK, OPTGROUP, OPTION, P, SECTION, SELECT, TABLE, TD, TH, TR} = choc; //autoimport
+import {choc, on, fix_dialogs} from "https://rosuav.github.io/choc/factory.js";
+const {BR, BUTTON, DIALOG, DIV, H3, HEADER, INPUT, LABEL, LINK, OPTGROUP, OPTION, P, SECTION, SELECT, TABLE, TD, TEXTAREA, TH, TR} = choc; //autoimport
 ensure_simpleconfirm_dlg(); //Unnecessary overhead once Firefox 98+ is standard - can then be removed
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: "formless"});
 
@@ -42,20 +42,25 @@ function ensure_simpleconfirm_dlg() {
 	])));
 }
 
-let simpleconfirm_callback = null;
+let simpleconfirm_callback = null, simpleconfirm_arg = null, simpleconfirm_match;
 //Simple confirmation dialog. If you need more than just a text string in the
 //confirmdesc, provide a function; it can return any Choc Factory content.
+//One argument will be carried through. For convenience with Choc Factory event
+//objects, its match attribute will be carried through independently.
 export function simpleconfirm(confirmdesc, callback) {
 	ensure_simpleconfirm_dlg();
 	return e => {
-		simpleconfirm_callback = callback;
-		set_content("#simpleconfirmdesc", typeof confirmdesc === "string" ? confirmdesc : confirmdesc());
+		simpleconfirm_callback = callback; simpleconfirm_arg = e;
+		if (e && e.match) simpleconfirm_match = e.match;
+		set_content("#simpleconfirmdesc", typeof confirmdesc === "string" ? confirmdesc : confirmdesc(e));
 		DOM("#simpleconfirmdlg").showModal();
 	};
 }
 on("click", "#simpleconfirmyes", e => {
-	let cb = simpleconfirm_callback; simpleconfirm_callback = null;
-	if (cb) cb();
+	const cb = simpleconfirm_callback, arg = simpleconfirm_arg;
+	if (simpleconfirm_match) arg.match = simpleconfirm_match;
+	simpleconfirm_match = simpleconfirm_arg = simpleconfirm_callback = undefined;
+	if (cb) cb(arg);
 	DOM("#simpleconfirmdlg").close();
 })
 
@@ -151,10 +156,31 @@ export function ensure_font(font) {
 }
 
 on("click", ".clipbtn", e => {
-	navigator.clipboard.writeText(e.match.dataset.copyme);
+	try {navigator.clipboard.writeText(e.match.dataset.copyme);}
+	catch (exc) {
+		//If we can't copy to clipboard, it might be possible to do it via an MLE.
+		const mle = TEXTAREA({value: e.match.dataset.copyme, style: "position: absolute; left: -99999999px"});
+		document.body.append(mle);
+		mle.select();
+		try {document.execCommand("copy");}
+		finally {mle.remove();}
+	}
 	const c = DOM("#copied");
 	c.classList.add("shown");
 	c.style.left = e.pageX + "px";
 	c.style.top = e.pageY + "px";
 	setTimeout(() => c.classList.remove("shown"), 1000);
 });
+
+const sidebar = DOM("nav#sidebar"), box = DOM("#togglesidebarbox");
+on("click", "#togglesidebar", e => {
+	if (sidebar) sidebar.classList.toggle("vis");
+	box.classList.toggle("sbvis");
+	window.onresize = null; //No longer automatically toggle as the window resizes.
+});
+//On wide windows, default to having the sidebar visible.
+(sidebar || box) && (window.onresize = () => {
+	const sbvis = window.innerWidth > 600;
+	if (sidebar) sidebar.classList.toggle("vis", sbvis);
+	if (box) box.classList.toggle("sbvis", sbvis);
+})();
