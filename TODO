@@ -27,10 +27,10 @@
     trying to remember which info categories are needed.
 
 Grab CEF by using the same commands as in obs-studio/CI/linux/01_install_dependencies.sh
-$ tar xjf cef_binary_4280_linux64.tar.bz2
+$ tar xjf cef_binary_5060_linux64.tar.bz2
 Building CEF shouldn't be necessary since it comes with binaries, but if tweaks are
 done, build with:
-$ mkdir -p cef_binary_4280_linux64/build; cd cef_binary_4280_linux64/build
+$ mkdir -p cef_binary_5060_linux64/build; cd cef_binary_5060_linux64/build
 $ cmake ..; make -j6
 
 Building FFMPEG from source is necessary for NVENC support. Start by fetching headers:
