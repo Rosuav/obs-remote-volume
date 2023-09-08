@@ -321,6 +321,7 @@ async function full_update() {
 		//but we're going to cheat and pretend that they're added to the end of every scene.
 		//This may possibly create duplicates; what happens if someone has added the default
 		//audio device to a scene? Does it duplicate the audio?
+		sceneitems.reverse();
 		Object.entries(specials).forEach(([k, n]) => n && sceneitems.push({
 			inputKind: "special_input", //hack
 			sceneItemId: k,
