@@ -44,7 +44,7 @@ Not currently using PipeWire. Remove ENABLE_PIPEWIRE=OFF if that becomes an opti
 
 To test a new build of OBS while live:
 $ cd obs-studio/build
-$ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=OFF -DENABLE_SCRIPTING=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
+$ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=OFF -DENABLE_SCRIPTING=OFF -DENABLE_QSV11=OFF -DENABLE_WEBRTC=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
 $ make -j6 && make install
 $ # If WS 4 is needed:
 $ # cd obs-websocket/build
