@@ -35,7 +35,7 @@ $ cmake ..; make -j6
 
 Building FFMPEG from source is necessary for NVENC support. Start by fetching headers:
 $ git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
-Check through its releases (git tag) and find the newest that supports the driver in use.
+Check through its releases (git tag) and find the newest that supports the driver in use. Make and sudo make install.
 Then grab FFMPEG:
 $ git clone https://git.ffmpeg.org/ffmpeg.git
 $ ./configure --prefix=/home/rosuav/.ffmpeg --enable-nvenc --enable-shared
@@ -44,8 +44,9 @@ Not currently using PipeWire. Remove ENABLE_PIPEWIRE=OFF if that becomes an opti
 
 To test a new build of OBS while live:
 $ cd obs-studio/build
-$ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig cmake -DUNIX_STRUCTURE=1 -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=OFF -DENABLE_SCRIPTING=OFF -DENABLE_QSV11=OFF -DENABLE_WEBRTC=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
-$ make -j6 && make install
+$ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig cmake -G Ninja -DENABLE_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=0 -DENABLE_SCRIPTING=OFF -DENABLE_QSV11=OFF -DENABLE_WEBRTC=0 -DENABLE_NEW_MPEGTS_OUTPUT=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
+$ cmake --build . -j6
+$ cmake --install .
 $ # If WS 4 is needed:
 $ # cd obs-websocket/build
 $ # rm -rf *; cmake -DLIBOBS_INCLUDE_DIR=/home/rosuav/obs-studio/libobs -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
