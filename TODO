@@ -26,12 +26,15 @@
     when you change scenes, add or remove elements, etc. It's probably not worth
     trying to remember which info categories are needed.
 
-Grab CEF by using the same commands as in obs-studio/CI/linux/01_install_dependencies.sh
-$ tar xjf cef_binary_5060_linux64.tar.bz2
+Grab CEF from https://cdn-fastly.obsproject.com/downloads/cef_binary_6533_linux_x86_64.tar.xz
+(trace through the paths in obs-studio/buildspec.json and buildspec_common.cmake to
+generate that URL)
+$ tar xjf cef_binary_6533_linux_x86_64.tar.bz2
 Building CEF shouldn't be necessary since it comes with binaries, but if tweaks are
 done, build with:
-$ mkdir -p cef_binary_5060_linux64/build; cd cef_binary_5060_linux64/build
+$ mkdir -p cef_binary_6533_linux_x86_64/build; cd cef_binary_6533_linux_x86_64/build
 $ cmake ..; make -j6
+(untested since v5060 but probably will work)
 
 Building FFMPEG from source is necessary for NVENC support. Start by fetching headers:
 $ git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
@@ -42,11 +45,14 @@ $ ./configure --prefix=/home/rosuav/.ffmpeg --enable-nvenc --enable-shared
 
 Not currently using PipeWire. Remove ENABLE_PIPEWIRE=OFF if that becomes an option.
 
+As of OBS v31, cmake v3.28-3.30 is required. As Debian Bookworm ships v3.25, this requires fetching
+a newer version to use: https://cmake.org/download/ and extract 3.30.6.
+
 To test a new build of OBS while live:
 $ cd obs-studio/build
-$ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig cmake -G Ninja -DENABLE_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_5060_linux64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=0 -DENABLE_SCRIPTING=OFF -DENABLE_QSV11=OFF -DENABLE_WEBRTC=0 -DENABLE_NEW_MPEGTS_OUTPUT=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
-$ cmake --build . -j6
-$ cmake --install .
+$ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig ../../cmake-3.30.6-linux-x86_64/bin/cmake -G Ninja -DENABLE_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_6533_linux_x86_64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=0 -DENABLE_SCRIPTING=OFF -DENABLE_QSV11=OFF -DENABLE_WEBRTC=0 -DENABLE_NEW_MPEGTS_OUTPUT=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
+$ ../../cmake-3.30.6-linux-x86_64/bin/cmake --build . -j6
+$ ../../cmake-3.30.6-linux-x86_64/bin/cmake --install .
 $ # If WS 4 is needed:
 $ # cd obs-websocket/build
 $ # rm -rf *; cmake -DLIBOBS_INCLUDE_DIR=/home/rosuav/obs-studio/libobs -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
