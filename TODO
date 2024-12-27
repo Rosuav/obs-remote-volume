@@ -53,11 +53,8 @@ $ cd obs-studio/build
 $ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig ../../cmake-3.30.6-linux-x86_64/bin/cmake -G Ninja -DENABLE_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_6533_linux_x86_64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=0 -DENABLE_SCRIPTING=OFF -DENABLE_QSV11=OFF -DENABLE_WEBRTC=0 -DENABLE_NEW_MPEGTS_OUTPUT=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
 $ ../../cmake-3.30.6-linux-x86_64/bin/cmake --build . -j6
 $ ../../cmake-3.30.6-linux-x86_64/bin/cmake --install .
-$ # If WS 4 is needed:
-$ # cd obs-websocket/build
-$ # rm -rf *; cmake -DLIBOBS_INCLUDE_DIR=/home/rosuav/obs-studio/libobs -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
-$ # make -j6 && make install
 $ cd /home/rosuav/tmp/obs
 $ LD_LIBRARY_PATH=/home/rosuav/tmp/obs/lib:/home/rosuav/.ffmpeg/lib bin/obs
 $ cd /home/rosuav/obs-remote-volume; python3 -m http.server
 http://localhost:8000/#@localhost:4445
+To switch to live, change path (second last arg to cmake) to /usr
