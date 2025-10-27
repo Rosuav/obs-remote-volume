@@ -29,7 +29,7 @@
 Grab CEF from https://cdn-fastly.obsproject.com/downloads/cef_binary_6533_linux_x86_64.tar.xz
 (trace through the paths in obs-studio/buildspec.json and buildspec_common.cmake to
 generate that URL)
-$ tar xjf cef_binary_6533_linux_x86_64.tar.bz2
+$ tar xf cef_binary_6533_linux_x86_64.tar.xz
 Building CEF shouldn't be necessary since it comes with binaries, but if tweaks are
 done, build with:
 $ mkdir -p cef_binary_6533_linux_x86_64/build; cd cef_binary_6533_linux_x86_64/build
@@ -49,12 +49,10 @@ As of OBS v31, cmake v3.28-3.30 is required. As Debian Bookworm ships v3.25, thi
 a newer version to use: https://cmake.org/download/ and extract 3.30.6.
 
 To test a new build of OBS while live:
-$ cd obs-studio/build
-$ rm -rf *; PKG_CONFIG_PATH=/home/rosuav/.ffmpeg/lib/pkgconfig ../../cmake-3.30.6-linux-x86_64/bin/cmake -G Ninja -DENABLE_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_6533_linux_x86_64" -DENABLE_PIPEWIRE=OFF -DENABLE_AJA=0 -DENABLE_SCRIPTING=OFF -DENABLE_QSV11=OFF -DENABLE_WEBRTC=0 -DENABLE_NEW_MPEGTS_OUTPUT=OFF -DCMAKE_INSTALL_PREFIX=/home/rosuav/tmp/obs ..
-$ ../../cmake-3.30.6-linux-x86_64/bin/cmake --build . -j6
-$ ../../cmake-3.30.6-linux-x86_64/bin/cmake --install .
-$ cd /home/rosuav/tmp/obs
-$ LD_LIBRARY_PATH=/home/rosuav/tmp/obs/lib:/home/rosuav/.ffmpeg/lib bin/obs
+$ cd obs-studio
+$ rm -rf build; PKG_CONFIG_LIBDIR=/home/rosuav/.ffmpeg/lib/pkgconfig ../cmake-3.30.6-linux-x86_64/bin/cmake -B build --preset rosuav-debian
+$ ../cmake-3.30.6-linux-x86_64/bin/cmake --build build -j6
+$ build/frontend/obs
+$ sudo ../cmake-3.30.6-linux-x86_64/bin/cmake --install build
 $ cd /home/rosuav/obs-remote-volume; python3 -m http.server
 http://localhost:8000/#@localhost:4445
-To switch to live, change path (second last arg to cmake) to /usr
