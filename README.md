@@ -21,7 +21,7 @@ websocket, check the "SSL" box before connecting.
 License: MIT
 
 The code in this repository, with the exception of forge_sha256.js, is all
-copyright (c) 2017, Chris Angelico. 
+copyright (c) 2017-2026, Chris Angelico. 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
 this software and associated documentation files (the "Software"), to deal in 
