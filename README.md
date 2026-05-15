@@ -10,13 +10,12 @@ and/or port forwarding rules), so you'll generally want to have a password
 set on the websocket.
 
 To connect to OBS running on localhost, easy - no encryption needed. To connect
-to an OBS on the internet, see [the OBS Websocket instructions for enabling
-remote access](https://github.com/Palakis/obs-websocket#connecting-over-a-tlssecure-connection-or-remotely).
-For LAN access, you will need to either forward or encrypt the traffic. A
-Python-based proxy is included; provide an SSL certificate and it does the
-rest. To connect to any sort of encrypted websocket, just add "wss://" or
-"https://" in front of the server name. TODO: Make it way easier to pick a
-server to connect to.
+to an OBS on the internet, you will need to encrypt the traffic. This will
+require an SSL certificate and a reverse proxy; one is included here, and
+others are available on the internet. For LAN access, you may be able to use
+unencrypted connections, if and only if the host is specified by IP address;
+otherwise, encryption will be required. To connect to any sort of encrypted
+websocket, check the "SSL" box before connecting.
 
 
 License: MIT
